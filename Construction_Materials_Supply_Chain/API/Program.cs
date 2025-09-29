@@ -1,4 +1,11 @@
+using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ScmVlxdContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+
 
 // Add services to the container.
 

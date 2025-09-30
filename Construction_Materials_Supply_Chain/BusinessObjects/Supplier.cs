@@ -14,4 +14,5 @@ public partial class Supplier
     public string? ContactPhone { get; set; }
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+    public virtual ICollection<Material> Materials { get; set; } = new List<Material>();
 }

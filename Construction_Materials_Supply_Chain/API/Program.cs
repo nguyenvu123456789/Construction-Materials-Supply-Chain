@@ -8,6 +8,7 @@ using Repositories.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// AutoMapper configuration
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();

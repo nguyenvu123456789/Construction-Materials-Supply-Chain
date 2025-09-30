@@ -1,22 +1,29 @@
 using BusinessObjects;
+using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
+using Repositories.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register DbContext
 builder.Services.AddDbContext<ScmVlxdContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
+// Register DAO & Repository
+builder.Services.AddScoped<MaterialDAO>();
+builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

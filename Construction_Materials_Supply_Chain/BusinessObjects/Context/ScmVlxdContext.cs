@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace BusinessObjects;
 
@@ -26,6 +28,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
     public virtual DbSet<Permission> Permissions { get; set; }
     public virtual DbSet<Material> Materials { get; set; }
+    public virtual DbSet<MaterialCheck> MaterialChecks { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
@@ -35,6 +38,11 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<Vendor> Vendors { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
+    public virtual DbSet<ImportRequest> ImportRequests { get; set; }
+    public virtual DbSet<ImportRequestDetail> ImportRequestDetails { get; set; }
+    public virtual DbSet<ExportRequest> ExportRequests { get; set; }
+    public virtual DbSet<ExportRequestDetail> ExportRequestDetails { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -42,6 +50,41 @@ public partial class ScmVlxdContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ImportRequest>(entity =>
+        {
+            entity.HasKey(e => e.ImportRequestId);
+            entity.ToTable("ImportRequest");
+            entity.Property(e => e.RequestDate).HasDefaultValueSql("(getdate())");
+            entity.HasOne(e => e.Warehouse).WithMany(w => w.ImportRequests).HasForeignKey(e => e.WarehouseId);
+            entity.HasOne(e => e.RequestedByNavigation).WithMany(u => u.ImportRequestCreatedNavigations).HasForeignKey(e => e.RequestedBy);
+        });
+
+        modelBuilder.Entity<ImportRequestDetail>(entity =>
+        {
+            entity.HasKey(e => e.ImportRequestDetailId);
+            entity.ToTable("ImportRequestDetail");
+            entity.HasOne(d => d.ImportRequest).WithMany(p => p.Details).HasForeignKey(d => d.ImportRequestId);
+            entity.HasOne(d => d.Material).WithMany(m => m.ImportRequestDetails).HasForeignKey(d => d.MaterialId);
+        });
+
+        modelBuilder.Entity<ExportRequest>(entity =>
+        {
+            entity.HasKey(e => e.ExportRequestId);
+            entity.ToTable("ExportRequest");
+            entity.Property(e => e.RequestDate).HasDefaultValueSql("(getdate())");
+            entity.HasOne(e => e.Warehouse).WithMany(w => w.ExportRequests).HasForeignKey(e => e.WarehouseId);
+            entity.HasOne(e => e.RequestedByNavigation).WithMany(u => u.ExportRequestCreatedNavigations).HasForeignKey(e => e.RequestedBy);
+        });
+
+        modelBuilder.Entity<ExportRequestDetail>(entity =>
+        {
+            entity.HasKey(e => e.ExportRequestDetailId);
+            entity.ToTable("ExportRequestDetail");
+            entity.HasOne(d => d.ExportRequest).WithMany(p => p.Details).HasForeignKey(d => d.ExportRequestId);
+            entity.HasOne(d => d.Material).WithMany(m => m.ExportRequestDetails).HasForeignKey(d => d.MaterialId);
+        });
+
+
         modelBuilder.Entity<ActivityLog>(entity =>
         {
             entity.HasKey(e => e.LogId).HasName("PK__Activity__5E5499A894C0E299");
@@ -155,7 +198,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.Property(e => e.InvoiceDetailId).HasColumnName("InvoiceDetailID");
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-            entity.Property(e => e.MaterialId).HasColumnName("MaterialID"); // sửa đúng
+            entity.Property(e => e.MaterialId).HasColumnName("MaterialID"); 
             entity.Property(e => e.LineTotal)
                 .HasComputedColumnSql("([Quantity]*[UnitPrice])", true)
                 .HasColumnType("decimal(29, 2)");
@@ -167,7 +210,7 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__InvoiceDe__Invoi__6FE99F9F");
 
             entity.HasOne(d => d.Material).WithMany(p => p.InvoiceDetails)
-                .HasForeignKey(d => d.MaterialId)
+                .HasForeignKey(d => d.MaterialId) 
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__InvoiceDe__Mater__70DDC3D8");
         });
@@ -232,7 +275,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.Property(e => e.OrderDetailId).HasColumnName("OrderDetailID");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
+            entity.Property(e => e.MaterialId).HasColumnName("MaterialID"); 
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
@@ -241,7 +284,7 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__OrderDeta__Order__628FA481");
 
             entity.HasOne(d => d.Material).WithMany(p => p.OrderDetails)
-                .HasForeignKey(d => d.MaterialId)
+                .HasForeignKey(d => d.MaterialId) 
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__OrderDeta__Mater__6383C8BA");
         });
@@ -287,12 +330,40 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CategoryId)
                 .HasColumnName("CategoryID");
 
+            entity.Property(e => e.SupplierId)
+                .HasColumnName("SupplierID");
+
             entity.HasOne(d => d.Category)
                 .WithMany(p => p.Materials)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Material__CategoryID__5BE2A6F2");
+
+            entity.HasOne(d => d.Supplier)
+                .WithMany(p => p.Materials)
+                .HasForeignKey(d => d.SupplierId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Material__SupplierID__5CE5B6AF"); 
         });
+
+        modelBuilder.Entity<MaterialCheck>(entity =>
+        {
+            entity.HasKey(e => e.CheckId);
+            entity.ToTable("MaterialCheck");
+
+            entity.Property(e => e.CheckId).HasColumnName("CheckID");
+            entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
+            entity.Property(e => e.CheckDate).HasColumnType("datetime");
+            entity.Property(e => e.Result).HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(255);
+
+            entity.HasOne(d => d.Material)
+                .WithMany(p => p.MaterialChecks)
+                .HasForeignKey(d => d.MaterialId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__MaterialCheck__MaterialID");
+        });
+
 
         modelBuilder.Entity<Role>(entity =>
         {

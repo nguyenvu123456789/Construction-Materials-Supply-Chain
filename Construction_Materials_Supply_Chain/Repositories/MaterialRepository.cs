@@ -1,7 +1,6 @@
 ﻿using BusinessObjects;
 using DataAccess;
 using Repositories.Interface;
-using System.Collections.Generic;
 
 namespace Repositories
 {

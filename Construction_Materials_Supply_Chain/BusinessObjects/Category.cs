@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace BusinessObjects;
+﻿namespace BusinessObjects;
 
 public partial class Category
 {

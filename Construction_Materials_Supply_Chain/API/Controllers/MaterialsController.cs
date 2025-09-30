@@ -1,6 +1,5 @@
 ﻿using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
-using Repositories;
 using Repositories.Interface;
 
 namespace API.Controllers

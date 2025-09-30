@@ -422,25 +422,13 @@ public partial class ScmVlxdContext : DbContext
         {
             entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__2608AFD9BEBFF0D6");
             entity.ToTable("Warehouse");
-
             entity.Property(e => e.WarehouseId).HasColumnName("WarehouseID");
             entity.Property(e => e.Location).HasMaxLength(255);
             entity.Property(e => e.ManagerId).HasColumnName("ManagerID");
             entity.Property(e => e.WarehouseName).HasMaxLength(100);
-            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
-            entity.Property(e => e.VendorId).HasColumnName("VendorID"); 
-
             entity.HasOne(d => d.Manager).WithMany(p => p.Warehouses)
                 .HasForeignKey(d => d.ManagerId)
                 .HasConstraintName("FK__Warehouse__Manag__5165187F");
-
-            entity.HasOne(d => d.Supplier).WithMany()
-                .HasForeignKey(d => d.SupplierId)
-                .HasConstraintName("FK__Warehouse__Suppl__5224328E");
-
-            entity.HasOne(d => d.Vendor).WithMany()
-                .HasForeignKey(d => d.VendorId)
-                .HasConstraintName("FK__Warehouse__Vendo__531856C7");
         });
 
         modelBuilder.Entity<Category>(entity =>

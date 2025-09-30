@@ -1,8 +1,8 @@
 using BusinessObjects;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
 using Repositories.Interface;
+using Repositories.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

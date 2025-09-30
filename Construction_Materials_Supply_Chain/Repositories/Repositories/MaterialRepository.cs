@@ -2,7 +2,7 @@
 using DataAccess;
 using Repositories.Interface;
 
-namespace Repositories
+namespace Repositories.Repositories
 {
     public class MaterialRepository : IMaterialRepository
     {

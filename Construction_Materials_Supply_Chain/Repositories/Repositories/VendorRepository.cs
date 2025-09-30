@@ -6,7 +6,14 @@ namespace Repositories.Repositories
 {
     public class VendorRepository : IVendorRepository
     {
-        public List<Vendor> GetApprovedVendors() => VendorDAO.GetApprovedVendors();
-        public List<Vendor> SearchVendors(string keyword) => VendorDAO.SearchVendors(keyword);
+        private readonly VendorDAO _dao;
+
+        public VendorRepository(VendorDAO dao)
+        {
+            _dao = dao;
+        }
+
+        public List<Vendor> GetApprovedVendors() => _dao.GetApprovedVendors();
+        public List<Vendor> SearchVendors(string keyword) => _dao.SearchVendors(keyword);
     }
 }

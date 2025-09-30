@@ -2,70 +2,38 @@
 
 namespace DataAccess
 {
-    public class ActivityLogDAO
+    public class ActivityLogDAO : BaseDAO
     {
-        public static List<ActivityLog> GetLogs()
+        public ActivityLogDAO(ScmVlxdContext context) : base(context) { }
+
+        public List<ActivityLog> GetLogs()
         {
-            var list = new List<ActivityLog>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.ActivityLogs
-                                  .OrderByDescending(l => l.CreatedAt)
-                                  .ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
+            return Context.ActivityLogs
+                          .OrderByDescending(l => l.CreatedAt)
+                          .ToList();
         }
 
-        public static List<ActivityLog> SearchLogs(string keyword)
+        public List<ActivityLog> SearchLogs(string keyword)
         {
-            var list = new List<ActivityLog>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.ActivityLogs
-                                  .Where(l => l.Action.Contains(keyword)
-                                           || l.EntityName.Contains(keyword))
-                                  .OrderByDescending(l => l.CreatedAt)
-                                  .ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
+            return Context.ActivityLogs
+                          .Where(l => l.Action.Contains(keyword)
+                                   || l.EntityName.Contains(keyword))
+                          .OrderByDescending(l => l.CreatedAt)
+                          .ToList();
         }
 
-        public static void LogAction(int userId, string action, string entityName = null, int? entityId = null)
+        public void LogAction(int userId, string action, string entityName = null, int? entityId = null)
         {
-            try
+            var log = new ActivityLog
             {
-                using (var context = new ScmVlxdContext())
-                {
-                    var log = new ActivityLog
-                    {
-                        UserId = userId,
-                        Action = action,
-                        EntityName = entityName,
-                        EntityId = entityId,
-                        CreatedAt = DateTime.Now
-                    };
-                    context.ActivityLogs.Add(log);
-                    context.SaveChanges();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+                UserId = userId,
+                Action = action,
+                EntityName = entityName,
+                EntityId = entityId,
+                CreatedAt = DateTime.Now
+            };
+            Context.ActivityLogs.Add(log);
+            Context.SaveChanges();
         }
     }
 }

@@ -2,23 +2,13 @@
 
 namespace DataAccess
 {
-    public class PermissionDAO
+    public class PermissionDAO : BaseDAO
     {
-        public static List<Permission> GetPermissions()
+        public PermissionDAO(ScmVlxdContext context) : base(context) { }
+
+        public List<Permission> GetPermissions()
         {
-            var list = new List<Permission>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.Permissions.ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
+            return Context.Permissions.ToList();
         }
     }
 }

@@ -1,18 +1,42 @@
+using API.Profiles;
 using BusinessObjects;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Repositories.Interface;
+using Repositories.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingProfile>();
+});
 
 // Register DbContext
 builder.Services.AddDbContext<ScmVlxdContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-// Register DAO & Repository
+// DAO
+builder.Services.AddScoped<ActivityLogDAO>();
 builder.Services.AddScoped<MaterialDAO>();
+builder.Services.AddScoped<NotificationDAO>();
+builder.Services.AddScoped<PermissionDAO>();
+builder.Services.AddScoped<RoleDAO>();
+builder.Services.AddScoped<ShippingLogDAO>();
+builder.Services.AddScoped<SupplyChainDAO>();
+builder.Services.AddScoped<UserDAO>();
+builder.Services.AddScoped<UserRoleDAO>();
+builder.Services.AddScoped<VendorDAO>();
+
+// Repository
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
+builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IVendorRepository, VendorRepository>();
+
 
 // Add services to the container
 builder.Services.AddControllers();

@@ -2,39 +2,16 @@
 
 namespace DataAccess
 {
-    public class UserRoleDAO
+    public class UserRoleDAO : BaseDAO
     {
-        public static List<UserRole> GetUserRoles()
-        {
-            var list = new List<UserRole>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.UserRoles.ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
-        }
+        public UserRoleDAO(ScmVlxdContext context) : base(context) { }
 
-        public static void AssignRole(UserRole ur)
+        public List<UserRole> GetUserRoles() => Context.UserRoles.ToList();
+
+        public void AssignRole(UserRole ur)
         {
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    context.UserRoles.Add(ur);
-                    context.SaveChanges();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+            Context.UserRoles.Add(ur);
+            Context.SaveChanges();
         }
     }
 }

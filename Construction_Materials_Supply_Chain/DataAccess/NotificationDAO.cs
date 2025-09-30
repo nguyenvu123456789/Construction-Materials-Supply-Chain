@@ -2,45 +2,25 @@
 
 namespace DataAccess
 {
-    public class NotificationDAO
+    public class NotificationDAO : BaseDAO
     {
-        public static List<Notification> GetNotificationsByUser(int userId)
+        public NotificationDAO(ScmVlxdContext context) : base(context) { }
+
+        public List<Notification> GetNotificationsByUser(int userId)
         {
-            var list = new List<Notification>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.Notifications
-                                  .Where(n => n.UserId == userId)
-                                  .OrderByDescending(n => n.CreatedAt)
-                                  .ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
+            return Context.Notifications
+                          .Where(n => n.UserId == userId)
+                          .OrderByDescending(n => n.CreatedAt)
+                          .ToList();
         }
 
-        public static void MarkAsRead(int notificationId)
+        public void MarkAsRead(int notificationId)
         {
-            try
+            var noti = Context.Notifications.SingleOrDefault(x => x.NotificationId == notificationId);
+            if (noti != null)
             {
-                using (var context = new ScmVlxdContext())
-                {
-                    var noti = context.Notifications.SingleOrDefault(x => x.NotificationId == notificationId);
-                    if (noti != null)
-                    {
-                        noti.IsRead = true;
-                        context.SaveChanges();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
+                noti.IsRead = true;
+                Context.SaveChanges();
             }
         }
     }

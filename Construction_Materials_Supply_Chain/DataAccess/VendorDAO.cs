@@ -2,27 +2,16 @@
 
 namespace DataAccess
 {
-    public class VendorDAO
+    public class VendorDAO : BaseDAO
     {
-        public static List<Vendor> GetApprovedVendors()
-        {
-            using (var context = new ScmVlxdContext())
-            {
-                return context.Vendors
-                              .Where(v => v.Status == "Approved")
-                              .ToList();
-            }
-        }
+        public VendorDAO(ScmVlxdContext context) : base(context) { }
 
-        public static List<Vendor> SearchVendors(string keyword)
-        {
-            using (var context = new ScmVlxdContext())
-            {
-                return context.Vendors
-                              .Where(v => v.VendorName.Contains(keyword)
-                                       || v.ContactEmail.Contains(keyword))
-                              .ToList();
-            }
-        }
+        public List<Vendor> GetApprovedVendors() =>
+            Context.Vendors.Where(v => v.Status == "Approved").ToList();
+
+        public List<Vendor> SearchVendors(string keyword) =>
+            Context.Vendors
+                   .Where(v => v.VendorName.Contains(keyword) || v.ContactEmail.Contains(keyword))
+                   .ToList();
     }
 }

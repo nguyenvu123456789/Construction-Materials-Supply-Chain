@@ -8,33 +8,13 @@ namespace API.Profiles
     {
         public MappingProfile()
         {
-            // User
-            CreateMap<User, UserDto>();
-            CreateMap<UserDto, User>();
-
-            // Vendor
-            CreateMap<Vendor, VendorDto>();
-            CreateMap<VendorDto, Vendor>();
-
-            // Supplier
-            CreateMap<Supplier, SupplierDto>();
-            CreateMap<SupplierDto, Supplier>();
-
-            // Warehouse
-            CreateMap<Warehouse, WarehouseDto>();
-            CreateMap<WarehouseDto, Warehouse>();
-
-            // Transport
-            CreateMap<Transport, TransportDto>();
-            CreateMap<TransportDto, Transport>();
-
-            // ActivityLog
-            CreateMap<ActivityLog, ActivityLogDto>();
-            CreateMap<ActivityLogDto, ActivityLog>();
-
-            // ShippingLog
-            CreateMap<ShippingLog, ShippingLogDto>();
-            CreateMap<ShippingLogDto, ShippingLog>();
+            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<Vendor, VendorDto>().ReverseMap();
+            CreateMap<Supplier, SupplierDto>().ReverseMap();
+            CreateMap<Warehouse, WarehouseDto>().ReverseMap();
+            CreateMap<Transport, TransportDto>().ReverseMap();
+            CreateMap<ActivityLog, ActivityLogDto>().ReverseMap();
+            CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }
     }
 }

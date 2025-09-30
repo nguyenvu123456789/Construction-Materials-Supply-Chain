@@ -6,7 +6,14 @@ namespace Repositories.Repositories
 {
     public class ShippingLogRepository : IShippingLogRepository
     {
-        public List<ShippingLog> GetAllShippingLogs() => ShippingLogDAO.GetAllShippingLogs();
-        public List<ShippingLog> SearchShippingLogs(string status) => ShippingLogDAO.SearchShippingLogs(status);
+        private readonly ShippingLogDAO _dao;
+
+        public ShippingLogRepository(ShippingLogDAO dao)
+        {
+            _dao = dao;
+        }
+
+        public List<ShippingLog> GetAllShippingLogs() => _dao.GetAllShippingLogs();
+        public List<ShippingLog> SearchShippingLogs(string status) => _dao.SearchShippingLogs(status);
     }
 }

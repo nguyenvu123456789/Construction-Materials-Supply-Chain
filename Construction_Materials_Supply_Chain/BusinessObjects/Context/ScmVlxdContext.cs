@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 
 namespace BusinessObjects;
 
@@ -198,7 +196,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.Property(e => e.InvoiceDetailId).HasColumnName("InvoiceDetailID");
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-            entity.Property(e => e.MaterialId).HasColumnName("MaterialID"); 
+            entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
             entity.Property(e => e.LineTotal)
                 .HasComputedColumnSql("([Quantity]*[UnitPrice])", true)
                 .HasColumnType("decimal(29, 2)");
@@ -210,7 +208,7 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__InvoiceDe__Invoi__6FE99F9F");
 
             entity.HasOne(d => d.Material).WithMany(p => p.InvoiceDetails)
-                .HasForeignKey(d => d.MaterialId) 
+                .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__InvoiceDe__Mater__70DDC3D8");
         });
@@ -275,7 +273,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.Property(e => e.OrderDetailId).HasColumnName("OrderDetailID");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.MaterialId).HasColumnName("MaterialID"); 
+            entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
@@ -284,7 +282,7 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__OrderDeta__Order__628FA481");
 
             entity.HasOne(d => d.Material).WithMany(p => p.OrderDetails)
-                .HasForeignKey(d => d.MaterialId) 
+                .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__OrderDeta__Mater__6383C8BA");
         });
@@ -343,7 +341,7 @@ public partial class ScmVlxdContext : DbContext
                 .WithMany(p => p.Materials)
                 .HasForeignKey(d => d.SupplierId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Material__SupplierID__5CE5B6AF"); 
+                .HasConstraintName("FK__Material__SupplierID__5CE5B6AF");
         });
 
         modelBuilder.Entity<MaterialCheck>(entity =>

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BusinessObjects;
+﻿namespace BusinessObjects;
 
 public class MaterialCheck
 {
@@ -10,7 +8,7 @@ public class MaterialCheck
 
     public DateTime CheckDate { get; set; }
 
-    public string? Result { get; set; } 
+    public string? Result { get; set; }
 
     public string? Notes { get; set; }
 

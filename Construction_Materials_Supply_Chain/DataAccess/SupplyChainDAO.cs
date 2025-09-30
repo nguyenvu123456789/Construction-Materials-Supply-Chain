@@ -1,52 +1,29 @@
 ﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
 {
-    public class SupplyChainDAO
+    public class SupplyChainDAO : BaseDAO
     {
-        public static List<Warehouse> GetWarehouses()
+        public SupplyChainDAO(ScmVlxdContext context) : base(context) { }
+
+        public List<Warehouse> GetWarehouses() => Context.Warehouses.ToList();
+        public List<Supplier> GetSuppliers() => Context.Suppliers.ToList();
+        public List<Transport> GetTransports() => Context.Transports.ToList();
+
+        public void UpdateWarehouse(Warehouse w)
         {
-            using (var context = new ScmVlxdContext())
-            {
-                return context.Warehouses.ToList();
-            }
+            Context.Entry(w).State = EntityState.Modified;
+            Context.SaveChanges();
         }
 
-        public static List<Supplier> GetSuppliers()
+        public void DeleteWarehouse(int id)
         {
-            using (var context = new ScmVlxdContext())
+            var w = Context.Warehouses.SingleOrDefault(x => x.WarehouseId == id);
+            if (w != null)
             {
-                return context.Suppliers.ToList();
-            }
-        }
-
-        public static List<Transport> GetTransports()
-        {
-            using (var context = new ScmVlxdContext())
-            {
-                return context.Transports.ToList();
-            }
-        }
-
-        public static void UpdateWarehouse(Warehouse w)
-        {
-            using (var context = new ScmVlxdContext())
-            {
-                context.Entry(w).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                context.SaveChanges();
-            }
-        }
-
-        public static void DeleteWarehouse(int id)
-        {
-            using (var context = new ScmVlxdContext())
-            {
-                var w = context.Warehouses.SingleOrDefault(x => x.WarehouseId == id);
-                if (w != null)
-                {
-                    context.Warehouses.Remove(w);
-                    context.SaveChanges();
-                }
+                Context.Warehouses.Remove(w);
+                Context.SaveChanges();
             }
         }
     }

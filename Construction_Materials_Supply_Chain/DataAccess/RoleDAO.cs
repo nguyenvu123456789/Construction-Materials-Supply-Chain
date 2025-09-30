@@ -2,23 +2,13 @@
 
 namespace DataAccess
 {
-    public class RoleDAO
+    public class RoleDAO : BaseDAO
     {
-        public static List<Role> GetRoles()
+        public RoleDAO(ScmVlxdContext context) : base(context) { }
+
+        public List<Role> GetRoles()
         {
-            var list = new List<Role>();
-            try
-            {
-                using (var context = new ScmVlxdContext())
-                {
-                    list = context.Roles.ToList();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            return list;
+            return Context.Roles.ToList();
         }
     }
 }

@@ -6,11 +6,18 @@ namespace Repositories.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        public List<User> GetUsers() => UserDAO.GetUsers();
-        public List<User> SearchUsers(string keyword) => UserDAO.SearchUsers(keyword);
-        public User GetUserById(int id) => UserDAO.FindUserById(id);
-        public void SaveUser(User u) => UserDAO.SaveUser(u);
-        public void UpdateUser(User u) => UserDAO.UpdateUser(u);
-        public void DeleteUserById(int id) => UserDAO.DeleteUserById(id);
+        private readonly UserDAO _dao;
+
+        public UserRepository(UserDAO dao)
+        {
+            _dao = dao;
+        }
+
+        public List<User> GetUsers() => _dao.GetUsers();
+        public List<User> SearchUsers(string keyword) => _dao.SearchUsers(keyword);
+        public User GetUserById(int id) => _dao.FindUserById(id);
+        public void SaveUser(User u) => _dao.SaveUser(u);
+        public void UpdateUser(User u) => _dao.UpdateUser(u);
+        public void DeleteUserById(int id) => _dao.DeleteUserById(id);
     }
 }

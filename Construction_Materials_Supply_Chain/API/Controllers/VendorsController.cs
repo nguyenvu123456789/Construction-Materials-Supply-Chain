@@ -1,7 +1,7 @@
-﻿using BusinessObjects;
+﻿using API.DTOs;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interface;
-using Repositories.Repositories;
 
 namespace API.Controllers
 {
@@ -9,14 +9,29 @@ namespace API.Controllers
     [ApiController]
     public class VendorsController : ControllerBase
     {
-        private readonly IVendorRepository repository = new VendorRepository();
+        private readonly IVendorRepository _repository;
+        private readonly IMapper _mapper;
+
+        public VendorsController(IVendorRepository repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+        }
 
         // GET: api/Vendors
         [HttpGet]
-        public ActionResult<IEnumerable<Vendor>> GetApprovedVendors() => repository.GetApprovedVendors();
+        public ActionResult<IEnumerable<VendorDto>> GetApprovedVendors()
+        {
+            var vendors = _repository.GetApprovedVendors();
+            return Ok(_mapper.Map<IEnumerable<VendorDto>>(vendors));
+        }
 
         // GET: api/Vendors/Search?keyword=abc
         [HttpGet("Search")]
-        public ActionResult<IEnumerable<Vendor>> Search(string keyword) => repository.SearchVendors(keyword);
+        public ActionResult<IEnumerable<VendorDto>> Search(string keyword)
+        {
+            var vendors = _repository.SearchVendors(keyword);
+            return Ok(_mapper.Map<IEnumerable<VendorDto>>(vendors));
+        }
     }
 }

@@ -255,6 +255,7 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.PermissionName).HasMaxLength(100);
         });
+
         modelBuilder.Entity<Material>(entity =>
         {
             entity.HasKey(e => e.MaterialId).HasName("PK__Material__B40CC6ED9105ABE6");
@@ -292,7 +293,6 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Material__CategoryID__5BE2A6F2");
         });
-
 
         modelBuilder.Entity<Role>(entity =>
         {

@@ -3,7 +3,6 @@ using AutoMapper;
 using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interface;
-using Repositories.Repositories;
 
 namespace API.Controllers
 {

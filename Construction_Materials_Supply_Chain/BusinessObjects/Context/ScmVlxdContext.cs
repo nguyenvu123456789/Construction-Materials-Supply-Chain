@@ -30,7 +30,8 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
-    public virtual DbSet<Supplier> Suppliers { get; set; }
+    public virtual DbSet<Partner> Partners { get; set; }
+    public virtual DbSet<PartnerType> PartnerTypes { get; set; }
     public virtual DbSet<Transport> Transports { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
@@ -126,68 +127,91 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
         });
-
         modelBuilder.Entity<Inventory>(entity =>
         {
             entity.HasKey(e => e.InventoryId).HasName("PK__Inventor__F5FDE6D3731CCD3C");
             entity.ToTable("Inventory");
+
             entity.Property(e => e.InventoryId).HasColumnName("InventoryID");
             entity.Property(e => e.BatchNumber).HasMaxLength(50);
+
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Location).HasMaxLength(100);
+
             entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
             entity.Property(e => e.Quantity).HasDefaultValue(0);
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.WarehouseId).HasColumnName("WarehouseID");
+
             entity.HasOne(d => d.Material).WithMany(p => p.Inventories)
                 .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Mater__5AEE82B9");
+
             entity.HasOne(d => d.Warehouse).WithMany(p => p.Inventories)
                 .HasForeignKey(d => d.WarehouseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Wareh__59FA5E80");
         });
 
+
         modelBuilder.Entity<Invoice>(entity =>
         {
             entity.HasKey(e => e.InvoiceId).HasName("PK__Invoice__D796AAD5C6273FC0");
+
             entity.ToTable("Invoice");
+
             entity.HasIndex(e => e.InvoiceNumber, "UQ__Invoice__D776E98185E86C00").IsUnique();
+
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
+
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+
             entity.Property(e => e.DueDate).HasColumnType("datetime");
+
             entity.Property(e => e.InvoiceNumber).HasMaxLength(50);
+
             entity.Property(e => e.InvoiceType).HasMaxLength(50);
+
             entity.Property(e => e.IssueDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.RelatedOrderId).HasColumnName("RelatedOrderID");
+
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
-            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
+
+            entity.Property(e => e.PartnerId).HasColumnName("PartnerID");
+
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
+
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.InvoiceCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
                 .HasConstraintName("FK__Invoice__Created__6D0D32F4");
+
             entity.HasOne(d => d.Customer).WithMany(p => p.InvoiceCustomers)
                 .HasForeignKey(d => d.CustomerId)
                 .HasConstraintName("FK__Invoice__Custome__6B24EA82");
+
             entity.HasOne(d => d.RelatedOrder).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.RelatedOrderId)
                 .HasConstraintName("FK__Invoice__Related__6A30C649");
-            entity.HasOne(d => d.Supplier).WithMany(p => p.Invoices)
-                .HasForeignKey(d => d.SupplierId)
-                .HasConstraintName("FK__Invoice__Supplie__6C190EBB");
+
+            entity.HasOne(d => d.Partner).WithMany(p => p.Invoices)
+                .HasForeignKey(d => d.PartnerId)
+                .HasConstraintName("FK__Invoice__Partner__6C190EBB");
         });
+
 
         modelBuilder.Entity<InvoiceDetail>(entity =>
         {
@@ -296,7 +320,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.PermissionName).HasMaxLength(100);
         });
-
         modelBuilder.Entity<Material>(entity =>
         {
             entity.HasKey(e => e.MaterialId).HasName("PK__Material__B40CC6ED9105ABE6");
@@ -328,8 +351,8 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CategoryId)
                 .HasColumnName("CategoryID");
 
-            entity.Property(e => e.SupplierId)
-                .HasColumnName("SupplierID");
+            entity.Property(e => e.PartnerId)
+                .HasColumnName("PartnerID");
 
             entity.HasOne(d => d.Category)
                 .WithMany(p => p.Materials)
@@ -337,11 +360,11 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Material__CategoryID__5BE2A6F2");
 
-            entity.HasOne(d => d.Supplier)
+            entity.HasOne(d => d.Partner)
                 .WithMany(p => p.Materials)
-                .HasForeignKey(d => d.SupplierId)
+                .HasForeignKey(d => d.PartnerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Material__SupplierID__5CE5B6AF");
+                .HasConstraintName("FK__Material__PartnerID__5CE5B6AF");
         });
 
         modelBuilder.Entity<MaterialCheck>(entity =>
@@ -413,15 +436,32 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__ShippingL__Trans__08B54D69");
         });
 
-        modelBuilder.Entity<Supplier>(entity =>
+        modelBuilder.Entity<PartnerType>(entity =>
         {
-            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE66694260B829E");
-            entity.ToTable("Supplier");
-            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
+            entity.HasKey(e => e.PartnerTypeId);
+            entity.ToTable("PartnerType");
+
+            entity.Property(e => e.PartnerTypeId).HasColumnName("PartnerTypeID");
+            entity.Property(e => e.TypeName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Partner>(entity =>
+        {
+            entity.HasKey(e => e.PartnerId);
+            entity.ToTable("Partner");
+
+            entity.Property(e => e.PartnerId).HasColumnName("PartnerID");
+            entity.Property(e => e.PartnerName).HasMaxLength(100);
             entity.Property(e => e.ContactEmail).HasMaxLength(100);
             entity.Property(e => e.ContactPhone).HasMaxLength(20);
-            entity.Property(e => e.SupplierName).HasMaxLength(100);
+            entity.Property(e => e.PartnerTypeId).HasColumnName("PartnerTypeID");
+
+            entity.HasOne(d => d.PartnerType)
+                .WithMany(p => p.Partners)
+                .HasForeignKey(d => d.PartnerTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
 
         modelBuilder.Entity<Transport>(entity =>
         {

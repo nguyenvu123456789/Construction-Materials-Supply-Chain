@@ -12,7 +12,7 @@ public partial class Invoice
 
     public int? CustomerId { get; set; }
 
-    public int? SupplierId { get; set; }
+    public int? PartnerId { get; set; }
 
     public DateTime IssueDate { get; set; }
 
@@ -36,5 +36,5 @@ public partial class Invoice
 
     public virtual Order? RelatedOrder { get; set; }
 
-    public virtual Supplier? Supplier { get; set; }
+    public virtual Partner? Partner { get; set; }
 }

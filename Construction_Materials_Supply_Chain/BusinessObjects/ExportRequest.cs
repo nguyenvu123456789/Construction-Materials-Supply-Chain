@@ -5,6 +5,7 @@ public partial class ExportRequest
     public int ExportRequestId { get; set; }
     public DateTime RequestDate { get; set; }
     public int WarehouseId { get; set; }
+    public string Status { get; set; } = "Pending";
     public int RequestedBy { get; set; }
     public string? Notes { get; set; }
 

@@ -9,7 +9,7 @@ public class MaterialCheck
     public DateTime CheckDate { get; set; }
 
     public string? Result { get; set; }
-
+    public int QuantityChecked { get; set; }
     public string? Notes { get; set; }
 
     public virtual Material Material { get; set; } = null!;

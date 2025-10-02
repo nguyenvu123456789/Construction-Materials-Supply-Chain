@@ -36,7 +36,6 @@ builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
 builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-
 // Add services to the container
 builder.Services.AddControllers();
 

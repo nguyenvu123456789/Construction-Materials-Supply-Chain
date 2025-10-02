@@ -13,26 +13,31 @@ namespace DataAccess
         public List<PartnerType> GetPartnerTypes() =>
             Context.PartnerTypes.Include(pt => pt.Partners).ToList();
 
-        public List<Warehouse> GetWarehouses() =>
-            Context.Warehouses.Include(w => w.Manager).ToList();
-
-        public List<Transport> GetTransports() =>
-            Context.Transports.ToList();
-
-        public void UpdateWarehouse(Warehouse w)
+        public List<Partner> GetPartnersPaged(string? keyword, int pageNumber, int pageSize)
         {
-            Context.Entry(w).State = EntityState.Modified;
-            Context.SaveChanges();
+            var query = Context.Partners.Include(p => p.PartnerType).AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(p => p.PartnerName.Contains(keyword));
+            }
+
+            return query.OrderBy(p => p.PartnerId)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
         }
 
-        public void DeleteWarehouse(int id)
+        public int GetTotalPartnersCount(string? keyword)
         {
-            var w = Context.Warehouses.SingleOrDefault(x => x.WarehouseId == id);
-            if (w != null)
+            var query = Context.Partners.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
             {
-                Context.Warehouses.Remove(w);
-                Context.SaveChanges();
+                query = query.Where(p => p.PartnerName.Contains(keyword));
             }
+
+            return query.Count();
         }
     }
 }

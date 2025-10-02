@@ -27,14 +27,6 @@ namespace API.Controllers
             return Ok(_mapper.Map<IEnumerable<UserDto>>(users));
         }
 
-        // GET: api/Users/Search?keyword=abc
-        [HttpGet("Search")]
-        public ActionResult<IEnumerable<UserDto>> SearchUsers(string keyword)
-        {
-            var users = _repository.SearchUsers(keyword);
-            return Ok(_mapper.Map<IEnumerable<UserDto>>(users));
-        }
-
         // POST: api/Users
         [HttpPost]
         public IActionResult PostUser(UserDto userDto)
@@ -67,6 +59,24 @@ namespace API.Controllers
 
             _repository.DeleteUserById(id);
             return NoContent();
+        }
+
+        [HttpGet("filter")]
+        public ActionResult<object> GetUsersFiltered([FromQuery] QueryParametersDto queryParams)
+        {
+            var users = _repository.GetUsersPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalUsersCount(queryParams.Keyword);
+
+            var result = new
+            {
+                Data = _mapper.Map<IEnumerable<UserDto>>(users),
+                TotalCount = totalCount,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
+            };
+
+            return Ok(result);
         }
     }
 }

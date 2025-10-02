@@ -12,7 +12,7 @@ namespace API.Controllers
     {
         private readonly IExportRequestRepository _repository;
         private readonly IMapper _mapper;
-        private readonly ScmVlxdContext _context; // dùng để check stock
+        private readonly ScmVlxdContext _context;
 
         public ExportRequestsController(IExportRequestRepository repository, IMapper mapper, ScmVlxdContext context)
         {

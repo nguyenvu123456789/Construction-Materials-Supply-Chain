@@ -35,8 +35,9 @@ namespace DataAccess
         }
 
         public List<User> SearchUsers(string keyword) =>
-            Context.Users.Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword))
-                         .ToList();
+            Context.Users
+                   .Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword))
+                   .ToList();
 
         public void DeleteUserById(int userId)
         {
@@ -46,6 +47,30 @@ namespace DataAccess
                 Context.Users.Remove(u);
                 Context.SaveChanges();
             }
+        }
+
+        public List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize)
+        {
+            var query = Context.Users.AsQueryable();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword));
+            }
+            return query
+                .OrderBy(u => u.UserId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
+        public int GetTotalUsersCount(string? keyword)
+        {
+            var query = Context.Users.AsQueryable();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword));
+            }
+            return query.Count();
         }
     }
 }

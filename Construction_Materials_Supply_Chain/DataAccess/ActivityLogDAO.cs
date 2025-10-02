@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
 {
@@ -34,6 +35,33 @@ namespace DataAccess
             };
             Context.ActivityLogs.Add(log);
             Context.SaveChanges();
+        }
+
+        public List<ActivityLog> GetLogsPaged(string? keyword, int pageNumber, int pageSize)
+        {
+            var query = Context.ActivityLogs.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(l => l.Action.Contains(keyword) || l.EntityName.Contains(keyword));
+            }
+
+            return query.OrderByDescending(l => l.CreatedAt)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+        }
+
+        public int GetTotalLogsCount(string? keyword)
+        {
+            var query = Context.ActivityLogs.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(l => l.Action.Contains(keyword) || l.EntityName.Contains(keyword));
+            }
+
+            return query.Count();
         }
     }
 }

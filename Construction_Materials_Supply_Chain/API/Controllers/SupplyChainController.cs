@@ -34,6 +34,7 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        // GET: api/supplychain/partners/by-type/1
         [HttpGet("partners/by-type/{partnerTypeId}")]
         public ActionResult<IEnumerable<PartnerDto>> GetPartnersByType(int partnerTypeId)
         {
@@ -47,6 +48,24 @@ namespace API.Controllers
 
             var dto = _mapper.Map<IEnumerable<PartnerDto>>(partnerType.Partners);
             return Ok(dto);
+        }
+
+        [HttpGet("partners/filter")]
+        public ActionResult<object> GetPartnersFiltered([FromQuery] QueryParametersDto queryParams)
+        {
+            var partners = _repository.GetPartnersPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalPartnersCount(queryParams.Keyword);
+
+            var result = new
+            {
+                Data = _mapper.Map<IEnumerable<PartnerDto>>(partners),
+                TotalCount = totalCount,
+                queryParams.PageNumber,
+                queryParams.PageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
+            };
+
+            return Ok(result);
         }
     }
 }

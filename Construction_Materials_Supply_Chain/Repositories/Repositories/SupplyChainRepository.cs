@@ -15,10 +15,11 @@ namespace Repositories.Repositories
 
         public List<Partner> GetPartners() => _dao.GetPartners();
         public List<PartnerType> GetPartnerTypes() => _dao.GetPartnerTypes();
-        public List<Warehouse> GetWarehouses() => _dao.GetWarehouses();
-        public List<Transport> GetTransports() => _dao.GetTransports();
 
-        public void UpdateWarehouse(Warehouse w) => _dao.UpdateWarehouse(w);
-        public void DeleteWarehouse(int id) => _dao.DeleteWarehouse(id);
+        public List<Partner> GetPartnersPaged(string? keyword, int pageNumber, int pageSize)
+            => _dao.GetPartnersPaged(keyword, pageNumber, pageSize);
+
+        public int GetTotalPartnersCount(string? keyword)
+            => _dao.GetTotalPartnersCount(keyword);
     }
 }

@@ -6,10 +6,8 @@ namespace Repositories.Interface
     {
         List<Partner> GetPartners();
         List<PartnerType> GetPartnerTypes();
-        List<Warehouse> GetWarehouses();
-        List<Transport> GetTransports();
 
-        void UpdateWarehouse(Warehouse w);
-        void DeleteWarehouse(int id);
+        List<Partner> GetPartnersPaged(string? keyword, int pageNumber, int pageSize);
+        int GetTotalPartnersCount(string? keyword);
     }
 }

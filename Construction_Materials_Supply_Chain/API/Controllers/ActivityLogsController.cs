@@ -25,11 +25,22 @@ namespace API.Controllers
             return Ok(_mapper.Map<IEnumerable<ActivityLogDto>>(logs));
         }
 
-        [HttpGet("Search")]
-        public ActionResult<IEnumerable<ActivityLogDto>> SearchLogs(string keyword)
+        [HttpGet("filter")]
+        public ActionResult<object> GetLogsFiltered([FromQuery] QueryParametersDto queryParams)
         {
-            var logs = _repository.SearchLogs(keyword);
-            return Ok(_mapper.Map<IEnumerable<ActivityLogDto>>(logs));
+            var logs = _repository.GetLogsPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalLogsCount(queryParams.Keyword);
+
+            var result = new
+            {
+                Data = _mapper.Map<IEnumerable<ActivityLogDto>>(logs),
+                TotalCount = totalCount,
+                queryParams.PageNumber,
+                queryParams.PageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
+            };
+
+            return Ok(result);
         }
     }
 }

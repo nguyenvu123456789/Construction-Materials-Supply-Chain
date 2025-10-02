@@ -10,5 +10,8 @@ namespace Repositories.Interface
         void SaveUser(User u);
         void UpdateUser(User u);
         void DeleteUserById(int id);
+
+        List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize);
+        int GetTotalUsersCount(string? keyword);
     }
 }

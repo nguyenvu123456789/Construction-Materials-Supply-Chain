@@ -19,5 +19,11 @@ namespace Repositories.Repositories
         public void SaveUser(User u) => _dao.SaveUser(u);
         public void UpdateUser(User u) => _dao.UpdateUser(u);
         public void DeleteUserById(int id) => _dao.DeleteUserById(id);
+
+        public List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize)
+            => _dao.GetUsersPaged(keyword, pageNumber, pageSize);
+
+        public int GetTotalUsersCount(string? keyword)
+            => _dao.GetTotalUsersCount(keyword);
     }
 }

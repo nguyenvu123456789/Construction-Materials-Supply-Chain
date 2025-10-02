@@ -28,6 +28,8 @@ builder.Services.AddScoped<ShippingLogDAO>();
 builder.Services.AddScoped<SupplyChainDAO>();
 builder.Services.AddScoped<UserDAO>();
 builder.Services.AddScoped<UserRoleDAO>();
+builder.Services.AddScoped<ImportRequestDAO>();
+builder.Services.AddScoped<ExportRequestDAO>();
 
 // Repository
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
@@ -35,6 +37,8 @@ builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
 builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
 builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IImportRequestRepository, ImportRequestRepository>();
+builder.Services.AddScoped<IExportRequestRepository, ExportRequestRepository>();
 
 // Add services to the container
 builder.Services.AddControllers();

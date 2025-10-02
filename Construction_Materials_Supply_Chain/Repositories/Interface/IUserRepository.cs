@@ -5,7 +5,6 @@ namespace Repositories.Interface
     public interface IUserRepository
     {
         List<User> GetUsers();
-        List<User> SearchUsers(string keyword);
         User GetUserById(int id);
         void SaveUser(User u);
         void UpdateUser(User u);

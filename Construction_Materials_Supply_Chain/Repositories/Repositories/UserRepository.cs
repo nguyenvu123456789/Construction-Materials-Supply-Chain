@@ -14,7 +14,6 @@ namespace Repositories.Repositories
         }
 
         public List<User> GetUsers() => _dao.GetUsers();
-        public List<User> SearchUsers(string keyword) => _dao.SearchUsers(keyword);
         public User GetUserById(int id) => _dao.FindUserById(id);
         public void SaveUser(User u) => _dao.SaveUser(u);
         public void UpdateUser(User u) => _dao.UpdateUser(u);

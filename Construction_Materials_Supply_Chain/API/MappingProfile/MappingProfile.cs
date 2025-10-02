@@ -17,6 +17,7 @@ namespace API.Profiles
             CreateMap<ImportRequestDetail, ImportRequestDetailDto>().ReverseMap();
             CreateMap<ExportRequest, ExportRequestDto>().ReverseMap();
             CreateMap<ExportRequestDetail, ExportRequestDetailDto>().ReverseMap();
+            CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
 
             CreateMap<Partner, PartnerDto>()
                 .ForMember(dest => dest.PartnerTypeName, opt => opt.MapFrom(src => src.PartnerType.TypeName));

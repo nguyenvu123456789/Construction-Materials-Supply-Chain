@@ -35,7 +35,6 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Transport> Transports { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
-    public virtual DbSet<Vendor> Vendors { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
     public virtual DbSet<ImportRequest> ImportRequests { get; set; }
     public virtual DbSet<ImportRequestDetail> ImportRequestDetails { get; set; }
@@ -511,20 +510,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__User_Role__UserI__4316F928");
-        });
-
-        modelBuilder.Entity<Vendor>(entity =>
-        {
-            entity.HasKey(e => e.VendorId).HasName("PK__Vendor__FC8618D3CCF2E9A2");
-            entity.ToTable("Vendor");
-            entity.Property(e => e.VendorId).HasColumnName("VendorID");
-            entity.Property(e => e.ContactEmail).HasMaxLength(100);
-            entity.Property(e => e.ContactPhone).HasMaxLength(20);
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.VendorName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Warehouse>(entity =>

@@ -1,6 +1,0 @@
-@Construction_Materials_Supply_Chain_HostAddress = http://localhost:5148
-
-GET {{Construction_Materials_Supply_Chain_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

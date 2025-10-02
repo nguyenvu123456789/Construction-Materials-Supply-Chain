@@ -9,7 +9,6 @@ namespace API.Profiles
         public MappingProfile()
         {
             CreateMap<User, UserDto>().ReverseMap();
-            CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
             CreateMap<ActivityLog, ActivityLogDto>().ReverseMap();

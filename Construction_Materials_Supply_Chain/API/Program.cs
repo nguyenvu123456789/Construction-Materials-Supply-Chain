@@ -69,6 +69,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
+SeedData.Initialize(context);
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {

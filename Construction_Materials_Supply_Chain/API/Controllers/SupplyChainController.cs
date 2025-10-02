@@ -1,59 +1,52 @@
-﻿//using API.DTOs;
-//using AutoMapper;
-//using BusinessObjects;
-//using Microsoft.AspNetCore.Mvc;
-//using Repositories.Interface;
+﻿using API.DTOs;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
-//namespace API.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class SupplyChainController : ControllerBase
-//    {
-//        private readonly ISupplyChainRepository _repository;
-//        private readonly IMapper _mapper;
+namespace API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class SupplyChainController : ControllerBase
+    {
+        private readonly ISupplyChainRepository _repository;
+        private readonly IMapper _mapper;
 
-//        public SupplyChainController(ISupplyChainRepository repository, IMapper mapper)
-//        {
-//            _repository = repository;
-//            _mapper = mapper;
-//        }
+        public SupplyChainController(ISupplyChainRepository repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+        }
 
-//        [HttpGet("Warehouses")]
-//        public ActionResult<IEnumerable<WarehouseDto>> GetWarehouses()
-//        {
-//            var warehouses = _repository.GetWarehouses();
-//            return Ok(_mapper.Map<IEnumerable<WarehouseDto>>(warehouses));
-//        }
+        // GET: api/supplychain/partners
+        [HttpGet("partners")]
+        public ActionResult<IEnumerable<PartnerTypeDto>> GetPartnersGroupedByType()
+        {
+            var partnerTypes = _repository.GetPartnerTypes();
 
-//        [HttpGet("Suppliers")]
-//        public ActionResult<IEnumerable<SupplierDto>> GetSuppliers()
-//        {
-//            var suppliers = _repository.GetSuppliers();
-//            return Ok(_mapper.Map<IEnumerable<SupplierDto>>(suppliers));
-//        }
+            var result = partnerTypes.Select(pt => new PartnerTypeDto
+            {
+                PartnerTypeId = pt.PartnerTypeId,
+                TypeName = pt.TypeName,
+                Partners = pt.Partners.Select(p => _mapper.Map<PartnerDto>(p)).ToList()
+            }).ToList();
 
-//        [HttpGet("Transports")]
-//        public ActionResult<IEnumerable<TransportDto>> GetTransports()
-//        {
-//            var transports = _repository.GetTransports();
-//            return Ok(_mapper.Map<IEnumerable<TransportDto>>(transports));
-//        }
+            return Ok(result);
+        }
 
-//        [HttpPut("Warehouse/{id}")]
-//        public IActionResult UpdateWarehouse(int id, WarehouseDto warehouseDto)
-//        {
-//            var warehouse = _mapper.Map<Warehouse>(warehouseDto);
-//            warehouse.WarehouseId = id;
-//            _repository.UpdateWarehouse(warehouse);
-//            return NoContent();
-//        }
+        [HttpGet("partners/by-type/{partnerTypeId}")]
+        public ActionResult<IEnumerable<PartnerDto>> GetPartnersByType(int partnerTypeId)
+        {
+            var partnerTypes = _repository.GetPartnerTypes();
+            var partnerType = partnerTypes.FirstOrDefault(pt => pt.PartnerTypeId == partnerTypeId);
 
-//        [HttpDelete("Warehouse/{id}")]
-//        public IActionResult DeleteWarehouse(int id)
-//        {
-//            _repository.DeleteWarehouse(id);
-//            return NoContent();
-//        }
-//    }
-//}
+            if (partnerType == null)
+            {
+                return NotFound(new { Message = "PartnerType not found" });
+            }
+
+            var dto = _mapper.Map<IEnumerable<PartnerDto>>(partnerType.Partners);
+            return Ok(dto);
+        }
+    }
+}

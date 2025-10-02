@@ -10,11 +10,16 @@ namespace API.Profiles
         {
             CreateMap<User, UserDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();
-            //CreateMap<Supplier, SupplierDto>().ReverseMap();
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
             CreateMap<ActivityLog, ActivityLogDto>().ReverseMap();
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
+
+            CreateMap<Partner, PartnerDto>()
+                .ForMember(dest => dest.PartnerTypeName, opt => opt.MapFrom(src => src.PartnerType.TypeName));
+            CreateMap<PartnerDto, Partner>();
+
+            CreateMap<PartnerType, PartnerTypeDto>().ReverseMap();
         }
     }
 }

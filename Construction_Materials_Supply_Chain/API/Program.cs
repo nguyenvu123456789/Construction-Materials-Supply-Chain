@@ -25,7 +25,7 @@ builder.Services.AddScoped<NotificationDAO>();
 builder.Services.AddScoped<PermissionDAO>();
 builder.Services.AddScoped<RoleDAO>();
 builder.Services.AddScoped<ShippingLogDAO>();
-//builder.Services.AddScoped<SupplyChainDAO>();
+builder.Services.AddScoped<SupplyChainDAO>();
 builder.Services.AddScoped<UserDAO>();
 builder.Services.AddScoped<UserRoleDAO>();
 builder.Services.AddScoped<VendorDAO>();
@@ -34,7 +34,7 @@ builder.Services.AddScoped<VendorDAO>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
 builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
-//builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
+builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVendorRepository, VendorRepository>();
 

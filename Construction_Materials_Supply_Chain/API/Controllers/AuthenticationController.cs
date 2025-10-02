@@ -2,6 +2,7 @@
 using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repositories.Interface;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,10 +13,12 @@ namespace API.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ScmVlxdContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public AuthenticationController(ScmVlxdContext context)
+        public AuthenticationController(ScmVlxdContext context, IActivityLogRepository activityLogRepository)
         {
             _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
         // POST: api/authentication/register
@@ -70,7 +73,18 @@ namespace API.Controllers
                 return Unauthorized(new { Message = "Invalid username or password" });
             }
 
+            _activityLogRepository.LogAction(user.UserId, "User logged in", "User", user.UserId);
+
             return Ok(new { Message = "Login successful" });
         }
+
+        [HttpPost("logout")]
+        public IActionResult Logout([FromBody] int userId)
+        {
+            _activityLogRepository.LogAction(userId, "User logged out", "User", userId);
+
+            return Ok(new { Message = "Logout successful" });
+        }
+
     }
 }

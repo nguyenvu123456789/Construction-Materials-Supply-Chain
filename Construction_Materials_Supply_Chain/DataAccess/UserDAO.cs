@@ -34,11 +34,6 @@ namespace DataAccess
             }
         }
 
-        public List<User> SearchUsers(string keyword) =>
-            Context.Users
-                   .Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword))
-                   .ToList();
-
         public void DeleteUserById(int userId)
         {
             var u = Context.Users.SingleOrDefault(x => x.UserId == userId);

@@ -40,7 +40,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ImportRequestDetail> ImportRequestDetails { get; set; }
     public virtual DbSet<ExportRequest> ExportRequests { get; set; }
     public virtual DbSet<ExportRequestDetail> ExportRequestDetails { get; set; }
-
+    public virtual DbSet<AuditLog> AuditLogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -155,6 +155,23 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__Inventory__Wareh__59FA5E80");
         });
 
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.AuditLogId);
+            entity.ToTable("AuditLog");
+
+            entity.Property(e => e.EntityName).HasMaxLength(100);
+            entity.Property(e => e.Action).HasMaxLength(50);
+            entity.Property(e => e.Changes).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.CreatedAt)
+                  .HasDefaultValueSql("(getdate())")
+                  .HasColumnType("datetime");
+
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.AuditLogs)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
 
         modelBuilder.Entity<Invoice>(entity =>
         {

@@ -40,6 +40,16 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IImportRequestRepository, ImportRequestRepository>();
 builder.Services.AddScoped<IExportRequestRepository, ExportRequestRepository>();
 
+// Audit Log Interceptor
+builder.Services.AddScoped<AuditLogInterceptor>();
+
+builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
+{
+    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
+           .AddInterceptors(interceptor);
+});
+
 // Add services to the container
 builder.Services.AddControllers();
 

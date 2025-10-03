@@ -1,5 +1,4 @@
-﻿using BusinessObjects;
-using DataAccess;
+﻿using DataAccess;
 using Repositories.Interface;
 
 namespace Repositories.Repositories

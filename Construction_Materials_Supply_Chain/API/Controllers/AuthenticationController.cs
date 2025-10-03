@@ -1,7 +1,6 @@
 ﻿using API.DTOs;
 using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Repositories.Interface;
 using System.Security.Cryptography;
 using System.Text;

@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Helper.Paging;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interface;
@@ -51,17 +52,17 @@ namespace API.Controllers
         }
 
         [HttpGet("partners/filter")]
-        public ActionResult<object> GetPartnersFiltered([FromQuery] QueryParametersDto queryParams)
+        public ActionResult<PagedResultDto<PartnerDto>> GetPartnersFiltered([FromQuery] PartnerPagedQueryDto queryParams)
         {
-            var partners = _repository.GetPartnersPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
-            var totalCount = _repository.GetTotalPartnersCount(queryParams.Keyword);
+            var partners = _repository.GetPartnersPaged(queryParams.SearchTerm, queryParams.PartnerType, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalPartnersCount(queryParams.SearchTerm, queryParams.PartnerType);
 
-            var result = new
+            var result = new PagedResultDto<PartnerDto>
             {
                 Data = _mapper.Map<IEnumerable<PartnerDto>>(partners),
                 TotalCount = totalCount,
-                queryParams.PageNumber,
-                queryParams.PageSize,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
             };
 

@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Helper.Paging;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Interface;
@@ -26,17 +27,17 @@ namespace API.Controllers
         }
 
         [HttpGet("filter")]
-        public ActionResult<object> GetLogsFiltered([FromQuery] QueryParametersDto queryParams)
+        public ActionResult<PagedResultDto<ActivityLogDto>> GetLogsFiltered([FromQuery] ActivityLogPagedQueryDto queryParams)
         {
-            var logs = _repository.GetLogsPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
-            var totalCount = _repository.GetTotalLogsCount(queryParams.Keyword);
+            var logs = _repository.GetLogsPaged(queryParams.SearchTerm, queryParams.FromDate, queryParams.ToDate, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalLogsCount(queryParams.SearchTerm, queryParams.FromDate, queryParams.ToDate);
 
-            var result = new
+            var result = new PagedResultDto<ActivityLogDto>
             {
                 Data = _mapper.Map<IEnumerable<ActivityLogDto>>(logs),
                 TotalCount = totalCount,
-                queryParams.PageNumber,
-                queryParams.PageSize,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
             };
 

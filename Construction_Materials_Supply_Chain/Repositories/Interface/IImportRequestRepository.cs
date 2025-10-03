@@ -1,6 +1,4 @@
-﻿using BusinessObjects;
-
-namespace Repositories.Interface
+﻿namespace Repositories.Interface
 {
     public interface IImportRequestRepository
     {

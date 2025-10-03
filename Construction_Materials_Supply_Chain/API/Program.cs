@@ -30,6 +30,7 @@ builder.Services.AddScoped<UserDAO>();
 builder.Services.AddScoped<UserRoleDAO>();
 builder.Services.AddScoped<ImportRequestDAO>();
 builder.Services.AddScoped<ExportRequestDAO>();
+builder.Services.AddScoped<RoleDAO>();
 
 // Repository
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
@@ -39,6 +40,7 @@ builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IImportRequestRepository, ImportRequestRepository>();
 builder.Services.AddScoped<IExportRequestRepository, ExportRequestRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 // Audit Log Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();

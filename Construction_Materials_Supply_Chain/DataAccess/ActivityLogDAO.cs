@@ -10,6 +10,7 @@ namespace DataAccess
         public List<ActivityLog> GetLogs()
         {
             return Context.ActivityLogs
+                          .Include(l => l.User)
                           .OrderByDescending(l => l.CreatedAt)
                           .ToList();
         }
@@ -17,6 +18,7 @@ namespace DataAccess
         public List<ActivityLog> SearchLogs(string keyword)
         {
             return Context.ActivityLogs
+                          .Include(l => l.User)
                           .Where(l => l.Action.Contains(keyword)
                                    || l.EntityName.Contains(keyword))
                           .OrderByDescending(l => l.CreatedAt)
@@ -37,13 +39,32 @@ namespace DataAccess
             Context.SaveChanges();
         }
 
-        public List<ActivityLog> GetLogsPaged(string? keyword, int pageNumber, int pageSize)
+        public List<ActivityLog> GetLogsPaged(string? searchTerm, DateTime? fromDate, DateTime? toDate, int pageNumber, int pageSize)
         {
-            var query = Context.ActivityLogs.AsQueryable();
+            var query = Context.ActivityLogs
+                              .Include(l => l.User)
+                              .AsQueryable();
 
-            if (!string.IsNullOrEmpty(keyword))
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(l => l.Action.Contains(keyword) || l.EntityName.Contains(keyword));
+                if (int.TryParse(searchTerm, out int userId))
+                {
+                    query = query.Where(l => l.UserId == userId);
+                }
+                else
+                {
+                    query = query.Where(l => l.User != null && l.User.UserName.Contains(searchTerm));
+                }
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt <= toDate.Value);
             }
 
             return query.OrderByDescending(l => l.CreatedAt)
@@ -52,13 +73,32 @@ namespace DataAccess
                         .ToList();
         }
 
-        public int GetTotalLogsCount(string? keyword)
+        public int GetTotalLogsCount(string? searchTerm, DateTime? fromDate, DateTime? toDate)
         {
-            var query = Context.ActivityLogs.AsQueryable();
+            var query = Context.ActivityLogs
+                              .Include(l => l.User)
+                              .AsQueryable();
 
-            if (!string.IsNullOrEmpty(keyword))
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(l => l.Action.Contains(keyword) || l.EntityName.Contains(keyword));
+                if (int.TryParse(searchTerm, out int userId))
+                {
+                    query = query.Where(l => l.UserId == userId);
+                }
+                else
+                {
+                    query = query.Where(l => l.User != null && l.User.UserName.Contains(searchTerm));
+                }
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(l => l.CreatedAt <= toDate.Value);
             }
 
             return query.Count();

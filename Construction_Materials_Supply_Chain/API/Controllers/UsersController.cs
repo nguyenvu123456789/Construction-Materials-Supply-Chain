@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Helper.Paging;
 using AutoMapper;
 using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
@@ -11,23 +12,32 @@ namespace API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _repository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
-        public UsersController(IUserRepository repository, IMapper mapper)
+        public UsersController(IUserRepository repository, IRoleRepository roleRepository, IMapper mapper)
         {
             _repository = repository;
+            _roleRepository = roleRepository;
             _mapper = mapper;
         }
 
-        // GET: api/Users
         [HttpGet]
         public ActionResult<IEnumerable<UserDto>> GetUsers()
         {
             var users = _repository.GetUsers();
-            return Ok(_mapper.Map<IEnumerable<UserDto>>(users));
+            var result = _mapper.Map<IEnumerable<UserDto>>(users);
+            return Ok(result);
         }
 
-        // POST: api/Users
+        [HttpGet("roles")]
+        public ActionResult<IEnumerable<RoleDto>> GetRoles()
+        {
+            var roles = _roleRepository.GetRoles();
+            var result = _mapper.Map<IEnumerable<RoleDto>>(roles);
+            return Ok(result);
+        }
+
         [HttpPost]
         public IActionResult PostUser(UserDto userDto)
         {
@@ -36,7 +46,6 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // PUT: api/Users/5
         [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, UserDto userDto)
         {
@@ -50,7 +59,6 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
@@ -62,12 +70,12 @@ namespace API.Controllers
         }
 
         [HttpGet("filter")]
-        public ActionResult<object> GetUsersFiltered([FromQuery] QueryParametersDto queryParams)
+        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto queryParams)
         {
-            var users = _repository.GetUsersPaged(queryParams.Keyword, queryParams.PageNumber, queryParams.PageSize);
-            var totalCount = _repository.GetTotalUsersCount(queryParams.Keyword);
+            var users = _repository.GetUsersPaged(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalUsersCount(queryParams.SearchTerm, queryParams.Roles);
 
-            var result = new
+            var result = new PagedResultDto<UserDto>
             {
                 Data = _mapper.Map<IEnumerable<UserDto>>(users),
                 TotalCount = totalCount,

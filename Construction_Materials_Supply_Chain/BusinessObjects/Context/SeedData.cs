@@ -1,7 +1,4 @@
-﻿using BusinessObjects;
-using Microsoft.EntityFrameworkCore;
-
-namespace BusinessObjects
+﻿namespace BusinessObjects
 {
     public static class SeedData
     {

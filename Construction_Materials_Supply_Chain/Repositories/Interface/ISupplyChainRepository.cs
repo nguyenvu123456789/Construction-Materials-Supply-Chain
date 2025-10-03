@@ -7,7 +7,7 @@ namespace Repositories.Interface
         List<Partner> GetPartners();
         List<PartnerType> GetPartnerTypes();
 
-        List<Partner> GetPartnersPaged(string? keyword, int pageNumber, int pageSize);
-        int GetTotalPartnersCount(string? keyword);
+        List<Partner> GetPartnersPaged(string? searchTerm, string? partnerType, int pageNumber, int pageSize);
+        int GetTotalPartnersCount(string? searchTerm, string? partnerType);
     }
 }

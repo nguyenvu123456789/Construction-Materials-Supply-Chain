@@ -16,10 +16,10 @@ namespace Repositories.Repositories
         public List<Partner> GetPartners() => _dao.GetPartners();
         public List<PartnerType> GetPartnerTypes() => _dao.GetPartnerTypes();
 
-        public List<Partner> GetPartnersPaged(string? keyword, int pageNumber, int pageSize)
-            => _dao.GetPartnersPaged(keyword, pageNumber, pageSize);
+        public List<Partner> GetPartnersPaged(string? searchTerm, string? partnerType, int pageNumber, int pageSize)
+            => _dao.GetPartnersPaged(searchTerm, partnerType, pageNumber, pageSize);
 
-        public int GetTotalPartnersCount(string? keyword)
-            => _dao.GetTotalPartnersCount(keyword);
+        public int GetTotalPartnersCount(string? searchTerm, string? partnerType)
+            => _dao.GetTotalPartnersCount(searchTerm, partnerType);
     }
 }

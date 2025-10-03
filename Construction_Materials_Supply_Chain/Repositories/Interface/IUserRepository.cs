@@ -10,7 +10,7 @@ namespace Repositories.Interface
         void UpdateUser(User u);
         void DeleteUserById(int id);
 
-        List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize);
-        int GetTotalUsersCount(string? keyword);
+        List<User> GetUsersPaged(string? searchTerm, List<string>? roles, int pageNumber, int pageSize);
+        int GetTotalUsersCount(string? searchTerm, List<string>? roles);
     }
 }

@@ -19,10 +19,10 @@ namespace Repositories.Repositories
         public void UpdateUser(User u) => _dao.UpdateUser(u);
         public void DeleteUserById(int id) => _dao.DeleteUserById(id);
 
-        public List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize)
-            => _dao.GetUsersPaged(keyword, pageNumber, pageSize);
+        public List<User> GetUsersPaged(string? searchTerm, List<string>? roles, int pageNumber, int pageSize)
+            => _dao.GetUsersPaged(searchTerm, roles, pageNumber, pageSize);
 
-        public int GetTotalUsersCount(string? keyword)
-            => _dao.GetTotalUsersCount(keyword);
+        public int GetTotalUsersCount(string? searchTerm, List<string>? roles)
+            => _dao.GetTotalUsersCount(searchTerm, roles);
     }
 }

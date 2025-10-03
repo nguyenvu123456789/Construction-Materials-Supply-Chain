@@ -7,10 +7,16 @@ namespace DataAccess
     {
         public UserDAO(ScmVlxdContext context) : base(context) { }
 
-        public List<User> GetUsers() => Context.Users.ToList();
+        public List<User> GetUsers() => Context.Users
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .ToList();
 
         public User FindUserById(int userId) =>
-            Context.Users.SingleOrDefault(x => x.UserId == userId);
+            Context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .SingleOrDefault(x => x.UserId == userId);
 
         public void SaveUser(User u)
         {
@@ -24,16 +30,6 @@ namespace DataAccess
             Context.SaveChanges();
         }
 
-        public void DeleteUser(User u)
-        {
-            var u1 = Context.Users.SingleOrDefault(x => x.UserId == u.UserId);
-            if (u1 != null)
-            {
-                Context.Users.Remove(u1);
-                Context.SaveChanges();
-            }
-        }
-
         public void DeleteUserById(int userId)
         {
             var u = Context.Users.SingleOrDefault(x => x.UserId == userId);
@@ -44,13 +40,24 @@ namespace DataAccess
             }
         }
 
-        public List<User> GetUsersPaged(string? keyword, int pageNumber, int pageSize)
+        public List<User> GetUsersPaged(string? searchTerm, List<string>? roles, int pageNumber, int pageSize)
         {
-            var query = Context.Users.AsQueryable();
-            if (!string.IsNullOrEmpty(keyword))
+            var query = Context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword));
+                query = query.Where(u => u.UserName.Contains(searchTerm) ||
+                                         (u.Email != null && u.Email.Contains(searchTerm)));
             }
+
+            if (roles != null && roles.Any())
+            {
+                query = query.Where(u => u.UserRoles.Any(ur => roles.Contains(ur.Role.RoleName)));
+            }
+
             return query
                 .OrderBy(u => u.UserId)
                 .Skip((pageNumber - 1) * pageSize)
@@ -58,13 +65,24 @@ namespace DataAccess
                 .ToList();
         }
 
-        public int GetTotalUsersCount(string? keyword)
+        public int GetTotalUsersCount(string? searchTerm, List<string>? roles)
         {
-            var query = Context.Users.AsQueryable();
-            if (!string.IsNullOrEmpty(keyword))
+            var query = Context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(u => u.UserName.Contains(keyword) || u.Email.Contains(keyword));
+                query = query.Where(u => u.UserName.Contains(searchTerm) ||
+                                         (u.Email != null && u.Email.Contains(searchTerm)));
             }
+
+            if (roles != null && roles.Any())
+            {
+                query = query.Where(u => u.UserRoles.Any(ur => roles.Contains(ur.Role.RoleName)));
+            }
+
             return query.Count();
         }
     }

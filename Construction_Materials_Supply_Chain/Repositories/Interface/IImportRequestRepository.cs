@@ -1,9 +1,9 @@
-﻿namespace Repositories.Interface
-{
-    public interface IImportRequestRepository
-    {
-        List<ImportRequest> GetAll();
-        ImportRequest? GetById(int id);
-        ImportRequest CreateImport(ImportRequest request);
-    }
-}
+﻿//namespace Repositories.Interface
+//{
+//    public interface IImportRequestRepository
+//    {
+//        List<Import> GetAll();
+//        Import? GetById(int id);
+//        Import CreateImport(Import request);
+//    }
+//}

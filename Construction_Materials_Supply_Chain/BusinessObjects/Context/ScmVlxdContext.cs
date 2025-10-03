@@ -36,10 +36,10 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
-    public virtual DbSet<ImportRequest> ImportRequests { get; set; }
-    public virtual DbSet<ImportRequestDetail> ImportRequestDetails { get; set; }
-    public virtual DbSet<ExportRequest> ExportRequests { get; set; }
-    public virtual DbSet<ExportRequestDetail> ExportRequestDetails { get; set; }
+    public virtual DbSet<Import> Imports { get; set; }
+    public virtual DbSet<ImportDetail> ImportDetails { get; set; }
+    public virtual DbSet<Export> Exports { get; set; }
+    public virtual DbSet<ExportDetail> ExportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -48,38 +48,76 @@ public partial class ScmVlxdContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ImportRequest>(entity =>
+        modelBuilder.Entity<Import>(entity =>
         {
-            entity.HasKey(e => e.ImportRequestId);
-            entity.ToTable("ImportRequest");
-            entity.Property(e => e.RequestDate).HasDefaultValueSql("(getdate())");
-            entity.HasOne(e => e.Warehouse).WithMany(w => w.ImportRequests).HasForeignKey(e => e.WarehouseId);
-            entity.HasOne(e => e.RequestedByNavigation).WithMany(u => u.ImportRequestCreatedNavigations).HasForeignKey(e => e.RequestedBy);
+            entity.HasKey(e => e.ImportId);
+            entity.ToTable("Import");
+
+            entity.Property(e => e.ImportId).HasColumnName("ImportID");
+            entity.Property(e => e.ImportDate).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Warehouse)
+                  .WithMany(p => p.Imports)
+                  .HasForeignKey(d => d.WarehouseId);
+
+            entity.HasOne(d => d.ImportedByNavigation)
+                  .WithMany(p => p.Imports)
+                  .HasForeignKey(d => d.ImportedBy);
         });
 
-        modelBuilder.Entity<ImportRequestDetail>(entity =>
+        modelBuilder.Entity<ImportDetail>(entity =>
         {
-            entity.HasKey(e => e.ImportRequestDetailId);
-            entity.ToTable("ImportRequestDetail");
-            entity.HasOne(d => d.ImportRequest).WithMany(p => p.Details).HasForeignKey(d => d.ImportRequestId);
-            entity.HasOne(d => d.Material).WithMany(m => m.ImportRequestDetails).HasForeignKey(d => d.MaterialId);
+            entity.HasKey(e => e.ImportDetailId);
+            entity.ToTable("ImportDetail");
+
+            entity.Property(e => e.ImportDetailId).HasColumnName("ImportDetailID");
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Quantity).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.LineTotal).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Import)
+                  .WithMany(p => p.ImportDetails)
+                  .HasForeignKey(d => d.ImportId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ExportRequest>(entity =>
+        modelBuilder.Entity<Export>(entity =>
         {
-            entity.HasKey(e => e.ExportRequestId);
-            entity.ToTable("ExportRequest");
-            entity.Property(e => e.RequestDate).HasDefaultValueSql("(getdate())");
-            entity.HasOne(e => e.Warehouse).WithMany(w => w.ExportRequests).HasForeignKey(e => e.WarehouseId);
-            entity.HasOne(e => e.RequestedByNavigation).WithMany(u => u.ExportRequestCreatedNavigations).HasForeignKey(e => e.RequestedBy);
+            entity.HasKey(e => e.ExportId);
+            entity.ToTable("Export");
+
+            entity.Property(e => e.ExportId).HasColumnName("ExportID");
+            entity.Property(e => e.ExportDate).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Warehouse)
+                  .WithMany(p => p.Exports)
+                  .HasForeignKey(d => d.WarehouseId);
+
+            entity.HasOne(d => d.ExportedByNavigation)
+                  .WithMany(p => p.Exports)
+                  .HasForeignKey(d => d.ExportedBy);
         });
 
-        modelBuilder.Entity<ExportRequestDetail>(entity =>
+        modelBuilder.Entity<ExportDetail>(entity =>
         {
-            entity.HasKey(e => e.ExportRequestDetailId);
-            entity.ToTable("ExportRequestDetail");
-            entity.HasOne(d => d.ExportRequest).WithMany(p => p.Details).HasForeignKey(d => d.ExportRequestId);
-            entity.HasOne(d => d.Material).WithMany(m => m.ExportRequestDetails).HasForeignKey(d => d.MaterialId);
+            entity.HasKey(e => e.ExportDetailId);
+            entity.ToTable("ExportDetail");
+
+            entity.Property(e => e.ExportDetailId).HasColumnName("ExportDetailID");
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Quantity).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.LineTotal).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Export)
+                  .WithMany(p => p.ExportDetails)
+                  .HasForeignKey(d => d.ExportId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -175,58 +213,26 @@ public partial class ScmVlxdContext : DbContext
 
         modelBuilder.Entity<Invoice>(entity =>
         {
-            entity.HasKey(e => e.InvoiceId).HasName("PK__Invoice__D796AAD5C6273FC0");
-
+            entity.HasKey(e => e.InvoiceId);
             entity.ToTable("Invoice");
 
-            entity.HasIndex(e => e.InvoiceNumber, "UQ__Invoice__D776E98185E86C00").IsUnique();
-
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-
-            entity.Property(e => e.DueDate).HasColumnType("datetime");
-
             entity.Property(e => e.InvoiceNumber).HasMaxLength(50);
-
             entity.Property(e => e.InvoiceType).HasMaxLength(50);
-
-            entity.Property(e => e.IssueDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-
-            entity.Property(e => e.RelatedOrderId).HasColumnName("RelatedOrderID");
-
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasDefaultValue("Pending");
-
-            entity.Property(e => e.PartnerId).HasColumnName("PartnerID");
-
+            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
-
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.InvoiceCreatedByNavigations)
-                .HasForeignKey(d => d.CreatedBy)
-                .HasConstraintName("FK__Invoice__Created__6D0D32F4");
+            entity.HasOne(d => d.CreatedByNavigation)
+                  .WithMany(p => p.InvoiceCreatedByNavigations)
+                  .HasForeignKey(d => d.CreatedBy);
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.InvoiceCustomers)
-                .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Invoice__Custome__6B24EA82");
-
-            entity.HasOne(d => d.RelatedOrder).WithMany(p => p.Invoices)
-                .HasForeignKey(d => d.RelatedOrderId)
-                .HasConstraintName("FK__Invoice__Related__6A30C649");
-
-            entity.HasOne(d => d.Partner).WithMany(p => p.Invoices)
-                .HasForeignKey(d => d.PartnerId)
-                .HasConstraintName("FK__Invoice__Partner__6C190EBB");
+            entity.HasOne(d => d.Partner)
+                  .WithMany(p => p.Invoices)
+                  .HasForeignKey(d => d.PartnerId);
         });
+
 
 
         modelBuilder.Entity<InvoiceDetail>(entity =>
@@ -350,10 +356,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-
-            entity.Property(e => e.Price)
-                .HasColumnType("decimal(18, 2)");
-
             entity.Property(e => e.MaterialName)
                 .HasMaxLength(100);
 

@@ -1,9 +1,10 @@
 ﻿namespace API.DTOs
 {
-    public class ImportRequestDto
+    public class ExportDto
     {
-        public string InvoiceCode { get; set; } = string.Empty;
+        public DateTime ExportDate { get; set; }
         public int WarehouseId { get; set; }
         public int CreatedBy { get; set; }
+        public string? Notes { get; set; }
     }
 }

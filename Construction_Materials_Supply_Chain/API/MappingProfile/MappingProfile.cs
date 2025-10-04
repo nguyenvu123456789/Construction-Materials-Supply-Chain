@@ -25,10 +25,9 @@ namespace API.Profiles
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
-            //CreateMap<Import, ImportRequestDto>().ReverseMap();
-            //CreateMap<ImportRequestDetail, ImportRequestDetailDto>().ReverseMap();
-            //CreateMap<Export, ExportRequestDto>().ReverseMap();
-            //CreateMap<ExportDetail, ExportRequestDetailDto>().ReverseMap();
+            CreateMap<Import, ImportDto>().ReverseMap();
+            CreateMap<ImportDetail, ImportDetailDto>().ReverseMap();
+            CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
 

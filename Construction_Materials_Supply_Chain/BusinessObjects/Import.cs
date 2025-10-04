@@ -10,7 +10,7 @@
 
         public string Status { get; set; } = "Pending";  // Pending, Success, Cancelled
 
-        public int ImportedBy { get; set; } // người nhập (UserId)
+        public int CreatedBy { get; set; } // người nhập (UserId)
 
         public string? Notes { get; set; }                                                   
 

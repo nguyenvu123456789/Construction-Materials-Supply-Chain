@@ -65,7 +65,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.HasOne(d => d.ImportedByNavigation)
                   .WithMany(p => p.Imports)
-                  .HasForeignKey(d => d.ImportedBy);
+                  .HasForeignKey(d => d.CreatedBy);
         });
 
         modelBuilder.Entity<ImportDetail>(entity =>
@@ -101,7 +101,7 @@ public partial class ScmVlxdContext : DbContext
 
             entity.HasOne(d => d.ExportedByNavigation)
                   .WithMany(p => p.Exports)
-                  .HasForeignKey(d => d.ExportedBy);
+                  .HasForeignKey(d => d.CreatedBy);
         });
 
         modelBuilder.Entity<ExportDetail>(entity =>

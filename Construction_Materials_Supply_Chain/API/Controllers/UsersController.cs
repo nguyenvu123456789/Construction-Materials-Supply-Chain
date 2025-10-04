@@ -1,89 +1,97 @@
-﻿//using API.DTOs;
-//using API.Helper.Paging;
-//using AutoMapper;
-//using BusinessObjects;
-//using Microsoft.AspNetCore.Mvc;
+﻿using API.DTOs;
+using API.Helper.Paging;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Services.Interfaces;
 
-//namespace API.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class UsersController : ControllerBase
-//    {
-//        private readonly IUserRepository _repository;
-//        private readonly IRoleRepository _roleRepository;
-//        private readonly IMapper _mapper;
+namespace API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsersController : ControllerBase
+    {
+        private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
+        private readonly IMapper _mapper;
 
-//        public UsersController(IUserRepository repository, IRoleRepository roleRepository, IMapper mapper)
-//        {
-//            _repository = repository;
-//            _roleRepository = roleRepository;
-//            _mapper = mapper;
-//        }
+        public UsersController(IUserService userService, IRoleService roleService, IMapper mapper)
+        {
+            _userService = userService;
+            _roleService = roleService;
+            _mapper = mapper;
+        }
 
-//        [HttpGet]
-//        public ActionResult<IEnumerable<UserDto>> GetUsers()
-//        {
-//            var users = _repository.GetUsers();
-//            var result = _mapper.Map<IEnumerable<UserDto>>(users);
-//            return Ok(result);
-//        }
+        [HttpGet]
+        public ActionResult<IEnumerable<UserDto>> GetUsers()
+        {
+            var users = _userService.GetAll();
+            var result = _mapper.Map<IEnumerable<UserDto>>(users);
+            return Ok(result);
+        }
 
-//        [HttpGet("roles")]
-//        public ActionResult<IEnumerable<RoleDto>> GetRoles()
-//        {
-//            var roles = _roleRepository.GetRoles();
-//            var result = _mapper.Map<IEnumerable<RoleDto>>(roles);
-//            return Ok(result);
-//        }
+        [HttpGet("roles")]
+        public ActionResult<IEnumerable<RoleDto>> GetRoles()
+        {
+            var roles = _roleService.GetAll();
+            var result = _mapper.Map<IEnumerable<RoleDto>>(roles);
+            return Ok(result);
+        }
 
-//        [HttpPost]
-//        public IActionResult PostUser(UserDto userDto)
-//        {
-//            var user = _mapper.Map<User>(userDto);
-//            _repository.SaveUser(user);
-//            return NoContent();
-//        }
+        [HttpGet("{id:int}")]
+        public ActionResult<UserDto> GetUser(int id)
+        {
+            var user = _userService.GetById(id);
+            if (user == null) return NotFound();
+            return Ok(_mapper.Map<UserDto>(user));
+        }
 
-//        [HttpPut("{id}")]
-//        public IActionResult UpdateUser(int id, UserDto userDto)
-//        {
-//            var existing = _repository.GetUserById(id);
-//            if (existing == null) return NotFound();
+        [HttpPost]
+        public IActionResult PostUser(UserDto userDto)
+        {
+            var user = _mapper.Map<BusinessObjects.User>(userDto);
+            _userService.Create(user);
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, _mapper.Map<UserDto>(user));
+        }
 
-//            var user = _mapper.Map<User>(userDto);
-//            user.UserId = id;
-//            _repository.UpdateUser(user);
+        [HttpPut("{id:int}")]
+        public IActionResult UpdateUser(int id, UserDto userDto)
+        {
+            var existing = _userService.GetById(id);
+            if (existing == null) return NotFound();
 
-//            return NoContent();
-//        }
+            var user = _mapper.Map<BusinessObjects.User>(userDto);
+            user.UserId = id;
+            _userService.Update(user);
 
-//        [HttpDelete("{id}")]
-//        public IActionResult DeleteUser(int id)
-//        {
-//            var existing = _repository.GetUserById(id);
-//            if (existing == null) return NotFound();
+            return NoContent();
+        }
 
-//            _repository.DeleteUserById(id);
-//            return NoContent();
-//        }
+        [HttpDelete("{id:int}")]
+        public IActionResult DeleteUser(int id)
+        {
+            var existing = _userService.GetById(id);
+            if (existing == null) return NotFound();
 
-//        [HttpGet("filter")]
-//        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto queryParams)
-//        {
-//            var users = _repository.GetUsersPaged(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize);
-//            var totalCount = _repository.GetTotalUsersCount(queryParams.SearchTerm, queryParams.Roles);
+            _userService.Delete(id);
+            return NoContent();
+        }
 
-//            var result = new PagedResultDto<UserDto>
-//            {
-//                Data = _mapper.Map<IEnumerable<UserDto>>(users),
-//                TotalCount = totalCount,
-//                PageNumber = queryParams.PageNumber,
-//                PageSize = queryParams.PageSize,
-//                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
-//            };
+        // GET: api/users/filter?SearchTerm=...&PageNumber=1&PageSize=10&Roles=Admin&Roles=Manager
+        [HttpGet("filter")]
+        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto queryParams)
+        {
+            var users = _userService.GetUsersFiltered(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
 
-//            return Ok(result);
-//        }
-//    }
-//}
+            var result = new PagedResultDto<UserDto>
+            {
+                Data = _mapper.Map<IEnumerable<UserDto>>(users),
+                TotalCount = totalCount,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
+            };
+
+            return Ok(result);
+        }
+    }
+}

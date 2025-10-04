@@ -1,6 +1,7 @@
 ﻿using API.DTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Services.Interfaces;
 
 namespace API.Controllers
 {
@@ -8,22 +9,20 @@ namespace API.Controllers
     [ApiController]
     public class AuditLogsController : ControllerBase
     {
-        private readonly IAuditLogRepository _repository;
+        private readonly IAuditLogService _service;
         private readonly IMapper _mapper;
 
-        public AuditLogsController(IAuditLogRepository repository, IMapper mapper)
+        public AuditLogsController(IAuditLogService service, IMapper mapper)
         {
-            _repository = repository;
+            _service = service;
             _mapper = mapper;
         }
 
-        // GET: api/auditlogs
+        // GET: api/auditlogs?Keyword=...&PageNumber=1&PageSize=20
         [HttpGet]
         public ActionResult<object> GetAuditLogs([FromQuery] QueryParametersDto query)
         {
-            var logs = _repository.GetAuditLogs(query.Keyword, query.PageNumber, query.PageSize);
-            var total = _repository.CountAuditLogs(query.Keyword);
-
+            var logs = _service.GetFiltered(query.Keyword, query.PageNumber, query.PageSize, out var total);
             return Ok(new
             {
                 Data = _mapper.Map<IEnumerable<AuditLogDto>>(logs),

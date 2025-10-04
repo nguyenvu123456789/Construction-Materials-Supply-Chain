@@ -1,6 +1,7 @@
 ﻿using API.DTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Services.Interfaces;
 
 namespace API.Controllers
 {
@@ -8,26 +9,26 @@ namespace API.Controllers
     [ApiController]
     public class ShippingLogsController : ControllerBase
     {
-        private readonly IShippingLogRepository _repository;
+        private readonly IShippingLogService _service;
         private readonly IMapper _mapper;
 
-        public ShippingLogsController(IShippingLogRepository repository, IMapper mapper)
+        public ShippingLogsController(IShippingLogService service, IMapper mapper)
         {
-            _repository = repository;
+            _service = service;
             _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
         {
-            var logs = _repository.GetAllShippingLogs();
+            var logs = _service.GetAll();
             return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
         }
 
-        [HttpGet("Search")]
-        public ActionResult<IEnumerable<ShippingLogDto>> Search(string status)
+        [HttpGet("search")]
+        public ActionResult<IEnumerable<ShippingLogDto>> Search([FromQuery] string status)
         {
-            var logs = _repository.SearchShippingLogs(status);
+            var logs = _service.SearchByStatus(status);
             return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
         }
     }

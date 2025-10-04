@@ -61,7 +61,7 @@ namespace DataAccess
                 {
                     UserName = "admin",
                     Email = "admin@example.com",
-                    PasswordHash = "admin123", // nên hash trong thực tế
+                    PasswordHash = "admin123",
                     CreatedAt = DateTime.Now
                 };
                 context.Users.Add(adminUser);
@@ -110,7 +110,24 @@ namespace DataAccess
                 context.SaveChanges();
             }
 
-            // 7. Seed Inventories
+            // 7. Seed Materials
+            if (!context.Materials.Any())
+            {
+                var partner = context.Partners.First();
+
+                var woodCategory = context.Categories.First(c => c.CategoryName == "Wood");
+                var metalCategory = context.Categories.First(c => c.CategoryName == "Metal");
+                var plasticCategory = context.Categories.First(c => c.CategoryName == "Plastic");
+
+                context.Materials.AddRange(
+                    new Material { MaterialCode = "W001", MaterialName = "Wood Board", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = woodCategory.CategoryId },
+                    new Material { MaterialCode = "M001", MaterialName = "Steel Rod", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = metalCategory.CategoryId },
+                    new Material { MaterialCode = "P001", MaterialName = "Plastic Sheet", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = plasticCategory.CategoryId }
+                );
+                context.SaveChanges();
+            }
+
+            // 8. Seed Inventories
             if (!context.Inventories.Any())
             {
                 var mainWarehouse = context.Warehouses.First(w => w.WarehouseName == "Main Warehouse");
@@ -145,23 +162,6 @@ namespace DataAccess
                         UnitPrice = 10,
                         CreatedAt = DateTime.Now
                     }
-                );
-                context.SaveChanges();
-            }
-
-            // 7. Seed Materials
-            if (!context.Materials.Any())
-            {
-                var partner = context.Partners.First();
-
-                var woodCategory = context.Categories.First(c => c.CategoryName == "Wood");
-                var metalCategory = context.Categories.First(c => c.CategoryName == "Metal");
-                var plasticCategory = context.Categories.First(c => c.CategoryName == "Plastic");
-
-                context.Materials.AddRange(
-                    new Material { MaterialCode = "W001", MaterialName = "Wood Board", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = woodCategory.CategoryId },
-                    new Material { MaterialCode = "M001", MaterialName = "Steel Rod", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = metalCategory.CategoryId },
-                    new Material { MaterialCode = "P001", MaterialName = "Plastic Sheet", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = plasticCategory.CategoryId }
                 );
                 context.SaveChanges();
             }

@@ -20,3 +20,4 @@ public partial class Invoice
     public virtual Partner Partner { get; set; } = null!;
     public virtual ICollection<InvoiceDetail> InvoiceDetails { get; set; } = new List<InvoiceDetail>();
 }
+    

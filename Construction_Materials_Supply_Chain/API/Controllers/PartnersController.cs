@@ -46,7 +46,7 @@ namespace API.Controllers
         [HttpGet("filter")]
         public ActionResult<PagedResultDto<PartnerDto>> GetPartnersFiltered([FromQuery] PartnerPagedQueryDto queryParams)
         {
-            var partners = _service.GetPartnersFiltered(queryParams.SearchTerm, queryParams.PartnerType, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
+            var partners = _service.GetPartnersFiltered(queryParams.SearchTerm, queryParams.PartnerTypes, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
 
             var result = new PagedResultDto<PartnerDto>
             {

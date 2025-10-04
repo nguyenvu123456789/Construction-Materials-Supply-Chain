@@ -25,13 +25,15 @@ namespace Services.Implementations
             var map = types.ToDictionary(t => t.PartnerTypeId, t => new List<Partner>());
             foreach (var p in partners)
             {
-                var key = p.PartnerTypeId;
-                if (map.ContainsKey(key)) map[key].Add(p);
+                if (map.ContainsKey(p.PartnerTypeId))
+                    map[p.PartnerTypeId].Add(p);
             }
+
             foreach (var t in types)
             {
                 t.Partners = map.TryGetValue(t.PartnerTypeId, out var list) ? list : new List<Partner>();
             }
+
             return types;
         }
 
@@ -40,18 +42,21 @@ namespace Services.Implementations
             return _partners.GetAll().Where(p => p.PartnerTypeId == partnerTypeId).ToList();
         }
 
-        public List<Partner> GetPartnersFiltered(string? searchTerm, string? partnerTypeName, int pageNumber, int pageSize, out int totalCount)
+        public List<Partner> GetPartnersFiltered(string? searchTerm, List<string>? partnerTypeNames, int pageNumber, int pageSize, out int totalCount)
         {
             var partners = _partners.GetAll().AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 partners = partners.Where(p => (p.PartnerName ?? "").Contains(searchTerm));
 
-            if (!string.IsNullOrWhiteSpace(partnerTypeName))
+            if (partnerTypeNames != null && partnerTypeNames.Any())
             {
-                var types = _partnerTypes.GetAll();
-                var ids = types.Where(t => (t.TypeName ?? "").Equals(partnerTypeName)).Select(t => t.PartnerTypeId).ToHashSet();
-                partners = partners.Where(p => ids.Contains(p.PartnerTypeId));
+                var typeIds = _partnerTypes.GetAll()
+                    .Where(t => partnerTypeNames.Contains(t.TypeName ?? ""))
+                    .Select(t => t.PartnerTypeId)
+                    .ToHashSet();
+
+                partners = partners.Where(p => typeIds.Contains(p.PartnerTypeId));
             }
 
             totalCount = partners.Count();

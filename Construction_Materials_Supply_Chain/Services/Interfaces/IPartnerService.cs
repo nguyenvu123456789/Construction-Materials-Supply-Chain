@@ -7,6 +7,6 @@ namespace Services.Interfaces
     {
         List<PartnerType> GetPartnerTypesWithPartners();
         List<Partner> GetPartnersByType(int partnerTypeId);
-        List<Partner> GetPartnersFiltered(string? searchTerm, string? partnerTypeName, int pageNumber, int pageSize, out int totalCount);
+        List<Partner> GetPartnersFiltered(string? searchTerm, List<string>? partnerTypeNames, int pageNumber, int pageSize, out int totalCount);
     }
 }

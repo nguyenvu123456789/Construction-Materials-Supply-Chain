@@ -21,5 +21,7 @@
         public virtual Warehouse Warehouse { get; set; } = null!;
         public virtual User ExportedByNavigation { get; set; } = null!;
         public virtual ICollection<ExportDetail> ExportDetails { get; set; } = new List<ExportDetail>();
+        public virtual ICollection<ExportReport> ExportReports { get; set; } = new List<ExportReport>();
+
     }
 }

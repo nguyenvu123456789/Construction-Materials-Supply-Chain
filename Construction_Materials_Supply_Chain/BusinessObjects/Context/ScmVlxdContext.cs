@@ -38,8 +38,12 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Warehouse> Warehouses { get; set; }
     public virtual DbSet<Import> Imports { get; set; }
     public virtual DbSet<ImportDetail> ImportDetails { get; set; }
+    public virtual DbSet<ImportReport> ImportReports { get; set; }
+    public virtual DbSet<ImportReportDetail> ImportReportDetails { get; set; }
     public virtual DbSet<Export> Exports { get; set; }
     public virtual DbSet<ExportDetail> ExportDetails { get; set; }
+    public virtual DbSet<ExportReport> ExportReports { get; set; }
+    public virtual DbSet<ExportReportDetail> ExportReportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -84,6 +88,51 @@ public partial class ScmVlxdContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<ImportReport>(entity =>
+        {
+            entity.HasKey(e => e.ImportReportId);
+            entity.ToTable("ImportReport");
+
+            entity.Property(e => e.ImportReportId).HasColumnName("ImportReportID");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.RejectReason).HasMaxLength(500);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+
+            entity.HasOne(e => e.Import)
+                  .WithMany(i => i.ImportReports)
+                  .HasForeignKey(e => e.ImportId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CreatedByNavigation)
+                  .WithMany(u => u.ImportReportsCreated)
+                  .HasForeignKey(e => e.CreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ReviewedByNavigation)
+                  .WithMany(u => u.ImportReportsReviewed)
+                  .HasForeignKey(e => e.ReviewedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ImportReportDetail>(entity =>
+        {
+            entity.HasKey(e => e.ImportReportDetailId);
+            entity.ToTable("ImportReportDetail");
+
+            entity.Property(e => e.ImportReportDetailId).HasColumnName("ImportReportDetailID");
+
+            entity.HasOne(e => e.ImportReport)
+                  .WithMany(ir => ir.ImportReportDetails)
+                  .HasForeignKey(e => e.ImportReportId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Material)
+                  .WithMany(m => m.ImportReportDetails)
+                  .HasForeignKey(e => e.MaterialId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<Export>(entity =>
         {
             entity.HasKey(e => e.ExportId);
@@ -119,7 +168,50 @@ public partial class ScmVlxdContext : DbContext
                   .HasForeignKey(d => d.ExportId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
+         modelBuilder.Entity<ExportReport>(entity =>
+    {
+        entity.HasKey(e => e.ExportReportId);
+        entity.ToTable("ExportReport");
 
+        entity.Property(e => e.ExportReportId).HasColumnName("ExportReportID");
+        entity.Property(e => e.ReportDate).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+        entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+        entity.Property(e => e.Notes).HasMaxLength(500);
+
+        entity.HasOne(e => e.Export)
+              .WithMany(e => e.ExportReports)
+              .HasForeignKey(e => e.ExportId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne(e => e.ReportedByNavigation)
+              .WithMany(u => u.ExportReportsReported)
+              .HasForeignKey(e => e.ReportedBy)
+              .OnDelete(DeleteBehavior.Restrict);
+
+        entity.HasOne(e => e.DecidedByNavigation)
+              .WithMany(u => u.ExportReportsDecided)
+              .HasForeignKey(e => e.DecidedBy)
+              .OnDelete(DeleteBehavior.Restrict);
+    });
+
+    modelBuilder.Entity<ExportReportDetail>(entity =>
+    {
+        entity.HasKey(e => e.ExportReportDetailId);
+        entity.ToTable("ExportReportDetail");
+
+        entity.Property(e => e.ExportReportDetailId).HasColumnName("ExportReportDetailID");
+        entity.Property(e => e.Reason).HasMaxLength(500);
+
+        entity.HasOne(e => e.ExportReport)
+              .WithMany(er => er.ExportReportDetails)
+              .HasForeignKey(e => e.ExportReportId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne(e => e.Material)
+              .WithMany(m => m.ExportReportDetails)
+              .HasForeignKey(e => e.MaterialId)
+              .OnDelete(DeleteBehavior.Restrict);
+    });
 
         modelBuilder.Entity<ActivityLog>(entity =>
         {
@@ -563,9 +655,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
         });
-
-        OnModelCreatingPartial(modelBuilder);
-
 
         OnModelCreatingPartial(modelBuilder);
     }

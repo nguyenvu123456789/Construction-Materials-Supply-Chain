@@ -14,7 +14,9 @@ public partial class Material
     public virtual Partner Partner { get; set; } = null!;
 
     public virtual ICollection<ImportDetail> ImportDetails { get; set; } = new List<ImportDetail>();
+    public virtual ICollection<ImportReportDetail> ImportReportDetails { get; set; } = new List<ImportReportDetail>();
     public virtual ICollection<ExportDetail> ExportDetails { get; set; } = new List<ExportDetail>();
+    public virtual ICollection<ExportReportDetail> ExportReportDetails { get; set; } = new List<ExportReportDetail>();
     public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
     public virtual ICollection<InvoiceDetail> InvoiceDetails { get; set; } = new List<InvoiceDetail>();
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

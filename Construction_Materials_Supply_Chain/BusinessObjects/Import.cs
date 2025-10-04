@@ -22,5 +22,7 @@
         public virtual Warehouse Warehouse { get; set; } = null!;
         public virtual User ImportedByNavigation { get; set; } = null!;
         public virtual ICollection<ImportDetail> ImportDetails { get; set; } = new List<ImportDetail>();
+        public virtual ICollection<ImportReport> ImportReports { get; set; } = new List<ImportReport>();
+
     }
 }

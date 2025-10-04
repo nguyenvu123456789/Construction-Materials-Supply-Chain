@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 
-namespace BusinessObjects;
+namespace DataAccess;
 
 public partial class ScmVlxdContext : DbContext
 {
@@ -168,50 +169,50 @@ public partial class ScmVlxdContext : DbContext
                   .HasForeignKey(d => d.ExportId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
-         modelBuilder.Entity<ExportReport>(entity =>
-    {
-        entity.HasKey(e => e.ExportReportId);
-        entity.ToTable("ExportReport");
+        modelBuilder.Entity<ExportReport>(entity =>
+   {
+       entity.HasKey(e => e.ExportReportId);
+       entity.ToTable("ExportReport");
 
-        entity.Property(e => e.ExportReportId).HasColumnName("ExportReportID");
-        entity.Property(e => e.ReportDate).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
-        entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
-        entity.Property(e => e.Notes).HasMaxLength(500);
+       entity.Property(e => e.ExportReportId).HasColumnName("ExportReportID");
+       entity.Property(e => e.ReportDate).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+       entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+       entity.Property(e => e.Notes).HasMaxLength(500);
 
-        entity.HasOne(e => e.Export)
-              .WithMany(e => e.ExportReports)
-              .HasForeignKey(e => e.ExportId)
-              .OnDelete(DeleteBehavior.Cascade);
+       entity.HasOne(e => e.Export)
+             .WithMany(e => e.ExportReports)
+             .HasForeignKey(e => e.ExportId)
+             .OnDelete(DeleteBehavior.Cascade);
 
-        entity.HasOne(e => e.ReportedByNavigation)
-              .WithMany(u => u.ExportReportsReported)
-              .HasForeignKey(e => e.ReportedBy)
-              .OnDelete(DeleteBehavior.Restrict);
+       entity.HasOne(e => e.ReportedByNavigation)
+             .WithMany(u => u.ExportReportsReported)
+             .HasForeignKey(e => e.ReportedBy)
+             .OnDelete(DeleteBehavior.Restrict);
 
-        entity.HasOne(e => e.DecidedByNavigation)
-              .WithMany(u => u.ExportReportsDecided)
-              .HasForeignKey(e => e.DecidedBy)
-              .OnDelete(DeleteBehavior.Restrict);
-    });
+       entity.HasOne(e => e.DecidedByNavigation)
+             .WithMany(u => u.ExportReportsDecided)
+             .HasForeignKey(e => e.DecidedBy)
+             .OnDelete(DeleteBehavior.Restrict);
+   });
 
-    modelBuilder.Entity<ExportReportDetail>(entity =>
-    {
-        entity.HasKey(e => e.ExportReportDetailId);
-        entity.ToTable("ExportReportDetail");
+        modelBuilder.Entity<ExportReportDetail>(entity =>
+        {
+            entity.HasKey(e => e.ExportReportDetailId);
+            entity.ToTable("ExportReportDetail");
 
-        entity.Property(e => e.ExportReportDetailId).HasColumnName("ExportReportDetailID");
-        entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.ExportReportDetailId).HasColumnName("ExportReportDetailID");
+            entity.Property(e => e.Reason).HasMaxLength(500);
 
-        entity.HasOne(e => e.ExportReport)
-              .WithMany(er => er.ExportReportDetails)
-              .HasForeignKey(e => e.ExportReportId)
-              .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.ExportReport)
+                  .WithMany(er => er.ExportReportDetails)
+                  .HasForeignKey(e => e.ExportReportId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
-        entity.HasOne(e => e.Material)
-              .WithMany(m => m.ExportReportDetails)
-              .HasForeignKey(e => e.MaterialId)
-              .OnDelete(DeleteBehavior.Restrict);
-    });
+            entity.HasOne(e => e.Material)
+                  .WithMany(m => m.ExportReportDetails)
+                  .HasForeignKey(e => e.MaterialId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<ActivityLog>(entity =>
         {

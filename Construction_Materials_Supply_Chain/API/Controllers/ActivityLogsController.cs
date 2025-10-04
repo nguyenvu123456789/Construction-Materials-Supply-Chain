@@ -2,7 +2,6 @@
 using API.Helper.Paging;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Repositories.Interface;
 
 namespace API.Controllers
 {

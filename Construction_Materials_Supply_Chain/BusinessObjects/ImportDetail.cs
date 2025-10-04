@@ -12,5 +12,5 @@ public partial class ImportDetail
     public decimal Quantity { get; set; }
     public decimal LineTotal { get; set; }
 
-    public virtual  Import Import { get; set; } = null!;
+    public virtual Import Import { get; set; } = null!;
 }

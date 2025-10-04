@@ -1,9 +1,6 @@
 ﻿using BusinessObjects;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
-namespace BusinessObjects
+namespace DataAccess
 {
     public static class SeedData
     {

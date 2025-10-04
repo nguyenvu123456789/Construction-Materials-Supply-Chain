@@ -12,7 +12,7 @@
 
         public int CreatedBy { get; set; } // người nhập (UserId)
 
-        public string? Notes { get; set; }                                                   
+        public string? Notes { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 

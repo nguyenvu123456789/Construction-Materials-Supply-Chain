@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace BusinessObjects
+namespace DataAccess
 {
     public class ScmVlxdContextFactory : IDesignTimeDbContextFactory<ScmVlxdContext>
     {

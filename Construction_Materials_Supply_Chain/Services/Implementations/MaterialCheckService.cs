@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using BusinessObjects;
-using Repositories.Interface;
+﻿using Repositories.Interface;
 using Services.Interfaces;
 
 namespace Services.Implementations

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using BusinessObjects;
+﻿using BusinessObjects;
 using Repositories.Interface;
 using Services.Interfaces;
 

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Repositories.Base
+﻿namespace Repositories.Base
 {
     public interface IGenericRepository<T> where T : class
     {

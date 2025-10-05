@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using BusinessObjects;
+﻿using BusinessObjects;
 using Repositories.Interface;
 using Services.Interfaces;
 
@@ -18,8 +16,6 @@ namespace Services.Implementations
         public List<User> GetAll() => _users.GetAll();
 
         public User? GetById(int id) => _users.GetById(id);
-
-        public User? GetByUsername(string username) => _users.GetByUsername(username);
 
         public void Create(User user) => _users.Add(user);
 

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using BusinessObjects;
-
-namespace Services.Interfaces
+﻿namespace Services.Interfaces
 {
     public interface IMaterialCheckService
     {

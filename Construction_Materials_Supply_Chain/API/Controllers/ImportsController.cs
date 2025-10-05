@@ -19,7 +19,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Import([FromBody] ImportRequestDto request)
+        public IActionResult Import([FromBody] ImportDto request)
         {
             try
             {

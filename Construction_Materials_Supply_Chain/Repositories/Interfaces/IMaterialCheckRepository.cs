@@ -1,4 +1,3 @@
-using BusinessObjects;
 using Repositories.Base;
 
 namespace Repositories.Interface

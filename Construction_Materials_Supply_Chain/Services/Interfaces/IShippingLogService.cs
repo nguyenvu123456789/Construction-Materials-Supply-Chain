@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using BusinessObjects;
+﻿using BusinessObjects;
 
 namespace Services.Interfaces
 {

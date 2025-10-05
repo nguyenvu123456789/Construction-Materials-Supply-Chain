@@ -113,7 +113,24 @@ namespace BusinessObjects
                 context.SaveChanges();
             }
 
-            // 7. Seed Inventories
+            // 7. Seed Materials
+            if (!context.Materials.Any())
+            {
+                var partner = context.Partners.First();
+
+                var woodCategory = context.Categories.First(c => c.CategoryName == "Wood");
+                var metalCategory = context.Categories.First(c => c.CategoryName == "Metal");
+                var plasticCategory = context.Categories.First(c => c.CategoryName == "Plastic");
+
+                context.Materials.AddRange(
+                    new Material { MaterialCode = "W001", MaterialName = "Wood Board", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = woodCategory.CategoryId },
+                    new Material { MaterialCode = "M001", MaterialName = "Steel Rod", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = metalCategory.CategoryId },
+                    new Material { MaterialCode = "P001", MaterialName = "Plastic Sheet", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = plasticCategory.CategoryId }
+                );
+                context.SaveChanges();
+            }
+
+            // 8. Seed Inventories (đưa phần này xuống sau Materials)
             if (!context.Inventories.Any())
             {
                 var mainWarehouse = context.Warehouses.First(w => w.WarehouseName == "Main Warehouse");
@@ -152,22 +169,6 @@ namespace BusinessObjects
                 context.SaveChanges();
             }
 
-            // 7. Seed Materials
-            if (!context.Materials.Any())
-            {
-                var partner = context.Partners.First();
-
-                var woodCategory = context.Categories.First(c => c.CategoryName == "Wood");
-                var metalCategory = context.Categories.First(c => c.CategoryName == "Metal");
-                var plasticCategory = context.Categories.First(c => c.CategoryName == "Plastic");
-
-                context.Materials.AddRange(
-                    new Material { MaterialCode = "W001", MaterialName = "Wood Board", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = woodCategory.CategoryId },
-                    new Material { MaterialCode = "M001", MaterialName = "Steel Rod", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = metalCategory.CategoryId },
-                    new Material { MaterialCode = "P001", MaterialName = "Plastic Sheet", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = plasticCategory.CategoryId }
-                );
-                context.SaveChanges();
-            }
 
             // 9. Seed Invoices + InvoiceDetails
             if (!context.Invoices.Any())
@@ -178,7 +179,6 @@ namespace BusinessObjects
                 var invoice1 = new Invoice
                 {
                     InvoiceCode = "INV-001",
-                    InvoiceNumber = "INV-001",
                     InvoiceType = "Import",
                     PartnerId = partner.PartnerId,
                     CreatedBy = user.UserId,
@@ -190,7 +190,6 @@ namespace BusinessObjects
                 var invoice2 = new Invoice
                 {
                     InvoiceCode = "INV-002",
-                    InvoiceNumber = "INV-002",
                     InvoiceType = "Import",
                     PartnerId = partner.PartnerId,
                     CreatedBy = user.UserId,

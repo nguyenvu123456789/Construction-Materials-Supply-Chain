@@ -307,9 +307,7 @@ public partial class ScmVlxdContext : DbContext
         {
             entity.HasKey(e => e.InvoiceId);
             entity.ToTable("Invoice");
-
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-            entity.Property(e => e.InvoiceNumber).HasMaxLength(50);
             entity.Property(e => e.InvoiceType).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");

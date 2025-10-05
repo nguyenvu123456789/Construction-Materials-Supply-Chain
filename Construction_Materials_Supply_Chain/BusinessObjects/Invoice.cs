@@ -4,7 +4,6 @@ public partial class Invoice
 {
     public int InvoiceId { get; set; }
     public string InvoiceCode { get; set; } = null!;
-    public string InvoiceNumber { get; set; } = null!;
     public string InvoiceType { get; set; } = null!;// Import / Export
     public int PartnerId { get; set; }
     public int CreatedBy { get; set; }

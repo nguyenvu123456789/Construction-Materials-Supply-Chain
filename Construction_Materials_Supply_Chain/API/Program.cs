@@ -40,6 +40,7 @@ builder.Services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IImportRepository, ImportRepository>();
 builder.Services.AddScoped<IExportRepository, ExportRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 // Audit Log Interceptor

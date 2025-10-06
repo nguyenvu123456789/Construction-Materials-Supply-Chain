@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace Domain.Persistence
+namespace Infrastructure.Persistence
 {
     public class ScmVlxdContextFactory : IDesignTimeDbContextFactory<ScmVlxdContext>
     {

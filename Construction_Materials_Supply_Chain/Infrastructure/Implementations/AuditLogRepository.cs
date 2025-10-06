@@ -1,5 +1,5 @@
 using Domain;
-using Domain.Persistence;
+using Infrastructure.Persistence;
 using Infrastructure.Base;
 using Infrastructure.Interface;
 

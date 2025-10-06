@@ -1,6 +1,6 @@
 ﻿using API.Profiles;
 using Application.Interfaces;
-using Domain.Persistence;
+using Infrastructure.Persistence;
 using Infrastructure.Implementations;
 using Infrastructure.Interface;
 using Microsoft.EntityFrameworkCore;

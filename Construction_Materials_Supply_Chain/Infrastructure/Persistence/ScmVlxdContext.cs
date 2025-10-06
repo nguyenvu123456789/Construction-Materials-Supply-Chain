@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Domain;
+using Microsoft.EntityFrameworkCore;
 
-namespace Domain.Persistence;
+namespace Infrastructure.Persistence;
 
 public partial class ScmVlxdContext : DbContext
 {

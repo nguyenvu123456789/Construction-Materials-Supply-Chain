@@ -1,4 +1,6 @@
-﻿namespace Domain.Persistence
+﻿using Domain;
+
+namespace Infrastructure.Persistence
 {
     public static class SeedData
     {

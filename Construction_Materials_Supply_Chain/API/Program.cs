@@ -1,11 +1,16 @@
-﻿using Application.MappingProfile;
-using Application.Interfaces;
-using Infrastructure.Persistence;
+﻿using Application.Interfaces;
+using Application.MappingProfile;
+using Application.Validation;
+using Application.Validation.ActivityLogs;
+using Application.Validation.Auth;
+using Domain.Interface;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Infrastructure.Implementations;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Services.Implementations;
-using Domain.Interface;
-using Infrastructure.Persistence.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +49,12 @@ builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 // Audit Log Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();

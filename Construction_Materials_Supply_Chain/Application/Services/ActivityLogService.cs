@@ -1,41 +1,63 @@
-﻿using Application.Interfaces;
-using Domain.Models;
+﻿using Application.Common.Pagination;
+using Application.DTOs;
+using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
+using FluentValidation;
+using System.ComponentModel.DataAnnotations;
 
 namespace Services.Implementations
 {
     public class ActivityLogService : IActivityLogService
     {
         private readonly IActivityLogRepository _repo;
+        private readonly IMapper _mapper;
+        private readonly IValidator<ActivityLogPagedQueryDto> _validator;
 
-        public ActivityLogService(IActivityLogRepository repo)
+        public ActivityLogService(
+            IActivityLogRepository repo,
+            IMapper mapper,
+            IValidator<ActivityLogPagedQueryDto> validator)
         {
             _repo = repo;
+            _mapper = mapper;
+            _validator = validator;
         }
 
-        public List<ActivityLog> GetAll() => _repo.GetLogs();
-
-        public void LogAction(int userId, string action, string? entityName = null, int? entityId = null)
+        public IEnumerable<ActivityLogDto> GetAllDto()
         {
-            _repo.LogAction(userId, action, entityName, entityId);
+            var logs = _repo.GetLogs();
+            return _mapper.Map<IEnumerable<ActivityLogDto>>(logs);
         }
 
-        public List<ActivityLog> GetFiltered(string? searchTerm, DateTime? fromDate, DateTime? toDate, int pageNumber, int pageSize, out int totalCount)
+        public PagedResultDto<ActivityLogDto> GetFiltered(ActivityLogPagedQueryDto query)
         {
-            var query = _repo.GetLogs().AsQueryable();
+            var vr = _validator.Validate(query);
+            if (!vr.IsValid) throw new FluentValidation.ValidationException(vr.Errors);
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-                query = query.Where(x => (x.Action ?? "").Contains(searchTerm));
+            var q = _repo.GetLogs().AsQueryable();
 
-            if (fromDate.HasValue) query = query.Where(x => x.CreatedAt >= fromDate.Value);
-            if (toDate.HasValue) query = query.Where(x => x.CreatedAt <= toDate.Value);
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+                q = q.Where(x => (x.Action ?? "").Contains(query.SearchTerm));
 
-            totalCount = query.Count();
+            if (query.FromDate.HasValue) q = q.Where(x => x.CreatedAt >= query.FromDate.Value);
+            if (query.ToDate.HasValue) q = q.Where(x => x.CreatedAt <= query.ToDate.Value);
 
-            if (pageNumber > 0 && pageSize > 0)
-                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var total = q.Count();
 
-            return query.ToList();
+            if (query.PageNumber > 0 && query.PageSize > 0)
+                q = q.Skip((query.PageNumber - 1) * query.PageSize).Take(query.PageSize);
+
+            var items = _mapper.Map<IEnumerable<ActivityLogDto>>(q.ToList());
+
+            return new PagedResultDto<ActivityLogDto>
+            {
+                Data = items,
+                TotalCount = total,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                TotalPages = (int)Math.Ceiling(total / (double)query.PageSize)
+            };
         }
     }
 }

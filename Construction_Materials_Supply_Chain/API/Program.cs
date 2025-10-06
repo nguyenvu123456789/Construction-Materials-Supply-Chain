@@ -1,10 +1,16 @@
-﻿using Application.MappingProfile;
-using Application.Interfaces;
-using Infrastructure.Persistence;
+﻿using Application.Interfaces;
+using Application.MappingProfile;
+using Application.Validation;
+using Application.Validation.ActivityLogs;
+using Application.Validation.Auth;
+using Domain.Interface;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Infrastructure.Implementations;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Services.Implementations;
-using Domain.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,15 +50,21 @@ builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
 
-// Audit Log Interceptor
-//builder.Services.AddScoped<AuditLogInterceptor>();
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-//builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
-//{
-//    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
-//           .AddInterceptors(interceptor);
-//});
+// Audit Log Interceptor
+builder.Services.AddScoped<AuditLogInterceptor>();
+
+builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
+{
+    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
+           .AddInterceptors(interceptor);
+});
 
 // Add services to the container
 builder.Services.AddControllers();

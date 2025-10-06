@@ -19,12 +19,9 @@ public partial class User
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public virtual ICollection<Warehouse> Warehouses { get; set; } = new List<Warehouse>();
-    //Import
     public virtual ICollection<Import> Imports { get; set; } = new List<Import>();
     public virtual ICollection<ImportReport> ImportReportsCreated { get; set; } = new List<ImportReport>();
     public virtual ICollection<ImportReport> ImportReportsReviewed { get; set; } = new List<ImportReport>();
-    //Export
-
     public virtual ICollection<Export> Exports { get; set; } = new List<Export>();
     public virtual ICollection<ExportReport> ExportReportsReported { get; set; } = new List<ExportReport>();
     public virtual ICollection<ExportReport> ExportReportsDecided { get; set; } = new List<ExportReport>();

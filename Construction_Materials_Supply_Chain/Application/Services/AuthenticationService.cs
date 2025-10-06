@@ -1,6 +1,9 @@
-﻿using Application.Interfaces;
+﻿using Application.DTOs;
+using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
+using FluentValidation;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,50 +11,64 @@ namespace Services.Implementations
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IActivityLogRepository _activityLogRepository;
+        private readonly IUserRepository _users;
+        private readonly IActivityLogRepository _activityLogs;
+        private readonly IMapper _mapper;
+        private readonly IValidator<RegisterRequestDto> _registerValidator;
+        private readonly IValidator<LoginRequestDto> _loginValidator;
 
         public AuthenticationService(
-            IUserRepository userRepository,
-            IActivityLogRepository activityLogRepository)
+            IUserRepository users,
+            IActivityLogRepository activityLogs,
+            IMapper mapper,
+            IValidator<RegisterRequestDto> registerValidator,
+            IValidator<LoginRequestDto> loginValidator)
         {
-            _userRepository = userRepository;
-            _activityLogRepository = activityLogRepository;
+            _users = users;
+            _activityLogs = activityLogs;
+            _mapper = mapper;
+            _registerValidator = registerValidator;
+            _loginValidator = loginValidator;
         }
 
-        public User Register(string userName, string password, string email)
+        public AuthResponseDto Register(RegisterRequestDto request)
         {
-            if (_userRepository.ExistsByUsername(userName))
+            var vr = _registerValidator.Validate(request);
+            if (!vr.IsValid) throw new ValidationException(vr.Errors);
+
+            if (_users.ExistsByUsername(request.UserName))
                 throw new InvalidOperationException("Username already exists");
 
             var user = new User
             {
-                UserName = userName,
-                PasswordHash = Hash(password),
-                Email = email,
+                UserName = request.UserName,
+                PasswordHash = Hash(request.Password),
+                Email = request.Email,
                 CreatedAt = DateTime.UtcNow
             };
 
-            _userRepository.Add(user);
-            return user;
+            _users.Add(user);
+            return _mapper.Map<AuthResponseDto>(user);
         }
 
-        public User? Login(string userName, string password)
+        public AuthResponseDto? Login(LoginRequestDto request)
         {
-            var user = _userRepository.GetByUsername(userName);
+            var vr = _loginValidator.Validate(request);
+            if (!vr.IsValid) throw new ValidationException(vr.Errors);
+
+            var user = _users.GetByUsername(request.UserName);
             if (user is null) return null;
 
-            var hash = Hash(password);
-            if (!string.Equals(user.PasswordHash, hash, StringComparison.Ordinal))
-                return null;
+            var hash = Hash(request.Password);
+            if (!string.Equals(user.PasswordHash, hash, StringComparison.Ordinal)) return null;
 
-            _activityLogRepository.LogAction(user.UserId, "User logged in", "User", user.UserId);
-            return user;
+            _activityLogs.LogAction(user.UserId, "User logged in", "User", user.UserId);
+            return _mapper.Map<AuthResponseDto>(user);
         }
 
         public void Logout(int userId)
         {
-            _activityLogRepository.LogAction(userId, "User logged out", "User", userId);
+            _activityLogs.LogAction(userId, "User logged out", "User", userId);
         }
 
         private static string Hash(string input)

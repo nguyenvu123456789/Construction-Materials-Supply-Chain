@@ -8,44 +8,28 @@ namespace API.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAuthenticationService _authService;
+        private readonly IAuthenticationService _auth;
 
-        public AuthenticationController(IAuthenticationService authService)
+        public AuthenticationController(IAuthenticationService auth)
         {
-            _authService = authService;
+            _auth = auth;
         }
 
-        // POST: api/authentication/register
         [HttpPost("register")]
-        public IActionResult Register(RegisterRequestDto request)
-        {
-            try
-            {
-                var user = _authService.Register(request.UserName, request.Password, request.Email);
-                return Ok(new { Message = "User registered successfully", UserId = user.UserId });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
+        public ActionResult<AuthResponseDto> Register([FromBody] RegisterRequestDto request)
+            => Ok(_auth.Register(request));
 
-        // POST: api/authentication/login
         [HttpPost("login")]
-        public IActionResult Login(LoginRequestDto request)
+        public ActionResult<AuthResponseDto> Login([FromBody] LoginRequestDto request)
         {
-            var user = _authService.Login(request.UserName, request.Password);
-            if (user == null)
-                return Unauthorized(new { Message = "Invalid username or password" });
-
-            return Ok(new { Message = "Login successful", UserId = user.UserId, UserName = user.UserName });
+            var result = _auth.Login(request);
+            return result is null ? Unauthorized(new { Message = "Invalid username or password" }) : Ok(result);
         }
 
-        // POST: api/authentication/logout
         [HttpPost("logout")]
         public IActionResult Logout([FromBody] int userId)
         {
-            _authService.Logout(userId);
+            _auth.Logout(userId);
             return Ok(new { Message = "Logout successful" });
         }
     }

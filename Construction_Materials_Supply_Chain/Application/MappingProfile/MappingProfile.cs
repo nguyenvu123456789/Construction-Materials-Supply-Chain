@@ -11,14 +11,12 @@ namespace Application.MappingProfile
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Roles, opt =>
                     opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.RoleName).ToList()));
-
             CreateMap<UserDto, User>()
                 .ForMember(dest => dest.UserRoles, opt => opt.Ignore());
+            CreateMap<User, AuthResponseDto>();
 
             CreateMap<ActivityLog, ActivityLogDto>()
-                .ForMember(dest => dest.UserName, opt =>
-                    opt.MapFrom(src => src.User != null ? src.User.UserName : null));
-
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : null));
             CreateMap<ActivityLogDto, ActivityLog>()
                 .ForMember(dest => dest.User, opt => opt.Ignore());
 
@@ -32,8 +30,7 @@ namespace Application.MappingProfile
             CreateMap<Role, RoleDto>().ReverseMap();
 
             CreateMap<Partner, PartnerDto>()
-                .ForMember(dest => dest.PartnerTypeName,
-                           opt => opt.MapFrom(src => src.PartnerType.TypeName));
+                .ForMember(dest => dest.PartnerTypeName, opt => opt.MapFrom(src => src.PartnerType.TypeName));
             CreateMap<PartnerDto, Partner>();
 
             CreateMap<PartnerType, PartnerTypeDto>().ReverseMap();

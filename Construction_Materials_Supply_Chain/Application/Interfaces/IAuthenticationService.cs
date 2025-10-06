@@ -1,13 +1,11 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
 
 namespace Application.Interfaces
 {
     public interface IAuthenticationService
     {
-        User Register(string userName, string password, string email);
-
-        User? Login(string userName, string password);
-
+        AuthResponseDto Register(RegisterRequestDto request);
+        AuthResponseDto? Login(LoginRequestDto request);
         void Logout(int userId);
     }
 }

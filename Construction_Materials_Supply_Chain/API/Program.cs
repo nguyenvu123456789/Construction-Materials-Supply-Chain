@@ -5,6 +5,7 @@ using Infrastructure.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Services.Implementations;
 using Domain.Interface;
+using Infrastructure.Persistence.Interceptors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,14 +46,14 @@ builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
 
 // Audit Log Interceptor
-//builder.Services.AddScoped<AuditLogInterceptor>();
+builder.Services.AddScoped<AuditLogInterceptor>();
 
-//builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
-//{
-//    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
-//           .AddInterceptors(interceptor);
-//});
+builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
+{
+    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
+           .AddInterceptors(interceptor);
+});
 
 // Add services to the container
 builder.Services.AddControllers();

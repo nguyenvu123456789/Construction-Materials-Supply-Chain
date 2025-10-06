@@ -1,4 +1,5 @@
 ﻿using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
@@ -8,7 +9,7 @@ namespace Infrastructure.Persistence
         {
             context.Database.EnsureCreated();
 
-            // 1. Seed PartnerTypes
+            // 1️⃣ Seed PartnerTypes
             if (!context.PartnerTypes.Any())
             {
                 context.PartnerTypes.AddRange(
@@ -19,226 +20,231 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 2. Seed Partners
+            // 2️⃣ Seed Partners
             if (!context.Partners.Any())
             {
                 var supplierType = context.PartnerTypes.First(pt => pt.TypeName == "Supplier");
+                var distributorType = context.PartnerTypes.First(pt => pt.TypeName == "Distributor");
 
                 context.Partners.AddRange(
                     new Partner
                     {
-                        PartnerName = "Default Supplier",
+                        PartnerName = "Công ty Gỗ Việt",
                         PartnerTypeId = supplierType.PartnerTypeId,
-                        ContactEmail = "supplier@example.com",
-                        ContactPhone = "0123456789"
+                        ContactEmail = "contact@goviet.vn",
+                        ContactPhone = "0903123456"
                     },
                     new Partner
                     {
-                        PartnerName = "Another Supplier",
+                        PartnerName = "Thép Hòa Phát",
                         PartnerTypeId = supplierType.PartnerTypeId,
-                        ContactEmail = "supplier2@example.com",
-                        ContactPhone = "0987654321"
+                        ContactEmail = "info@hoaphatsteel.vn",
+                        ContactPhone = "0911222333"
+                    },
+                    new Partner
+                    {
+                        PartnerName = "Nhựa Duy Tân",
+                        PartnerTypeId = distributorType.PartnerTypeId,
+                        ContactEmail = "sales@duytanplastic.vn",
+                        ContactPhone = "0988999777"
                     }
                 );
                 context.SaveChanges();
             }
 
-            // 3. Seed Roles
+            // 3️⃣ Seed Roles
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
-                    new Role { RoleName = "Admin", Description = "Administrator role" },
-                    new Role { RoleName = "Manager", Description = "Manager role" },
-                    new Role { RoleName = "User", Description = "Regular user role" }
+                    new Role { RoleName = "Admin", Description = "Quản trị hệ thống" },
+                    new Role { RoleName = "Manager", Description = "Quản lý kho và nhân sự" },
+                    new Role { RoleName = "User", Description = "Nhân viên nhập/xuất kho" }
                 );
                 context.SaveChanges();
             }
 
-            // 4. Seed Users
+            // 4️⃣ Seed Users
             if (!context.Users.Any())
             {
-                var adminUser = new User
+                var admin = new User
                 {
                     UserName = "admin",
-                    Email = "admin@example.com",
+                    Email = "admin@scmvlxd.vn",
+                    FullName = "Nguyễn Văn Admin",
                     PasswordHash = "admin123",
                     CreatedAt = DateTime.Now
                 };
-                context.Users.Add(adminUser);
+
+                var manager = new User
+                {
+                    UserName = "manager1",
+                    Email = "manager1@scmvlxd.vn",
+                    FullName = "Trần Thị Quản Lý",
+                    PasswordHash = "manager123",
+                    CreatedAt = DateTime.Now
+                };
+
+                var staff = new User
+                {
+                    UserName = "staff01",
+                    Email = "staff01@scmvlxd.vn",
+                    FullName = "Lê Văn Nhân Viên",
+                    PasswordHash = "staff123",
+                    CreatedAt = DateTime.Now
+                };
+
+                context.Users.AddRange(admin, manager, staff);
                 context.SaveChanges();
 
                 var adminRole = context.Roles.First(r => r.RoleName == "Admin");
-                context.UserRoles.Add(new UserRole
-                {
-                    UserId = adminUser.UserId,
-                    RoleId = adminRole.RoleId,
-                    AssignedAt = DateTime.Now
-                });
+                var managerRole = context.Roles.First(r => r.RoleName == "Manager");
+                var userRole = context.Roles.First(r => r.RoleName == "User");
+
+                context.UserRoles.AddRange(
+                    new UserRole { UserId = admin.UserId, RoleId = adminRole.RoleId, AssignedAt = DateTime.Now },
+                    new UserRole { UserId = manager.UserId, RoleId = managerRole.RoleId, AssignedAt = DateTime.Now },
+                    new UserRole { UserId = staff.UserId, RoleId = userRole.RoleId, AssignedAt = DateTime.Now }
+                );
+
                 context.SaveChanges();
             }
 
-            // 5. Seed Categories
+            // 5️⃣ Seed Categories
             if (!context.Categories.Any())
             {
                 context.Categories.AddRange(
-                    new Category { CategoryName = "Wood", Description = "Wood materials" },
-                    new Category { CategoryName = "Metal", Description = "Metal materials" },
-                    new Category { CategoryName = "Plastic", Description = "Plastic materials" }
+                    new Category { CategoryName = "Gỗ", Description = "Vật liệu từ gỗ" },
+                    new Category { CategoryName = "Kim loại", Description = "Vật liệu kim loại" },
+                    new Category { CategoryName = "Nhựa", Description = "Vật liệu nhựa công nghiệp" }
                 );
                 context.SaveChanges();
             }
 
-            // 6. Seed Warehouses
+            // 6️⃣ Seed Warehouses
             if (!context.Warehouses.Any())
             {
-                var manager = context.Users.FirstOrDefault();
+                var manager = context.Users.First(u => u.UserName == "manager1");
+
                 context.Warehouses.AddRange(
-                    new Warehouse { WarehouseName = "Main Warehouse", Location = "Hanoi", ManagerId = manager?.UserId },
-                    new Warehouse { WarehouseName = "Secondary Warehouse", Location = "Ho Chi Minh", ManagerId = manager?.UserId }
+                    new Warehouse
+                    {
+                        WarehouseName = "Kho Hà Nội",
+                        Location = "Số 12 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+                        ManagerId = manager.UserId
+                    },
+                    new Warehouse
+                    {
+                        WarehouseName = "Kho TP.HCM",
+                        Location = "Số 98 Lê Văn Việt, Quận 9, TP.HCM",
+                        ManagerId = manager.UserId
+                    }
                 );
                 context.SaveChanges();
             }
-            // 6. Seed Warehouses
-            if (!context.Warehouses.Any())
-            {
-                var manager = context.Users.FirstOrDefault();
 
-                context.Warehouses.AddRange(
-                    new Warehouse { WarehouseName = "Main Warehouse", Location = "Hanoi", ManagerId = manager?.UserId },
-                    new Warehouse { WarehouseName = "Secondary Warehouse", Location = "Ho Chi Minh", ManagerId = manager?.UserId }
-                );
-                context.SaveChanges();
-            }
-
-            // 7. Seed Materials
+            // 7️⃣ Seed Materials
             if (!context.Materials.Any())
             {
-                var partner = context.Partners.First();
+                var woodCat = context.Categories.First(c => c.CategoryName == "Gỗ");
+                var metalCat = context.Categories.First(c => c.CategoryName == "Kim loại");
+                var plasticCat = context.Categories.First(c => c.CategoryName == "Nhựa");
 
-                var woodCategory = context.Categories.First(c => c.CategoryName == "Wood");
-                var metalCategory = context.Categories.First(c => c.CategoryName == "Metal");
-                var plasticCategory = context.Categories.First(c => c.CategoryName == "Plastic");
+                var goviet = context.Partners.First(p => p.PartnerName == "Công ty Gỗ Việt");
+                var hoaphat = context.Partners.First(p => p.PartnerName == "Thép Hòa Phát");
+                var duytan = context.Partners.First(p => p.PartnerName == "Nhựa Duy Tân");
 
                 context.Materials.AddRange(
-                    new Material { MaterialCode = "W001", MaterialName = "Wood Board", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = woodCategory.CategoryId },
-                    new Material { MaterialCode = "M001", MaterialName = "Steel Rod", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = metalCategory.CategoryId },
-                    new Material { MaterialCode = "P001", MaterialName = "Plastic Sheet", Unit = "pcs", PartnerId = partner.PartnerId, CategoryId = plasticCategory.CategoryId }
+                    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", PartnerId = goviet.PartnerId, CategoryId = woodCat.CategoryId },
+                    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", PartnerId = hoaphat.PartnerId, CategoryId = metalCat.CategoryId },
+                    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", PartnerId = duytan.PartnerId, CategoryId = plasticCat.CategoryId }
                 );
                 context.SaveChanges();
             }
 
-            // 8. Seed Inventories
+            // 8️⃣ Seed Inventories
             if (!context.Inventories.Any())
             {
-                var mainWarehouse = context.Warehouses.First(w => w.WarehouseName == "Main Warehouse");
-                var secondaryWarehouse = context.Warehouses.First(w => w.WarehouseName == "Secondary Warehouse");
+                var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
+                var wh2 = context.Warehouses.First(w => w.WarehouseName == "Kho TP.HCM");
 
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
 
                 context.Inventories.AddRange(
-                    new Inventory
-                    {
-                        WarehouseId = mainWarehouse.WarehouseId,
-                        MaterialId = wood.MaterialId,
-                        Quantity = 100,
-                        UnitPrice = 20,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Inventory
-                    {
-                        WarehouseId = mainWarehouse.WarehouseId,
-                        MaterialId = metal.MaterialId,
-                        Quantity = 50,
-                        UnitPrice = 50,
-                        CreatedAt = DateTime.Now
-                    },
-                    new Inventory
-                    {
-                        WarehouseId = secondaryWarehouse.WarehouseId,
-                        MaterialId = plastic.MaterialId,
-                        Quantity = 200,
-                        UnitPrice = 10,
-                        CreatedAt = DateTime.Now
-                    }
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
             }
 
-            // 9. Seed Invoices + InvoiceDetails
+            // 9️⃣ Seed Invoices & InvoiceDetails
             if (!context.Invoices.Any())
             {
-                var user = context.Users.First();
-                var partner = context.Partners.First();
+                var manager = context.Users.First(u => u.UserName == "manager1");
+                var goviet = context.Partners.First(p => p.PartnerName == "Công ty Gỗ Việt");
+                var hoaphat = context.Partners.First(p => p.PartnerName == "Thép Hòa Phát");
 
-                var invoice1 = new Invoice
+                var inv1 = new Invoice
                 {
                     InvoiceCode = "INV-001",
                     InvoiceNumber = "INV-001",
                     InvoiceType = "Import",
-                    PartnerId = partner.PartnerId,
-                    CreatedBy = user.UserId,
-                    IssueDate = DateTime.Now.AddDays(-1),
+                    PartnerId = goviet.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-10),
                     Status = "Pending",
                     CreatedAt = DateTime.Now
                 };
 
-                var invoice2 = new Invoice
+                var inv2 = new Invoice
                 {
                     InvoiceCode = "INV-002",
                     InvoiceNumber = "INV-002",
                     InvoiceType = "Import",
-                    PartnerId = partner.PartnerId,
-                    CreatedBy = user.UserId,
-                    IssueDate = DateTime.Now.AddDays(-2),
-                    Status = "Pending",
+                    PartnerId = hoaphat.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-15),
+                    Status = "Approved",
                     CreatedAt = DateTime.Now
                 };
 
-                context.Invoices.AddRange(invoice1, invoice2);
+                context.Invoices.AddRange(inv1, inv2);
                 context.SaveChanges();
 
-                // InvoiceDetails cho invoice1
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
-
-                context.InvoiceDetails.AddRange(
-                    new InvoiceDetail
-                    {
-                        InvoiceId = invoice1.InvoiceId,
-                        MaterialId = wood.MaterialId,
-                        Quantity = 50,
-                        UnitPrice = 20,
-                        LineTotal = 50 * 20
-                    },
-                    new InvoiceDetail
-                    {
-                        InvoiceId = invoice1.InvoiceId,
-                        MaterialId = metal.MaterialId,
-                        Quantity = 30,
-                        UnitPrice = 50,
-                        LineTotal = 30 * 50
-                    }
-                );
-
-                // InvoiceDetails cho invoice2
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
 
                 context.InvoiceDetails.AddRange(
                     new InvoiceDetail
                     {
-                        InvoiceId = invoice2.InvoiceId,
+                        InvoiceId = inv1.InvoiceId,
+                        MaterialId = wood.MaterialId,
+                        Quantity = 50,
+                        UnitPrice = 250000,
+                        LineTotal = 50 * 250000
+                    },
+                    new InvoiceDetail
+                    {
+                        InvoiceId = inv1.InvoiceId,
+                        MaterialId = metal.MaterialId,
+                        Quantity = 20,
+                        UnitPrice = 320000,
+                        LineTotal = 20 * 320000
+                    },
+                    new InvoiceDetail
+                    {
+                        InvoiceId = inv2.InvoiceId,
                         MaterialId = plastic.MaterialId,
                         Quantity = 100,
-                        UnitPrice = 10,
-                        LineTotal = 100 * 10
+                        UnitPrice = 180000,
+                        LineTotal = 100 * 180000
                     }
                 );
-
                 context.SaveChanges();
             }
-
         }
     }
 }

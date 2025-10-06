@@ -3,6 +3,7 @@ using Application.MappingProfile;
 using Application.Validation;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
+using Application.Validation.Partners;
 using Domain.Interface;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -54,7 +55,7 @@ builder.Services.AddScoped<IPartnerService, PartnerService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
 
 // Audit Log Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();

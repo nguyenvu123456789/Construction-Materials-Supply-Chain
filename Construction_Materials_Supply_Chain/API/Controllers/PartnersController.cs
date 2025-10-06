@@ -1,8 +1,8 @@
-﻿using Application.DTOs;
-using Application.Common.Pagination;
+﻿using Application.Common.Pagination;
+using Application.DTOs.Partners;
 using Application.Interfaces;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace API.Controllers
 {
@@ -11,53 +11,49 @@ namespace API.Controllers
     public class PartnersController : ControllerBase
     {
         private readonly IPartnerService _service;
-        private readonly IMapper _mapper;
+        public PartnersController(IPartnerService service) => _service = service;
 
-        public PartnersController(IPartnerService service, IMapper mapper)
+        [HttpGet]
+        public ActionResult<IEnumerable<PartnerDto>> GetAll() => Ok(_service.GetAllDto());
+
+        [HttpGet("{id:int}")]
+        public ActionResult<PartnerDto> GetById(int id)
         {
-            _service = service;
-            _mapper = mapper;
+            var dto = _service.GetDto(id);
+            return dto == null ? NotFound() : Ok(dto);
         }
 
-        // GET: api/partners/grouped-by-type
+        [HttpPost]
+        public ActionResult<PartnerDto> Create([FromBody] PartnerCreateDto dto)
+        {
+            var created = _service.Create(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.PartnerId }, created);
+        }
+
+        [HttpPut("{id:int}")]
+        public IActionResult Update(int id, [FromBody] PartnerUpdateDto dto)
+        {
+            _service.Update(id, dto);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        public IActionResult Delete(int id)
+        {
+            _service.Delete(id);
+            return NoContent();
+        }
+
         [HttpGet("grouped-by-type")]
-        public ActionResult<IEnumerable<PartnerTypeDto>> GetPartnersGroupedByType()
-        {
-            var types = _service.GetPartnerTypesWithPartners();
-            var result = types.Select(pt => new PartnerTypeDto
-            {
-                PartnerTypeId = pt.PartnerTypeId,
-                TypeName = pt.TypeName,
-                Partners = pt.Partners.Select(p => _mapper.Map<PartnerDto>(p)).ToList()
-            }).ToList();
+        public ActionResult<IEnumerable<PartnerTypeDto>> GroupedByType() => Ok(_service.GetPartnerTypesWithPartnersDto());
 
-            return Ok(result);
-        }
-
-        // GET: api/partners/by-type/1
         [HttpGet("by-type/{partnerTypeId:int}")]
-        public ActionResult<IEnumerable<PartnerDto>> GetPartnersByType(int partnerTypeId)
-        {
-            var partners = _service.GetPartnersByType(partnerTypeId);
-            return Ok(_mapper.Map<IEnumerable<PartnerDto>>(partners));
-        }
+        public ActionResult<IEnumerable<PartnerDto>> ByType(int partnerTypeId) => Ok(_service.GetPartnersByTypeDto(partnerTypeId));
 
-        // GET: api/partners/filter
         [HttpGet("filter")]
-        public ActionResult<PagedResultDto<PartnerDto>> GetPartnersFiltered([FromQuery] PartnerPagedQueryDto queryParams)
-        {
-            var partners = _service.GetPartnersFiltered(queryParams.SearchTerm, queryParams.PartnerTypes, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
+        public ActionResult<PagedResultDto<PartnerDto>> Filter([FromQuery] PartnerPagedQueryDto query) => Ok(_service.GetPartnersFiltered(query));
 
-            var result = new PagedResultDto<PartnerDto>
-            {
-                Data = _mapper.Map<IEnumerable<PartnerDto>>(partners),
-                TotalCount = totalCount,
-                PageNumber = queryParams.PageNumber,
-                PageSize = queryParams.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
-            };
-
-            return Ok(result);
-        }
+        [HttpGet("types")]
+        public ActionResult<IEnumerable<PartnerTypeDto>> Types() => Ok(_service.GetPartnerTypesDto());
     }
 }

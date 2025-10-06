@@ -1,8 +1,8 @@
 ﻿using API.DTOs;
-using Application.Interfaces;
 using AutoMapper;
-using Domain;
+using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
@@ -10,39 +10,32 @@ namespace API.Controllers
     [ApiController]
     public class ExportsController : ControllerBase
     {
-        private readonly IExportService _service;
+        private readonly IExportRepository _exportRepository;
         private readonly IMapper _mapper;
 
-        public ExportsController(IExportService service, IMapper mapper)
+        public ExportsController(IExportRepository exportRepository, IMapper mapper)
         {
-            _service = service;
+            _exportRepository = exportRepository;
             _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Export>> GetExports()
         {
-            var exports = _service.GetAll();
+            var exports = _exportRepository.GetExports();
             return Ok(exports);
-        }
-
-        [HttpGet("{id:int}")]
-        public ActionResult<Export> GetById(int id)
-        {
-            var exp = _service.GetById(id);
-            if (exp == null) return NotFound();
-            return Ok(exp);
         }
 
         [HttpPost]
         public IActionResult CreateExport(ExportDto exportDto)
         {
             var export = _mapper.Map<Export>(exportDto);
-            export.Status = string.IsNullOrWhiteSpace(export.Status) ? "Pending" : export.Status;
-            export.CreatedAt = export.CreatedAt == default ? DateTime.Now : export.CreatedAt;
+            export.Status = "Pending";
+            export.CreatedAt = DateTime.Now;
 
-            _service.Create(export);
-            return CreatedAtAction(nameof(GetById), new { id = export.ExportId }, export);
+            _exportRepository.SaveExport(export);
+
+            return CreatedAtAction(nameof(GetExports), new { id = export.ExportId }, export);
         }
     }
 }

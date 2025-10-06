@@ -2,6 +2,6 @@
 {
     public class PartnerPagedQueryDto : PagedQueryDto
     {
-        public List<string>? PartnerTypes { get; set; }
+        public string? PartnerType { get; set; }
     }
 }

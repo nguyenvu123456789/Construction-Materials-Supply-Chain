@@ -1,8 +1,9 @@
 ﻿using API.DTOs;
 using API.Helper.Paging;
-using Application.Interfaces;
 using AutoMapper;
+using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
@@ -10,21 +11,21 @@ namespace API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
+        private readonly IUserRepository _repository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
 
-        public UsersController(IUserService userService, IRoleService roleService, IMapper mapper)
+        public UsersController(IUserRepository repository, IRoleRepository roleRepository, IMapper mapper)
         {
-            _userService = userService;
-            _roleService = roleService;
+            _repository = repository;
+            _roleRepository = roleRepository;
             _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<UserDto>> GetUsers()
         {
-            var users = _userService.GetAll();
+            var users = _repository.GetUsers();
             var result = _mapper.Map<IEnumerable<UserDto>>(users);
             return Ok(result);
         }
@@ -32,55 +33,47 @@ namespace API.Controllers
         [HttpGet("roles")]
         public ActionResult<IEnumerable<RoleDto>> GetRoles()
         {
-            var roles = _roleService.GetAll();
+            var roles = _roleRepository.GetRoles();
             var result = _mapper.Map<IEnumerable<RoleDto>>(roles);
             return Ok(result);
-        }
-
-        [HttpGet("{id:int}")]
-        public ActionResult<UserDto> GetUser(int id)
-        {
-            var user = _userService.GetById(id);
-            if (user == null) return NotFound();
-            return Ok(_mapper.Map<UserDto>(user));
         }
 
         [HttpPost]
         public IActionResult PostUser(UserDto userDto)
         {
-            var user = _mapper.Map<Domain.User>(userDto);
-            _userService.Create(user);
-            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, _mapper.Map<UserDto>(user));
+            var user = _mapper.Map<User>(userDto);
+            _repository.SaveUser(user);
+            return NoContent();
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, UserDto userDto)
         {
-            var existing = _userService.GetById(id);
+            var existing = _repository.GetUserById(id);
             if (existing == null) return NotFound();
 
-            var user = _mapper.Map<Domain.User>(userDto);
+            var user = _mapper.Map<User>(userDto);
             user.UserId = id;
-            _userService.Update(user);
+            _repository.UpdateUser(user);
 
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
-            var existing = _userService.GetById(id);
+            var existing = _repository.GetUserById(id);
             if (existing == null) return NotFound();
 
-            _userService.Delete(id);
+            _repository.DeleteUserById(id);
             return NoContent();
         }
 
-        // GET: api/users/filter?SearchTerm=...&PageNumber=1&PageSize=10&Roles=Admin&Roles=Manager
         [HttpGet("filter")]
         public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto queryParams)
         {
-            var users = _userService.GetUsersFiltered(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
+            var users = _repository.GetUsersPaged(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalUsersCount(queryParams.SearchTerm, queryParams.Roles);
 
             var result = new PagedResultDto<UserDto>
             {

@@ -1,30 +1,31 @@
 ﻿using API.DTOs;
 using API.Helper.Paging;
-using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PartnersController : ControllerBase
+    public class SupplyChainController : ControllerBase
     {
-        private readonly IPartnerService _service;
+        private readonly ISupplyChainRepository _repository;
         private readonly IMapper _mapper;
 
-        public PartnersController(IPartnerService service, IMapper mapper)
+        public SupplyChainController(ISupplyChainRepository repository, IMapper mapper)
         {
-            _service = service;
+            _repository = repository;
             _mapper = mapper;
         }
 
-        // GET: api/partners/grouped-by-type
-        [HttpGet("grouped-by-type")]
+        // GET: api/supplychain/partners
+        [HttpGet("partners")]
         public ActionResult<IEnumerable<PartnerTypeDto>> GetPartnersGroupedByType()
         {
-            var types = _service.GetPartnerTypesWithPartners();
-            var result = types.Select(pt => new PartnerTypeDto
+            var partnerTypes = _repository.GetPartnerTypes();
+
+            var result = partnerTypes.Select(pt => new PartnerTypeDto
             {
                 PartnerTypeId = pt.PartnerTypeId,
                 TypeName = pt.TypeName,
@@ -34,19 +35,27 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        // GET: api/partners/by-type/1
-        [HttpGet("by-type/{partnerTypeId:int}")]
+        // GET: api/supplychain/partners/by-type/1
+        [HttpGet("partners/by-type/{partnerTypeId}")]
         public ActionResult<IEnumerable<PartnerDto>> GetPartnersByType(int partnerTypeId)
         {
-            var partners = _service.GetPartnersByType(partnerTypeId);
-            return Ok(_mapper.Map<IEnumerable<PartnerDto>>(partners));
+            var partnerTypes = _repository.GetPartnerTypes();
+            var partnerType = partnerTypes.FirstOrDefault(pt => pt.PartnerTypeId == partnerTypeId);
+
+            if (partnerType == null)
+            {
+                return NotFound(new { Message = "PartnerType not found" });
+            }
+
+            var dto = _mapper.Map<IEnumerable<PartnerDto>>(partnerType.Partners);
+            return Ok(dto);
         }
 
-        // GET: api/partners/filter
-        [HttpGet("filter")]
+        [HttpGet("partners/filter")]
         public ActionResult<PagedResultDto<PartnerDto>> GetPartnersFiltered([FromQuery] PartnerPagedQueryDto queryParams)
         {
-            var partners = _service.GetPartnersFiltered(queryParams.SearchTerm, queryParams.PartnerTypes, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
+            var partners = _repository.GetPartnersPaged(queryParams.SearchTerm, queryParams.PartnerType, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalPartnersCount(queryParams.SearchTerm, queryParams.PartnerType);
 
             var result = new PagedResultDto<PartnerDto>
             {

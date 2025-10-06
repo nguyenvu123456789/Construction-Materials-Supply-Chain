@@ -1,6 +1,6 @@
 ﻿using API.DTOs;
 using AutoMapper;
-using Domain;
+using BusinessObjects;
 
 namespace API.Profiles
 {

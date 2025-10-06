@@ -1,8 +1,8 @@
 ﻿using API.DTOs;
 using API.Helper.Paging;
-using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
@@ -10,26 +10,27 @@ namespace API.Controllers
     [ApiController]
     public class ActivityLogsController : ControllerBase
     {
-        private readonly IActivityLogService _service;
+        private readonly IActivityLogRepository _repository;
         private readonly IMapper _mapper;
 
-        public ActivityLogsController(IActivityLogService service, IMapper mapper)
+        public ActivityLogsController(IActivityLogRepository repository, IMapper mapper)
         {
-            _service = service;
+            _repository = repository;
             _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<ActivityLogDto>> GetLogs()
         {
-            var logs = _service.GetAll();
+            var logs = _repository.GetLogs();
             return Ok(_mapper.Map<IEnumerable<ActivityLogDto>>(logs));
         }
 
         [HttpGet("filter")]
         public ActionResult<PagedResultDto<ActivityLogDto>> GetLogsFiltered([FromQuery] ActivityLogPagedQueryDto queryParams)
         {
-            var logs = _service.GetFiltered(queryParams.SearchTerm, queryParams.FromDate, queryParams.ToDate, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
+            var logs = _repository.GetLogsPaged(queryParams.SearchTerm, queryParams.FromDate, queryParams.ToDate, queryParams.PageNumber, queryParams.PageSize);
+            var totalCount = _repository.GetTotalLogsCount(queryParams.SearchTerm, queryParams.FromDate, queryParams.ToDate);
 
             var result = new PagedResultDto<ActivityLogDto>
             {

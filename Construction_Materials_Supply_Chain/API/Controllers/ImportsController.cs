@@ -1,7 +1,8 @@
 ﻿using API.DTOs;
-using Application.Interfaces;
 using AutoMapper;
+using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
@@ -9,27 +10,25 @@ namespace API.Controllers
     [ApiController]
     public class ImportsController : ControllerBase
     {
-        private readonly IImportService _service;
+        private readonly IImportRepository _importRepository;
         private readonly IMapper _mapper;
 
-        public ImportsController(IImportService service, IMapper mapper)
+        public ImportsController(IImportRepository importRepository, IMapper mapper)
         {
-            _service = service;
+            _importRepository = importRepository;
             _mapper = mapper;
         }
 
         [HttpPost]
         public IActionResult Import([FromBody] ImportRequestDto request)
         {
-            try
-            {
-                var invoice = _service.ImportByCode(request.InvoiceCode, request.WarehouseId, request.CreatedBy);
-                return Ok(new { Message = "Nhập kho thành công", InvoiceId = invoice.InvoiceId });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { Message = ex.Message });
-            }
+            var invoice = _importRepository.GetPendingInvoiceByCode(request.InvoiceCode);
+            if (invoice == null)
+                return NotFound($"Invoice {request.InvoiceCode} không tồn tại hoặc không ở trạng thái Pending.");
+
+            _importRepository.ImportInvoice(invoice, request.WarehouseId, request.CreatedBy);
+
+            return Ok(new { Message = "Nhập kho thành công", InvoiceId = invoice.InvoiceId });
         }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using API.DTOs;
-using Application.Interfaces;
+using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace API.Controllers
 {
@@ -8,45 +11,79 @@ namespace API.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAuthenticationService _authService;
+        private readonly ScmVlxdContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public AuthenticationController(IAuthenticationService authService)
+        public AuthenticationController(ScmVlxdContext context, IActivityLogRepository activityLogRepository)
         {
-            _authService = authService;
+            _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
         // POST: api/authentication/register
         [HttpPost("register")]
         public IActionResult Register(RegisterRequestDto request)
         {
-            try
+            if (_context.Users.Any(u => u.UserName == request.UserName))
             {
-                var user = _authService.Register(request.UserName, request.Password, request.Email);
-                return Ok(new { Message = "User registered successfully", UserId = user.UserId });
+                return BadRequest(new { Message = "Username already exists" });
             }
-            catch (InvalidOperationException ex)
+
+            string hashedPassword;
+            using (var sha = SHA256.Create())
             {
-                return BadRequest(new { Message = ex.Message });
+                var bytes = Encoding.UTF8.GetBytes(request.Password);
+                var hash = sha.ComputeHash(bytes);
+                hashedPassword = Convert.ToBase64String(hash);
             }
+
+            var user = new User
+            {
+                UserName = request.UserName,
+                PasswordHash = hashedPassword,
+                Email = request.Email,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            return Ok(new { Message = "User registered successfully" });
         }
 
         // POST: api/authentication/login
         [HttpPost("login")]
         public IActionResult Login(LoginRequestDto request)
         {
-            var user = _authService.Login(request.UserName, request.Password);
+            var user = _context.Users.FirstOrDefault(u => u.UserName == request.UserName);
             if (user == null)
                 return Unauthorized(new { Message = "Invalid username or password" });
 
-            return Ok(new { Message = "Login successful", UserId = user.UserId, UserName = user.UserName });
+            string hashOfInput;
+            using (var sha = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(request.Password);
+                var hash = sha.ComputeHash(bytes);
+                hashOfInput = Convert.ToBase64String(hash);
+            }
+
+            if (user.PasswordHash != hashOfInput)
+            {
+                return Unauthorized(new { Message = "Invalid username or password" });
+            }
+
+            _activityLogRepository.LogAction(user.UserId, "User logged in", "User", user.UserId);
+
+            return Ok(new { Message = "Login successful" });
         }
 
-        // POST: api/authentication/logout
         [HttpPost("logout")]
         public IActionResult Logout([FromBody] int userId)
         {
-            _authService.Logout(userId);
+            _activityLogRepository.LogAction(userId, "User logged out", "User", userId);
+
             return Ok(new { Message = "Logout successful" });
         }
+
     }
 }

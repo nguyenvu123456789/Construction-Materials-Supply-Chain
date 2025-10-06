@@ -1,6 +1,6 @@
-﻿using Application.Interfaces;
-using Domain;
+﻿using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
 
 namespace API.Controllers
 {
@@ -8,24 +8,24 @@ namespace API.Controllers
     [ApiController]
     public class MaterialsController : ControllerBase
     {
-        private readonly IMaterialService _service;
+        private readonly IMaterialRepository _repository;
 
-        public MaterialsController(IMaterialService service)
+        public MaterialsController(IMaterialRepository repository)
         {
-            _service = service;
+            _repository = repository;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            var materials = _service.GetAll();
+            var materials = _repository.GetMaterials();
             return Ok(materials);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var material = _service.GetById(id);
+            var material = _repository.GetMaterialById(id);
             if (material == null) return NotFound();
             return Ok(material);
         }
@@ -33,28 +33,22 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult Create(Material material)
         {
-            _service.Create(material);
+            _repository.AddMaterial(material);
             return CreatedAtAction(nameof(GetById), new { id = material.MaterialId }, material);
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id}")]
         public IActionResult Update(int id, Material material)
         {
             if (id != material.MaterialId) return BadRequest();
-            var existing = _service.GetById(id);
-            if (existing == null) return NotFound();
-
-            _service.Update(material);
+            _repository.UpdateMaterial(material);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var existing = _service.GetById(id);
-            if (existing == null) return NotFound();
-
-            _service.Delete(id);
+            _repository.DeleteMaterial(id);
             return NoContent();
         }
     }

@@ -1,8 +1,8 @@
 ﻿using API.DTOs;
+using Application.Interfaces;
 using AutoMapper;
-using BusinessObjects;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
-using Services.Interfaces;
 
 namespace API.Controllers
 {

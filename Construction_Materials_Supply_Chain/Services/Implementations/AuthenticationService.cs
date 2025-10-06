@@ -1,7 +1,7 @@
-﻿using BusinessObjects;
-using DataAccess;
-using Repositories.Interface;
-using Services.Interfaces;
+﻿using Application.Interfaces;
+using Domain;
+using Domain.Persistence;
+using Infrastructure.Interface;
 using System.Security.Cryptography;
 using System.Text;
 

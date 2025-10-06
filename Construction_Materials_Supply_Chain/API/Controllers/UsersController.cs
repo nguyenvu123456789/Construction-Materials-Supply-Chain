@@ -1,8 +1,8 @@
 ﻿using API.DTOs;
 using API.Helper.Paging;
+using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Services.Interfaces;
 
 namespace API.Controllers
 {
@@ -48,7 +48,7 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult PostUser(UserDto userDto)
         {
-            var user = _mapper.Map<BusinessObjects.User>(userDto);
+            var user = _mapper.Map<Domain.User>(userDto);
             _userService.Create(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, _mapper.Map<UserDto>(user));
         }
@@ -59,7 +59,7 @@ namespace API.Controllers
             var existing = _userService.GetById(id);
             if (existing == null) return NotFound();
 
-            var user = _mapper.Map<BusinessObjects.User>(userDto);
+            var user = _mapper.Map<Domain.User>(userDto);
             user.UserId = id;
             _userService.Update(user);
 

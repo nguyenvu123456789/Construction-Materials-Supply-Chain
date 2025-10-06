@@ -1,6 +1,6 @@
-﻿using BusinessObjects;
-using Repositories.Interface;
-using Services.Interfaces;
+﻿using Application.Interfaces;
+using Domain;
+using Infrastructure.Interface;
 
 namespace Services.Implementations
 {

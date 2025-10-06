@@ -1,8 +1,8 @@
 ﻿using API.DTOs;
 using API.Helper.Paging;
+using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Services.Interfaces;
 
 namespace API.Controllers
 {

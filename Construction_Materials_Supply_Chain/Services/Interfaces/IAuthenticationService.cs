@@ -1,6 +1,6 @@
-﻿using BusinessObjects;
+﻿using Domain;
 
-namespace Services.Interfaces
+namespace Application.Interfaces
 {
     public interface IAuthenticationService
     {

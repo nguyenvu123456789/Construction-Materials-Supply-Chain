@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿namespace Domain;
 
 public class MaterialCheck
 {
@@ -12,5 +12,5 @@ public class MaterialCheck
     public string? Notes { get; set; }
 
     public virtual Material Material { get; set; } = null!;
-    public virtual User User { get; set; } = null!; // User who performed the check
+    public virtual User User { get; set; } = null!;
 }

@@ -1,8 +1,9 @@
-using DataAccess;
-using Repositories.Base;
-using Repositories.Interface;
+using Domain;
+using Domain.Persistence;
+using Infrastructure.Base;
+using Infrastructure.Interface;
 
-namespace Repositories.Implementations
+namespace Infrastructure.Implementations
 {
     public class MaterialCheckRepository : GenericRepository<MaterialCheck>, IMaterialCheckRepository
     {

@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+﻿namespace Domain;
 
 public partial class ExportDetail
 {

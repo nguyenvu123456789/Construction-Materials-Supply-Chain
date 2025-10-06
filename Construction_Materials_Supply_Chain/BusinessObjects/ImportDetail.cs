@@ -1,4 +1,5 @@
-﻿using BusinessObjects;
+﻿namespace Domain;
+
 public partial class ImportDetail
 {
     public int ImportDetailId { get; set; }

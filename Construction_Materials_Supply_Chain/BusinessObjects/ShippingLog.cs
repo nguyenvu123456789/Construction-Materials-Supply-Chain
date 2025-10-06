@@ -1,4 +1,4 @@
-﻿namespace BusinessObjects;
+﻿namespace Domain;
 
 public partial class ShippingLog
 {

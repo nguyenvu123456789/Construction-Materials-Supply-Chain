@@ -1,6 +1,6 @@
-﻿using BusinessObjects;
+﻿using Application.Interfaces;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
-using Services.Interfaces;
 
 namespace API.Controllers
 {

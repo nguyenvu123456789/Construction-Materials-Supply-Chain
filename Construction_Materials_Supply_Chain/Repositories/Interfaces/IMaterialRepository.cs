@@ -1,7 +1,7 @@
-using BusinessObjects;
-using Repositories.Base;
+using Domain;
+using Infrastructure.Base;
 
-namespace Repositories.Interface
+namespace Infrastructure.Interface
 {
     public interface IMaterialRepository : IGenericRepository<Material>
     {

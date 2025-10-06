@@ -3,15 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessObjects", "BusinessObjects\BusinessObjects.csproj", "{CD29B103-573B-4C49-AC39-E3C2C31D94A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "BusinessObjects\Domain.csproj", "{CD29B103-573B-4C49-AC39-E3C2C31D94A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{020A59B6-0471-43FC-952D-EFA9B45AB357}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Repositories\Repositories.csproj", "{AE67BE41-7ADB-4707-A896-DF9E2F61A3C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Repositories\Infrastructure.csproj", "{AE67BE41-7ADB-4707-A896-DF9E2F61A3C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{E2615904-E3BD-49BD-87D3-9E1470AC827B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{3660C192-EDF1-4C93-AAF4-6DC9D8C82541}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Services\Application.csproj", "{3660C192-EDF1-4C93-AAF4-6DC9D8C82541}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{CD29B103-573B-4C49-AC39-E3C2C31D94A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD29B103-573B-4C49-AC39-E3C2C31D94A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD29B103-573B-4C49-AC39-E3C2C31D94A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{020A59B6-0471-43FC-952D-EFA9B45AB357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{020A59B6-0471-43FC-952D-EFA9B45AB357}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{020A59B6-0471-43FC-952D-EFA9B45AB357}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{020A59B6-0471-43FC-952D-EFA9B45AB357}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AE67BE41-7ADB-4707-A896-DF9E2F61A3C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AE67BE41-7ADB-4707-A896-DF9E2F61A3C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE67BE41-7ADB-4707-A896-DF9E2F61A3C3}.Release|Any CPU.ActiveCfg = Release|Any CPU

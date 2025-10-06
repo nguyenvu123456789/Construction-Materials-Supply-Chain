@@ -1,7 +1,7 @@
-using DataAccess;
+using Domain.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Repositories.Base
+namespace Infrastructure.Base
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {

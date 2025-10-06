@@ -1,6 +1,7 @@
-using Repositories.Base;
+using Domain;
+using Infrastructure.Base;
 
-namespace Repositories.Interface
+namespace Infrastructure.Interface
 {
     public interface IMaterialCheckRepository : IGenericRepository<MaterialCheck>
     {

@@ -1,4 +1,6 @@
-﻿namespace Services.Interfaces
+﻿using Domain;
+
+namespace Application.Interfaces
 {
     public interface IMaterialCheckService
     {

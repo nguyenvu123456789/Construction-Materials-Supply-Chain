@@ -1,7 +1,8 @@
-﻿using API.DTOs;
-using API.Helper.Paging;
+﻿using Application.DTOs;
+using Application.Common.Pagination;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -48,7 +49,7 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult PostUser(UserDto userDto)
         {
-            var user = _mapper.Map<Domain.User>(userDto);
+            var user = _mapper.Map<User>(userDto);
             _userService.Create(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, _mapper.Map<UserDto>(user));
         }
@@ -59,7 +60,7 @@ namespace API.Controllers
             var existing = _userService.GetById(id);
             if (existing == null) return NotFound();
 
-            var user = _mapper.Map<Domain.User>(userDto);
+            var user = _mapper.Map<User>(userDto);
             user.UserId = id;
             _userService.Update(user);
 

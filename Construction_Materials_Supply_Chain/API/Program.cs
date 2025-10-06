@@ -1,10 +1,10 @@
-﻿using API.Profiles;
+﻿using Application.MappingProfile;
 using Application.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Implementations;
-using Infrastructure.Interface;
 using Microsoft.EntityFrameworkCore;
 using Services.Implementations;
+using Domain.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 

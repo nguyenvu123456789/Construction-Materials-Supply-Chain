@@ -1,4 +1,5 @@
-﻿using API.DTOs;
+﻿using Application.Common.Pagination;
+using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -18,18 +19,24 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/auditlogs?Keyword=...&PageNumber=1&PageSize=20
+        // GET: api/auditlogs?SearchTerm=...&PageNumber=1&PageSize=20
         [HttpGet]
-        public ActionResult<object> GetAuditLogs([FromQuery] QueryParametersDto query)
+        public ActionResult<PagedResultDto<AuditLogDto>> GetAuditLogs([FromQuery] PagedQueryDto query)
         {
-            var logs = _service.GetFiltered(query.Keyword, query.PageNumber, query.PageSize, out var total);
-            return Ok(new
+            var logs = _service.GetFiltered(query.SearchTerm, query.PageNumber, query.PageSize, out var totalCount);
+            var dtoList = _mapper.Map<IEnumerable<AuditLogDto>>(logs);
+            var totalPages = (int)Math.Ceiling((double)totalCount / query.PageSize);
+
+            var result = new PagedResultDto<AuditLogDto>
             {
-                Data = _mapper.Map<IEnumerable<AuditLogDto>>(logs),
-                TotalCount = total,
+                Data = dtoList,
+                TotalCount = totalCount,
                 PageNumber = query.PageNumber,
-                PageSize = query.PageSize
-            });
+                PageSize = query.PageSize,
+                TotalPages = totalPages
+            };
+
+            return Ok(result);
         }
     }
 }

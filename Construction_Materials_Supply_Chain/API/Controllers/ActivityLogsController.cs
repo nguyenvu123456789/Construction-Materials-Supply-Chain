@@ -1,5 +1,5 @@
-﻿using API.DTOs;
-using API.Helper.Paging;
+﻿using Application.DTOs;
+using Application.Common.Pagination;
 using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;

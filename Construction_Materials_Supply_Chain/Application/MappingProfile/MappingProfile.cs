@@ -26,6 +26,13 @@ namespace Application.MappingProfile
             CreateMap<Import, ImportDto>().ReverseMap();
             CreateMap<ImportDetail, ImportDetailDto>().ReverseMap();
             CreateMap<ImportRequestDto, Import>().ReverseMap();
+            CreateMap<Material, MaterialDto>()
+    .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName))
+    .ForMember(dest => dest.PartnerName, opt => opt.MapFrom(src => src.Partner.PartnerName))
+    .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Quantity))
+    .ForMember(dest => dest.WarehouseName, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Warehouse.WarehouseName))
+    .ReverseMap();
+
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap();

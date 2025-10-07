@@ -9,5 +9,10 @@ namespace Application.Interfaces
         void Create(Material material);
         void Update(Material material);
         void Delete(int id);
+        List<Material> GetMaterialsFiltered(string? searchTerm, int pageNumber, int pageSize, out int totalCount);
+        List<Material> GetByCategory(int categoryId);
+        List<Material> GetByWarehouse(int warehouseId, string? searchTerm);
+
+
     }
 }

@@ -28,6 +28,8 @@ namespace Application.MappingProfile
             CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
+            CreateMap<Category, CategoryDto>().ReverseMap();
+
 
             CreateMap<Partner, PartnerDto>()
                 .ForMember(dest => dest.PartnerTypeName, opt => opt.MapFrom(src => src.PartnerType.TypeName));

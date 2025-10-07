@@ -27,6 +27,7 @@ builder.Services.AddDbContext<ScmVlxdContext>(options =>
 // Đăng ký Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
 builder.Services.AddScoped<IMaterialCheckRepository, MaterialCheckRepository>();
 builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
@@ -41,6 +42,7 @@ builder.Services.AddScoped<IPartnerTypeRepository, PartnerTypeRepository>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IShippingLogService, ShippingLogService>();

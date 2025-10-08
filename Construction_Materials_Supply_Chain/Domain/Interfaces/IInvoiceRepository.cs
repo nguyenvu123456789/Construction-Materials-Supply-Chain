@@ -5,6 +5,6 @@ namespace Domain.Interface
 {
     public interface IInvoiceRepository : IGenericRepository<Invoice>
     {
-        Invoice? GetByCode(string code);
+        Invoice? GetByCode(string invoiceCode);
     }
 }

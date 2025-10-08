@@ -10,12 +10,11 @@ namespace Infrastructure.Implementations
     {
         public InvoiceRepository(ScmVlxdContext context) : base(context) { }
 
-        public Invoice? GetByCode(string code)
+        public Invoice? GetByCode(string invoiceCode)
         {
-            return _dbSet
-                .Include(i => i.InvoiceDetails)
-                .ThenInclude(d => d.Material)
-                .FirstOrDefault(i => i.InvoiceCode == code);
+            return _dbSet.Include(i => i.InvoiceDetails)
+                         .ThenInclude(d => d.Material)
+                         .FirstOrDefault(i => i.InvoiceCode == invoiceCode);
         }
     }
 }

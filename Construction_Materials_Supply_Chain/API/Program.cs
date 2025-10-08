@@ -1,6 +1,5 @@
 ﻿using Application.Interfaces;
 using Application.MappingProfile;
-using Application.Validation;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Domain.Interface;
@@ -39,6 +38,8 @@ builder.Services.AddScoped<IMaterialCheckRepository, MaterialCheckRepository>();
 builder.Services.AddScoped<IShippingLogRepository, ShippingLogRepository>();
 builder.Services.AddScoped<IImportRepository, ImportRepository>();
 builder.Services.AddScoped<IImportDetailRepository, ImportDetailRepository>();
+builder.Services.AddScoped<IImportReportRepository, ImportReportRepository>();
+builder.Services.AddScoped<IImportReportDetailRepository, ImportReportDetailRepository>();
 
 builder.Services.AddScoped<IExportRepository, ExportRepository>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
@@ -57,9 +58,12 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IShippingLogService, ShippingLogService>();
+
 builder.Services.AddScoped<IImportService, ImportService>();
+builder.Services.AddScoped<IImportReportService, ImportReportService>();
 
 builder.Services.AddScoped<IExportService, ExportService>();
+
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();

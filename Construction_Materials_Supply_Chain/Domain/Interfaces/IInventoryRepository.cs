@@ -1,10 +1,8 @@
 ﻿using Domain.Interface.Base;
 using Domain.Models;
 
-namespace Domain.Interface
+public interface IInventoryRepository : IGenericRepository<Inventory>
 {
-    public interface IInventoryRepository : IGenericRepository<Inventory>
-    {
-        Inventory? GetByWarehouseAndMaterial(int warehouseId, int materialId);
-    }
+    Inventory? GetByMaterial(int materialId);
+    Inventory? GetByWarehouseAndMaterial(int warehouseId, int materialId);
 }

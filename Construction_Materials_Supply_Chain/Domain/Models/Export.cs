@@ -3,7 +3,7 @@
     public partial class Export
     {
         public int ExportId { get; set; }
-
+        public string ExportCode { get; set; } = null!;
         public DateTime ExportDate { get; set; }
 
         public int WarehouseId { get; set; }

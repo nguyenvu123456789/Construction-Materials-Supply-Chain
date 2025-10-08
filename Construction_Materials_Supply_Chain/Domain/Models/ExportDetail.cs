@@ -4,7 +4,7 @@ public partial class ExportDetail
 {
     public int ExportDetailId { get; set; }
     public int ExportId { get; set; }
-
+    public int MaterialId { get; set; }
     // snapshot từ Material
     public string MaterialCode { get; set; } = null!;
     public string MaterialName { get; set; } = null!;

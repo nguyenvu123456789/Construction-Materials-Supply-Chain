@@ -42,6 +42,8 @@ builder.Services.AddScoped<IImportReportRepository, ImportReportRepository>();
 builder.Services.AddScoped<IImportReportDetailRepository, ImportReportDetailRepository>();
 
 builder.Services.AddScoped<IExportRepository, ExportRepository>();
+builder.Services.AddScoped<IExportReportRepository, ExportReportRepository>();
+builder.Services.AddScoped<IExportDetailRepository, ExportDetailRepository>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IPartnerRepository, PartnerRepository>();
@@ -63,6 +65,7 @@ builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IImportReportService, ImportReportService>();
 
 builder.Services.AddScoped<IExportService, ExportService>();
+builder.Services.AddScoped<IExportReportService, ExportReportService>();
 
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();

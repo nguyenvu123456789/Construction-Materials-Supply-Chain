@@ -13,6 +13,7 @@ namespace Services.Implementations
         private readonly IImportReportDetailRepository _reportDetails;
         private readonly IMaterialRepository _materials;
         private readonly IImportRepository _imports;
+        private readonly IImportService _importService;
 
 
         public ImportReportService(
@@ -21,14 +22,16 @@ namespace Services.Implementations
             IInventoryRepository inventories,
             IImportReportDetailRepository reportDetails,
             IMaterialRepository materials,
-            IImportRepository imports)   
+            IImportRepository imports,
+            IImportService importService)   // thêm đây
         {
             _reports = reports;
             _invoices = invoices;
             _inventories = inventories;
             _reportDetails = reportDetails;
             _materials = materials;
-            _imports = imports;  
+            _imports = imports;
+            _importService = importService; // lưu instance
         }
 
 
@@ -91,43 +94,51 @@ namespace Services.Implementations
 
 
 
-        // 🔹 Duyệt phiếu báo cáo
+        // 🔹 Duyệt phiếu báo cáo và tự nhập kho sản phẩm tốt
         public ImportReport ReviewReport(int reportId, ReviewImportReportDto dto)
         {
-            var report = _reports.GetById(reportId) ?? throw new Exception("Report not found.");
-            if (report.Status != "Pending") throw new Exception("Report already reviewed.");
+            // Lấy report
+            var report = _reports.GetById(reportId);
+            if (report == null) throw new Exception("Report not found.");
 
+            // Cập nhật trạng thái review
             report.Status = dto.Status;
             report.ReviewedBy = dto.ReviewedBy;
-            report.ReviewedAt = DateTime.UtcNow;
-            report.RejectReason = dto.RejectReason;
+            report.ReviewedAt = DateTime.Now;
+            report.RejectReason = dto.Status == "Rejected" ? dto.RejectReason : null;
 
+            _reports.Update(report);
+
+            // Nếu Approved, tạo PendingImport và tự xác nhận nhập kho
             if (dto.Status == "Approved")
             {
-                // nhập số lượng Good vào kho theo từng vật tư
-                foreach (var detail in report.ImportReportDetails)
+                var goodMaterials = report.ImportReportDetails
+                    .Where(d => d.GoodQuantity > 0)
+                    .Select(d => new Application.DTOs.PendingImportMaterialDto
+                    {
+                        MaterialId = d.MaterialId,
+                        Quantity = d.GoodQuantity
+                    })
+                    .ToList();
+
+                if (goodMaterials.Any())
                 {
-                    // giả sử Inventory lưu theo MaterialId duy nhất hoặc warehouse mặc định
-                    var inventory = _inventories.GetByMaterial(detail.MaterialId);
-                    if (inventory == null)
-                    {
-                        _inventories.Add(new Inventory
-                        {
-                            MaterialId = detail.MaterialId,
-                            Quantity = detail.GoodQuantity,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                    }
-                    else
-                    {
-                        inventory.Quantity = (inventory.Quantity ?? 0) + detail.GoodQuantity;
-                        inventory.UpdatedAt = DateTime.UtcNow;
-                        _inventories.Update(inventory);
-                    }
+                    // 1️⃣ Tạo phiếu Pending Import
+                    var pendingImport = _importService.CreatePendingImport(
+                        warehouseId: report.Import.WarehouseId,
+                        createdBy: dto.ReviewedBy,
+                        notes: $"Auto-generated from approved report #{reportId}",
+                        materials: goodMaterials
+                    );
+
+                    // 2️⃣ Xác nhận Pending Import để thực sự nhập kho
+                    _importService.ConfirmPendingImport(
+                        importCode: pendingImport.ImportCode,
+                        notes: $"Auto-import from approved report #{reportId}"
+                    );
                 }
             }
 
-            _reports.Update(report);
             return report;
         }
 

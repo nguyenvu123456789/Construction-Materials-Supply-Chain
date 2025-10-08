@@ -18,6 +18,10 @@ namespace Infrastructure.Implementations
         {
             return _context.Inventories.FirstOrDefault(i => i.MaterialId == materialId);
         }
-
+        public Inventory? GetByMaterialId(int materialId, int warehouseId)
+        {
+            return _context.Inventories
+                           .FirstOrDefault(i => i.MaterialId == materialId && i.WarehouseId == warehouseId);
+        }
     }
 }

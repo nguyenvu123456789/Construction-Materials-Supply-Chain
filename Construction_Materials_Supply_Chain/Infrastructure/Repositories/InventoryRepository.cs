@@ -14,5 +14,14 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.FirstOrDefault(x => x.WarehouseId == warehouseId && x.MaterialId == materialId);
         }
+        public Inventory? GetByMaterial(int materialId)
+        {
+            return _context.Inventories.FirstOrDefault(i => i.MaterialId == materialId);
+        }
+        public Inventory? GetByMaterialId(int materialId, int warehouseId)
+        {
+            return _context.Inventories
+                           .FirstOrDefault(i => i.MaterialId == materialId && i.WarehouseId == warehouseId);
+        }
     }
 }

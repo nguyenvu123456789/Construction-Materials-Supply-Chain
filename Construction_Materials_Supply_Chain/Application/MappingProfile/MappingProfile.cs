@@ -38,6 +38,12 @@ namespace Application.MappingProfile
             .ForMember(dest => dest.Materials, opt => opt.MapFrom(src => src.ImportDetails));
 
             CreateMap<ImportDetail, PendingImportMaterialResponseDto>();
+            CreateMap<Export, ExportResponseDto>()
+                        .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ExportDetails));
+
+            CreateMap<ExportDetail, ExportDetailResponseDto>();
+
+
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap();

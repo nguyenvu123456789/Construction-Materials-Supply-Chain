@@ -60,4 +60,5 @@
         public decimal UnitPrice { get; set; }
         public decimal LineTotal { get; set; }
     }
+
 }

@@ -1,11 +1,14 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
+using Domain.Models;
+using System.Collections.Generic;
 
 namespace Application.Interfaces
 {
     public interface IExportService
     {
-        List<Export> GetAll();
+        Export CreatePendingExport(ExportRequestDto dto);
+        Export ConfirmExport(string exportCode, string? notes);
         Export? GetById(int id);
-        void Create(Export export);
+        List<Export> GetAll();
     }
 }

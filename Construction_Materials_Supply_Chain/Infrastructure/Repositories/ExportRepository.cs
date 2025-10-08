@@ -2,6 +2,7 @@ using Infrastructure.Persistence;
 using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations
 {
@@ -9,15 +10,9 @@ namespace Infrastructure.Implementations
     {
         public ExportRepository(ScmVlxdContext context) : base(context) { }
 
-        public void SaveExport(Export export)
-        {
-            _dbSet.Add(export);
-            _context.SaveChanges();
-        }
-
         public Export GetExportById(int id)
         {
-            return _dbSet.Find(id);
+            return _dbSet.Include(e => e.ExportDetails).FirstOrDefault(e => e.ExportId == id);
         }
     }
 }

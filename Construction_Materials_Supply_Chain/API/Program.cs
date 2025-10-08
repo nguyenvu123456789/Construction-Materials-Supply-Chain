@@ -14,17 +14,29 @@ using Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AutoMapper configuration
+// ==========================
+// 1️⃣ AutoMapper configuration
+// ==========================
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
 
-// Register DbContext
-builder.Services.AddDbContext<ScmVlxdContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+// ==========================
+// 2️⃣ DbContext với AuditLogInterceptor
+// ==========================
+builder.Services.AddScoped<AuditLogInterceptor>();
 
-// Đăng ký Repository
+builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
+{
+    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
+           .AddInterceptors(interceptor);
+});
+
+// ==========================
+// 3️⃣ Đăng ký Repository
+// ==========================
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -37,8 +49,10 @@ builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IPartnerRepository, PartnerRepository>();
 builder.Services.AddScoped<IPartnerTypeRepository, PartnerTypeRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
-// Đăng ký Service
+// 4️⃣ Đăng ký Service
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -47,31 +61,25 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IShippingLogService, ShippingLogService>();
 builder.Services.AddScoped<IImportService, ImportService>();
+builder.Services.AddScoped<IImportDetailRepository, ImportDetailRepository>();
 builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
 
-// FluentValidation
+
+// ==========================
+// 5️⃣ FluentValidation
+// ==========================
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-// Audit Log Interceptor
-builder.Services.AddScoped<AuditLogInterceptor>();
-
-builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
-{
-    var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"))
-           .AddInterceptors(interceptor);
-});
-
-// Add services to the container
+// ==========================
+// 6️⃣ Controllers, Swagger, CORS
+// ==========================
 builder.Services.AddControllers();
-
-// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -87,11 +95,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
-SeedData.Initialize(context);
+// 7️⃣ Seed Data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
+    SeedData.Initialize(context);
+}
 
-// Configure the HTTP request pipeline
+// 8️⃣ Middleware pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -99,11 +110,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

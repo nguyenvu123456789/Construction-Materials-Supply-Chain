@@ -4,6 +4,7 @@ public partial class ImportDetail
 {
     public int ImportDetailId { get; set; }
     public int ImportId { get; set; }
+    public int MaterialId { get; set; }
 
     // snapshot từ Material
     public string MaterialCode { get; set; } = null!;

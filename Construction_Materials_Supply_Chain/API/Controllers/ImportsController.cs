@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -9,27 +10,100 @@ namespace API.Controllers
     [ApiController]
     public class ImportsController : ControllerBase
     {
-        private readonly IImportService _service;
+        private readonly IImportService _importService;
         private readonly IMapper _mapper;
 
-        public ImportsController(IImportService service, IMapper mapper)
+        public ImportsController(IImportService importService, IMapper mapper)
         {
-            _service = service;
+            _importService = importService;
             _mapper = mapper;
         }
 
+
         [HttpPost]
-        public IActionResult Import([FromBody] ImportRequestDto request)
+        public IActionResult CreateImport([FromBody] ImportRequestDto dto)
         {
+            if (dto == null)
+                return BadRequest("Invalid request data");
+
             try
             {
-                var invoice = _service.ImportByCode(request.InvoiceCode, request.WarehouseId, request.CreatedBy);
-                return Ok(new { Message = "Nhập kho thành công", InvoiceId = invoice.InvoiceId });
+                Import import;
+
+                // ✅ 1️⃣ Trường hợp nhập theo hóa đơn (InvoiceCode)
+                if (!string.IsNullOrEmpty(dto.InvoiceCode))
+                {
+                    if (dto.WarehouseId <= 0)
+                        return BadRequest("WarehouseId is required when importing from invoice.");
+
+                    import = _importService.CreateImportFromInvoice(
+                        importCode: "IMP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                        invoiceCode: dto.InvoiceCode,
+                        warehouseId: dto.WarehouseId,
+                        createdBy: dto.CreatedBy,
+                        notes: dto.Notes
+                    );
+                }
+                // ✅ 2️⃣ Trường hợp nhập từ phiếu Pending (ImportCode)
+                else if (!string.IsNullOrEmpty(dto.ImportCode))
+                {
+                    import = _importService.ConfirmPendingImport(
+                        importCode: dto.ImportCode,
+                        notes: dto.Notes
+                    );
+                }
+                else
+                {
+                    return BadRequest("You must provide either ImportCode or InvoiceCode.");
+                }
+
+                var result = _mapper.Map<ImportResponseDto>(import);
+                return CreatedAtAction(nameof(GetImport), new { id = import.ImportId }, result);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                return NotFound(new { Message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
+
+
+        /// Lấy phiếu nhập theo ID
+        [HttpGet("{id:int}")]
+        public IActionResult GetImport(int id)
+        {
+            var import = _importService.GetById(id);
+            if (import == null) return NotFound();
+            var result = _mapper.Map<ImportResponseDto>(import);
+            return Ok(result);
+        }
+
+        /// Lấy danh sách tất cả phiếu nhập
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var imports = _importService.GetAll();
+            var result = _mapper.Map<IEnumerable<ImportResponseDto>>(imports);
+            return Ok(result);
+        }
+
+        [HttpPost("request")]
+        public IActionResult CreatePendingImport([FromBody] CreatePendingImportDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid request data");
+
+            try
+            {
+                var import = _importService.CreatePendingImport(dto.WarehouseId, dto.CreatedBy, dto.Notes, dto.Materials);
+                var result = _mapper.Map<PendingImportResponseDto>(import);
+                return CreatedAtAction(nameof(GetImport), new { id = import.ImportId }, result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
     }
 }

@@ -270,8 +270,14 @@ public partial class ScmVlxdContext : DbContext
                 .HasColumnType("datetime");
 
             entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
-            entity.Property(e => e.Quantity).HasDefaultValue(0);
-            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Quantity)
+                .HasColumnType("decimal(18, 2)")  
+                .HasDefaultValueSql("0");          
+
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(18, 2)");
+
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.WarehouseId).HasColumnName("WarehouseID");
 
@@ -285,6 +291,7 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Wareh__59FA5E80");
         });
+
 
         modelBuilder.Entity<AuditLog>(entity =>
         {
@@ -308,9 +315,7 @@ public partial class ScmVlxdContext : DbContext
         {
             entity.HasKey(e => e.InvoiceId);
             entity.ToTable("Invoice");
-
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-            entity.Property(e => e.InvoiceNumber).HasMaxLength(50);
             entity.Property(e => e.InvoiceType).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");

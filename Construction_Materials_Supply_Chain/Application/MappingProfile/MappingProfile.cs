@@ -23,16 +23,21 @@ namespace Application.MappingProfile
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
-            CreateMap<Import, ImportDto>().ReverseMap();
-            CreateMap<ImportDetail, ImportDetailDto>().ReverseMap();
+            CreateMap<Import, ImportResponseDto>()
+                       .ForMember(dest => dest.InvoiceCode, opt => opt.Ignore())
+                       .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt ?? DateTime.UtcNow));
+
             CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<Material, MaterialDto>()
-    .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName))
-    .ForMember(dest => dest.PartnerName, opt => opt.MapFrom(src => src.Partner.PartnerName))
-    .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Quantity))
-    .ForMember(dest => dest.WarehouseName, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Warehouse.WarehouseName))
-    .ReverseMap();
+                        .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.CategoryName))
+                        .ForMember(dest => dest.PartnerName, opt => opt.MapFrom(src => src.Partner.PartnerName))
+                        .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Quantity))
+                        .ForMember(dest => dest.WarehouseName, opt => opt.MapFrom(src => src.Inventories.FirstOrDefault()!.Warehouse.WarehouseName))
+                        .ReverseMap();
+            CreateMap<Import, PendingImportResponseDto>()
+            .ForMember(dest => dest.Materials, opt => opt.MapFrom(src => src.ImportDetails));
 
+            CreateMap<ImportDetail, PendingImportMaterialResponseDto>();
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap();

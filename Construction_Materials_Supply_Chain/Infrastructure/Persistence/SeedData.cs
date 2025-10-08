@@ -180,16 +180,17 @@ namespace Infrastructure.Persistence
             }
 
             // 9️⃣ Seed Invoices & InvoiceDetails
+            // 9️⃣ Seed Invoices và InvoiceDetails
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var goviet = context.Partners.First(p => p.PartnerName == "Công ty Gỗ Việt");
                 var hoaphat = context.Partners.First(p => p.PartnerName == "Thép Hòa Phát");
 
+                // Hai hóa đơn nhập
                 var inv1 = new Invoice
                 {
                     InvoiceCode = "INV-001",
-                    InvoiceNumber = "INV-001",
                     InvoiceType = "Import",
                     PartnerId = goviet.PartnerId,
                     CreatedBy = manager.UserId,
@@ -201,7 +202,6 @@ namespace Infrastructure.Persistence
                 var inv2 = new Invoice
                 {
                     InvoiceCode = "INV-002",
-                    InvoiceNumber = "INV-002",
                     InvoiceType = "Import",
                     PartnerId = hoaphat.PartnerId,
                     CreatedBy = manager.UserId,
@@ -213,6 +213,7 @@ namespace Infrastructure.Persistence
                 context.Invoices.AddRange(inv1, inv2);
                 context.SaveChanges();
 
+                // Chi tiết hóa đơn
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
@@ -245,6 +246,110 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
+
+            // 🔟 Seed Imports & ImportDetails từ hóa đơn Pending
+            if (!context.Imports.Any())
+            {
+                var pendingInvoices = context.Invoices
+                    .Where(i => i.Status == "Pending" && i.InvoiceType == "Import")
+                    .ToList();
+
+                foreach (var invoice in pendingInvoices)
+                {
+                    // ✅ Tạo phiếu nhập tự động từ hóa đơn Pending
+                    var import = new Import
+                    {
+                        ImportCode = "IMP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                        ImportDate = DateTime.Now,
+                        WarehouseId = context.Warehouses.First().WarehouseId, // gán kho đầu tiên
+                        CreatedBy = invoice.CreatedBy,
+                        Notes = $"Tự động nhập từ hóa đơn {invoice.InvoiceCode}",
+                        Status = "Success",
+                        CreatedAt = DateTime.Now
+                    };
+
+                    context.Imports.Add(import);
+                    context.SaveChanges();
+
+                    // ✅ Copy chi tiết từ InvoiceDetail sang ImportDetail
+                    var invoiceDetails = context.InvoiceDetails
+                        .Where(d => d.InvoiceId == invoice.InvoiceId)
+                        .ToList();
+
+                    foreach (var detail in invoiceDetails)
+                    {
+                        var material = context.Materials.First(m => m.MaterialId == detail.MaterialId);
+
+                        context.ImportDetails.Add(new ImportDetail
+                        {
+                            ImportId = import.ImportId,
+                            MaterialId = material.MaterialId,
+                            MaterialCode = material.MaterialCode ?? "",
+                            MaterialName = material.MaterialName,
+                            Unit = material.Unit,
+                            UnitPrice = detail.UnitPrice,
+                            Quantity = detail.Quantity,
+                            LineTotal = detail.UnitPrice * detail.Quantity
+                        });
+                    }
+
+                    // ✅ Cập nhật hóa đơn sang trạng thái Success
+                    invoice.Status = "Success";
+                    invoice.UpdatedAt = DateTime.Now;
+                    context.Invoices.Update(invoice);
+
+                    context.SaveChanges();
+                }
+
+                // ✅ Seed thêm một phiếu nhập Pending để test API tạo nhập kho thủ công
+                var manager = context.Users.First(u => u.UserName == "manager1");
+                var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+                var metal = context.Materials.First(m => m.MaterialCode == "M001");
+
+                var pendingImport = new Import
+                {
+                    ImportCode = "IMP-PENDING-001",
+                    ImportDate = DateTime.Now,
+                    WarehouseId = wh1.WarehouseId,
+                    CreatedBy = manager.UserId,
+                    Notes = "Phiếu nhập đang chờ duyệt (Pending)",
+                    Status = "Pending",
+                    CreatedAt = DateTime.Now
+                };
+
+                context.Imports.Add(pendingImport);
+                context.SaveChanges();
+
+                context.ImportDetails.AddRange(
+                    new ImportDetail
+                    {
+                        ImportId = pendingImport.ImportId,
+                        MaterialId = wood.MaterialId,
+                        MaterialCode = wood.MaterialCode ?? "",
+                        MaterialName = wood.MaterialName,
+                        Unit = wood.Unit,
+                        UnitPrice = 250000,
+                        Quantity = 10,
+                        LineTotal = 250000 * 10
+                    },
+                    new ImportDetail
+                    {
+                        ImportId = pendingImport.ImportId,
+                        MaterialId = metal.MaterialId,
+                        MaterialCode = metal.MaterialCode ?? "",
+                        MaterialName = metal.MaterialName,
+                        Unit = metal.Unit,
+                        UnitPrice = 320000,
+                        Quantity = 5,
+                        LineTotal = 320000 * 5
+                    }
+                );
+                context.SaveChanges();
+            }
+
+
+
         }
     }
 }

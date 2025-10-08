@@ -3,7 +3,7 @@
     public partial class Import
     {
         public int ImportId { get; set; }
-
+        public string ImportCode { get; set; } = string.Empty;
         public DateTime ImportDate { get; set; }
 
         public int WarehouseId { get; set; }

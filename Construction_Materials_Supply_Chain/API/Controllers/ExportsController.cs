@@ -21,7 +21,7 @@ namespace API.Controllers
         }
 
         // 🔹 Tạo Pending Export
-        [HttpPost("pending")]
+        [HttpPost("request")]
         public IActionResult CreatePendingExport([FromBody] ExportRequestDto dto)
         {
             if (dto == null)
@@ -40,7 +40,6 @@ namespace API.Controllers
         }
 
         // 🔹 Tạo Export thực tế (trừ kho)
-        // 🔹 Tạo Export thực tế (trừ kho)
         [HttpPost]
         public IActionResult ConfirmExport([FromBody] ExportConfirmDto dto)
         {
@@ -51,7 +50,7 @@ namespace API.Controllers
             {
                 var export = _exportService.ConfirmExport(dto.ExportCode, dto.Notes);
                 var result = _mapper.Map<ExportResponseDto>(export);
-                return Ok(result); // 200 OK vì đây là xác nhận, không tạo mới
+                return Ok(result); 
             }
             catch (Exception ex)
             {

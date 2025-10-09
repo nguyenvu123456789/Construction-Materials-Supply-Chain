@@ -8,6 +8,7 @@ using FluentValidation.AspNetCore;
 using Infrastructure.Implementations;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Services.Implementations;
 
@@ -50,6 +51,7 @@ builder.Services.AddScoped<IPartnerRepository, PartnerRepository>();
 builder.Services.AddScoped<IPartnerTypeRepository, PartnerTypeRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
 
 // 4️⃣ Đăng ký Service
@@ -71,6 +73,8 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+
 
 // 5️⃣ FluentValidation
 builder.Services.AddFluentValidationAutoValidation();

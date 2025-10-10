@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Partners;
 using AutoMapper;
 using Domain.Models;
 
@@ -50,10 +51,11 @@ namespace Application.MappingProfile
 
 
             CreateMap<Partner, PartnerDto>()
-                .ForMember(dest => dest.PartnerTypeName, opt => opt.MapFrom(src => src.PartnerType.TypeName));
-            CreateMap<PartnerDto, Partner>();
-
-            CreateMap<PartnerType, PartnerTypeDto>().ReverseMap();
+                .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType.TypeName));
+            CreateMap<PartnerCreateDto, Partner>();
+            CreateMap<PartnerUpdateDto, Partner>();
+            CreateMap<PartnerType, PartnerTypeDto>()
+                .ForMember(d => d.Partners, o => o.Ignore());
         }
     }
 }

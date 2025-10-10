@@ -1,9 +1,11 @@
 ﻿using Application.Interfaces;
 using Application.MappingProfile;
+using Application.Services;
 using Application.Validation;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Partners;
+using Application.Validation.Stock;
 using Domain.Interface;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -50,12 +52,14 @@ builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
+builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
 
 // Audit Log Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();

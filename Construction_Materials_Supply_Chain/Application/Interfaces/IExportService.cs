@@ -1,6 +1,5 @@
 ﻿using Application.DTOs;
 using Domain.Models;
-using System.Collections.Generic;
 
 namespace Application.Interfaces
 {

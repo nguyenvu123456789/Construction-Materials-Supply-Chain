@@ -4,7 +4,6 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using FluentValidation;
-using System.ComponentModel.DataAnnotations;
 
 namespace Services.Implementations
 {

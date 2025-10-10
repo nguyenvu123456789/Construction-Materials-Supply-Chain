@@ -2,7 +2,6 @@
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
-using System.Linq;
 
 namespace Infrastructure.Implementations
 {

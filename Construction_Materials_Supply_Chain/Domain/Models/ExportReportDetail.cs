@@ -12,7 +12,7 @@
 
         public string Reason { get; set; } = null!; // Lý do hư hỏng
 
-        public bool Keep { get; set; } = false; 
+        public bool Keep { get; set; } = false;
 
         public virtual ExportReport ExportReport { get; set; } = null!;
         public virtual Material Material { get; set; } = null!;

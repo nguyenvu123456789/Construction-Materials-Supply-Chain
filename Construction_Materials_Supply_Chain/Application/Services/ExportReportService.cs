@@ -1,10 +1,5 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Domain.Interface;
+﻿using Domain.Interface;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 public class ExportReportService : IExportReportService
 {

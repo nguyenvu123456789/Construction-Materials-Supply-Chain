@@ -272,8 +272,8 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
 
             entity.Property(e => e.Quantity)
-                .HasColumnType("decimal(18, 2)")  
-                .HasDefaultValueSql("0");          
+                .HasColumnType("decimal(18, 2)")
+                .HasDefaultValueSql("0");
 
             entity.Property(e => e.UnitPrice)
                 .HasColumnType("decimal(18, 2)");

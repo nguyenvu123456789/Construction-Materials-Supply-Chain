@@ -1,6 +1,5 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs.Partners;
-using System.Collections.Generic;
 
 namespace Application.Interfaces
 {

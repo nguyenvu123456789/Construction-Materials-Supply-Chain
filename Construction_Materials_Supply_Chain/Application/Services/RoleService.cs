@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
-using Domain.Models;
 using Domain.Interface;
+using Domain.Models;
 
 namespace Services.Implementations
 {

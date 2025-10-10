@@ -3,9 +3,9 @@
     public partial class ImportReport
     {
         public int ImportReportId { get; set; }
-        public int? ImportId { get; set; } 
+        public int? ImportId { get; set; }
         public int? InvoiceId { get; set; }
-        public int CreatedBy { get; set; }      
+        public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public string Status { get; set; } = "Pending"; // Pending / Approved / Rejected

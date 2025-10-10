@@ -5,7 +5,7 @@ using Domain.Models;
 
 namespace Services.Implementations
 {
-    public class ImportService :  IImportService
+    public class ImportService : IImportService
     {
         private readonly IImportRepository _imports;
         private readonly IInvoiceRepository _invoices;
@@ -18,13 +18,13 @@ namespace Services.Implementations
             IInvoiceRepository invoices,
             IInventoryRepository inventories,
             IImportDetailRepository importDetails,
-            IMaterialRepository materialRepository) 
+            IMaterialRepository materialRepository)
         {
             _imports = imports;
             _invoices = invoices;
             _inventories = inventories;
             _importDetails = importDetails;
-            _materialRepository = materialRepository; 
+            _materialRepository = materialRepository;
         }
 
         public Import CreateImportFromInvoice(string? importCode, string? invoiceCode, int warehouseId, int createdBy, string? notes)
@@ -188,7 +188,7 @@ namespace Services.Implementations
 
             foreach (var m in materials)
             {
-                var material = _materialRepository.GetById(m.MaterialId); 
+                var material = _materialRepository.GetById(m.MaterialId);
                 if (material == null)
                     throw new Exception($"MaterialId {m.MaterialId} not found.");
 

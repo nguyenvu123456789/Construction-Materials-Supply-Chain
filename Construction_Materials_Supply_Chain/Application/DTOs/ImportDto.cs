@@ -2,7 +2,7 @@
 {
     public class ImportRequestDto
     {
-        public string? ImportCode { get; set; } 
+        public string? ImportCode { get; set; }
         public string? InvoiceCode { get; set; }
         public int WarehouseId { get; set; }
         public int CreatedBy { get; set; }

@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Domain.Models;
+﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Infrastructure.Persistence.Interceptors
 {

@@ -1,6 +1,5 @@
 ﻿using Domain.Interface.Base;
 using Domain.Models;
-using System.Linq;
 
 namespace Domain.Interface
 {

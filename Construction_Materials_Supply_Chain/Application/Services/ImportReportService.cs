@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
 
@@ -23,7 +22,7 @@ namespace Services.Implementations
             IImportReportDetailRepository reportDetails,
             IMaterialRepository materials,
             IImportRepository imports,
-            IImportService importService) 
+            IImportService importService)
         {
             _reports = reports;
             _invoices = invoices;
@@ -77,8 +76,8 @@ namespace Services.Implementations
                 {
                     ImportReportId = report.ImportReportId,
                     MaterialId = invoiceDetail.MaterialId,
-                    TotalQuantity = invoiceDetail.Quantity,         
-                    GoodQuantity = clientDetail.GoodQuantity,      
+                    TotalQuantity = invoiceDetail.Quantity,
+                    GoodQuantity = clientDetail.GoodQuantity,
                     DamagedQuantity = clientDetail.DamagedQuantity,
                     Comment = clientDetail.Comment
                 };

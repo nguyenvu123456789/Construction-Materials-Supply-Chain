@@ -335,6 +335,25 @@ namespace Infrastructure.Persistence
                     new ExportDetail { ExportId = context.Exports.First(e => e.ExportCode == "EXP-PENDING-001").ExportId, MaterialId = glass.MaterialId, MaterialCode = glass.MaterialCode ?? "", MaterialName = glass.MaterialName, Unit = glass.Unit, UnitPrice = 200000, Quantity = 25, LineTotal = 200000 * 25 }
                 );
                 context.SaveChanges();
+
+                // 12️⃣ Seed MaterialChecks
+                if (!context.MaterialChecks.Any())
+                {
+                    var invUser = context.Users.First(u => u.UserName == "inventory1");
+
+                    var mats = context.Materials.ToList();
+
+                    context.MaterialChecks.AddRange(
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "W001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddHours(-6), QuantityChecked = 115, Result = "OK", Notes = "Mất 5 tấm do hư hỏng" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "M001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddHours(-20), QuantityChecked = 80, Result = "OK" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "P001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-1), QuantityChecked = 210, Result = "OK", Notes = "Nhập bù chưa hạch toán" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "C001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-2), QuantityChecked = 140, Result = "OK", Notes = "Hao hụt/đổ vỡ" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "B001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-3), QuantityChecked = 5200, Result = "OK", Notes = "Nhập thừa so với kế hoạch" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "S001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-4), QuantityChecked = 49, Result = "OK", Notes = "Rò rỉ 1 thùng" },
+                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "G001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-5), QuantityChecked = 100, Result = "OK" }
+                    );
+                    context.SaveChanges();
+                }
             }
         }
     }

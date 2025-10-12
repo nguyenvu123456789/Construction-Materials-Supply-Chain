@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<UserDto>> GetUsers()
         {
-            var users = _userService.GetAll();
+            var users = _userService.GetAllWithRoles();
             var result = _mapper.Map<IEnumerable<UserDto>>(users);
             return Ok(result);
         }
@@ -41,7 +41,7 @@ namespace API.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<UserDto> GetUser(int id)
         {
-            var user = _userService.GetById(id);
+            var user = _userService.GetByIdWithRoles(id);
             if (user == null) return NotFound();
             return Ok(_mapper.Map<UserDto>(user));
         }

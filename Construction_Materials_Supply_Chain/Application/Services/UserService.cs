@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
+using System.Globalization;
 
 namespace Services.Implementations
 {
@@ -28,18 +29,45 @@ namespace Services.Implementations
                 _users.Delete(u);
         }
 
-        public List<User> GetUsersFiltered(string? searchTerm, List<string>? roles, int pageNumber, int pageSize, out int totalCount)
+        public List<User> GetAllWithRoles()
+        => _users.QueryWithRoles().ToList();
+
+        public User? GetByIdWithRoles(int id)
+            => _users.QueryWithRoles().FirstOrDefault(u => u.UserId == id);
+
+        public List<User> GetUsersFiltered(string? searchTerm, List<string>? roles,
+        int pageNumber, int pageSize, out int totalCount)
         {
-            var query = _users.GetAll().AsQueryable();
+            var query = _users.QueryWithRoles();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
                 query = query.Where(u =>
-                    (u.UserName ?? "").Contains(searchTerm) ||
-                    (u.Email ?? "").Contains(searchTerm));
+                    (u.UserName ?? "").Contains(term) ||
+                    (u.Email ?? "").Contains(term) ||
+                    (u.FullName ?? "").Contains(term));
+            }
+
+            if (roles != null && roles.Count > 0)
+            {
+                var set = roles
+                    .Where(r => !string.IsNullOrWhiteSpace(r))
+                    .Select(r => r.Trim().ToLower(CultureInfo.InvariantCulture))
+                    .ToHashSet();
+
+                query = query.Where(u => u.UserRoles.Any(ur =>
+                    set.Contains(ur.Role.RoleName.ToLower())));
+            }
 
             totalCount = query.Count();
+
             if (pageNumber > 0 && pageSize > 0)
-                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            {
+                query = query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize);
+            }
 
             return query.ToList();
         }

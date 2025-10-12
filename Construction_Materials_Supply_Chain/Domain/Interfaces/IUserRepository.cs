@@ -7,5 +7,7 @@ namespace Domain.Interface
     {
         User GetByUsername(string username);
         bool ExistsByUsername(string username);
+
+        IQueryable<User> QueryWithRoles();
     }
 }

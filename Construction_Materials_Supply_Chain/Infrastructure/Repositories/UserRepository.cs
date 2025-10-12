@@ -2,6 +2,7 @@ using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations
 {
@@ -18,5 +19,10 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.Any(u => u.UserName == username);
         }
+
+        public IQueryable<User> QueryWithRoles()
+        => _dbSet
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role);
     }
 }

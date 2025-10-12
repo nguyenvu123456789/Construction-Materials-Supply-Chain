@@ -10,6 +10,9 @@ namespace Application.Interfaces
         void Update(User user);
         void Delete(int id);
 
+        List<User> GetAllWithRoles();
+        User? GetByIdWithRoles(int id);
+
         List<User> GetUsersFiltered(string? searchTerm, List<string>? roles, int pageNumber, int pageSize, out int totalCount);
     }
 }

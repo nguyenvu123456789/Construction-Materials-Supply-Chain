@@ -56,6 +56,14 @@ namespace Application.MappingProfile
             CreateMap<PartnerUpdateDto, Partner>();
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
+
+            CreateMap<User, UserDto>()
+                .ForMember(d => d.Roles, opt => opt.MapFrom(s =>
+                    s.UserRoles.Select(ur => ur.Role.RoleName).ToList()));
+            CreateMap<UserDto, User>()
+                .ForMember(d => d.UserRoles, opt => opt.Ignore());
+
+
         }
     }
 }

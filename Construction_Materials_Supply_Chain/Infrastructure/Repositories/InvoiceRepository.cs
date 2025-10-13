@@ -16,5 +16,11 @@ namespace Infrastructure.Implementations
                          .ThenInclude(d => d.Material)
                          .FirstOrDefault(i => i.InvoiceCode == invoiceCode);
         }
+        public Invoice? GetByIdWithDetails(int id)
+        {
+            return _dbSet.Include(i => i.InvoiceDetails)
+                         .ThenInclude(d => d.Material)
+                         .FirstOrDefault(i => i.InvoiceId == id);
+        }   
     }
 }

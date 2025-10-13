@@ -1,16 +1,18 @@
-﻿namespace Domain.Models;
-
-public partial class Partner
+﻿namespace Domain.Models
 {
-    public int PartnerId { get; set; }
-    public string PartnerName { get; set; } = null!;
-    public string? ContactEmail { get; set; }
-    public string? ContactPhone { get; set; }
+    public partial class Partner
+    {
+        public int PartnerId { get; set; }
+        public string PartnerCode { get; set; } = null!;
+        public string PartnerName { get; set; } = null!;
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public int PartnerTypeId { get; set; }
+        public string? Status { get; set; }
+        public virtual PartnerType PartnerType { get; set; } = null!;
 
-    public int PartnerTypeId { get; set; }
-
-    public virtual PartnerType PartnerType { get; set; } = null!;
-
-    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
-    public virtual ICollection<Material> Materials { get; set; } = new List<Material>();
+        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+        public virtual ICollection<Material> Materials { get; set; } = new List<Material>();
+        public virtual ICollection<User> Users { get; set; } = new List<User>();
+    }
 }

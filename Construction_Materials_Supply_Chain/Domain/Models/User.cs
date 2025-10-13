@@ -8,10 +8,13 @@ public partial class User
     public string PasswordHash { get; set; } = null!;
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public string? Status { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public int? PartnerId { get; set; }
 
+    public virtual Partner? Partner { get; set; }
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
     public virtual ICollection<Invoice> InvoiceCreatedByNavigations { get; set; } = new List<Invoice>();
     public virtual ICollection<Invoice> InvoiceCustomers { get; set; } = new List<Invoice>();

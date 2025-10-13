@@ -6,7 +6,7 @@ namespace Application.Interfaces
     public interface IInvoiceService
     {
         Invoice CreateInvoice(CreateInvoiceDto dto);
-        Invoice? GetById(int id);
-        List<Invoice> GetAll();
+        Invoice? GetByIdWithDetails(int id);
+        List<Invoice> GetAllWithDetails();
     }
 }

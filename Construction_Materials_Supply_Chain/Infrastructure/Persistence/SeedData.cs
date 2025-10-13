@@ -1,4 +1,6 @@
 ﻿using Domain.Models;
+using System;
+using System.Linq;
 
 namespace Infrastructure.Persistence
 {
@@ -35,13 +37,13 @@ namespace Infrastructure.Persistence
                 var collaboratorType = context.PartnerTypes.First(pt => pt.TypeName == "Cộng tác viên");
 
                 context.Partners.AddRange(
-                    new Partner { PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456" },
-                    new Partner { PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333" },
-                    new Partner { PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777" },
-                    new Partner { PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555" },
-                    new Partner { PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777" },
-                    new Partner { PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888" },
-                    new Partner { PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444" }
+                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active" },
+                    new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active" },
+                    new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active" },
+                    new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active" },
+                    new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active" },
+                    new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active" },
+                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" }
                 );
                 context.SaveChanges();
             }
@@ -64,14 +66,19 @@ namespace Infrastructure.Persistence
             // 4️⃣ Seed Users
             if (!context.Users.Any())
             {
+                var customerPartner = context.Partners.First(p => p.PartnerCode == "P005");
+                var collaboratorPartner = context.Partners.First(p => p.PartnerCode == "P007");
+
                 context.Users.AddRange(
-                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "admin123", CreatedAt = DateTime.Now },
-                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "manager123", CreatedAt = DateTime.Now },
-                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "staff123", CreatedAt = DateTime.Now },
-                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "accountant123", CreatedAt = DateTime.Now },
-                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "sales123", CreatedAt = DateTime.Now },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "support123", CreatedAt = DateTime.Now },
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "inventory123", CreatedAt = DateTime.Now }
+                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "admin123", Phone = "0901234567", Status = "Active", AvatarUrl = "https://example.com/avatars/admin.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "manager123", Phone = "0912345678", Status = "Active", AvatarUrl = "https://example.com/avatars/manager1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "staff123", Phone = "0923456789", Status = "Active", AvatarUrl = "https://example.com/avatars/staff01.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "accountant123", Phone = "0934567890", Status = "Active", AvatarUrl = "https://example.com/avatars/accountant1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "sales123", Phone = "0945678901", Status = "Active", AvatarUrl = "https://example.com/avatars/sales1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "support123", Phone = "0956789012", Status = "Active", AvatarUrl = "https://example.com/avatars/support1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "inventory123", Phone = "0967890123", Status = "Active", AvatarUrl = "https://example.com/avatars/inventory1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "customer123", Phone = "0915666777", Status = "Active", AvatarUrl = "https://example.com/avatars/customer1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = customerPartner.PartnerId },
+                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "collaborator123", Phone = "0922333444", Status = "Active", AvatarUrl = "https://example.com/avatars/collaborator1.jpg", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = collaboratorPartner.PartnerId }
                 );
                 context.SaveChanges();
 
@@ -90,7 +97,9 @@ namespace Infrastructure.Persistence
                     new UserRole { UserId = context.Users.First(u => u.UserName == "accountant1").UserId, RoleId = accountantRole.RoleId, AssignedAt = DateTime.Now },
                     new UserRole { UserId = context.Users.First(u => u.UserName == "sales1").UserId, RoleId = salesRole.RoleId, AssignedAt = DateTime.Now },
                     new UserRole { UserId = context.Users.First(u => u.UserName == "support1").UserId, RoleId = supportRole.RoleId, AssignedAt = DateTime.Now },
-                    new UserRole { UserId = context.Users.First(u => u.UserName == "inventory1").UserId, RoleId = inventoryRole.RoleId, AssignedAt = DateTime.Now }
+                    new UserRole { UserId = context.Users.First(u => u.UserName == "inventory1").UserId, RoleId = inventoryRole.RoleId, AssignedAt = DateTime.Now },
+                    new UserRole { UserId = context.Users.First(u => u.UserName == "customer1").UserId, RoleId = salesRole.RoleId, AssignedAt = DateTime.Now },
+                    new UserRole { UserId = context.Users.First(u => u.UserName == "collaborator1").UserId, RoleId = supportRole.RoleId, AssignedAt = DateTime.Now }
                 );
                 context.SaveChanges();
             }
@@ -136,9 +145,9 @@ namespace Infrastructure.Persistence
                 var brickCat = context.Categories.First(c => c.CategoryName == "Gạch");
                 var paintCat = context.Categories.First(c => c.CategoryName == "Sơn");
                 var glassCat = context.Categories.First(c => c.CategoryName == "Kính");
-                var goviet = context.Partners.First(p => p.PartnerName == "Công ty Gỗ Việt");
-                var hoaphat = context.Partners.First(p => p.PartnerName == "Thép Hòa Phát");
-                var duytan = context.Partners.First(p => p.PartnerName == "Nhựa Duy Tân");
+                var goviet = context.Partners.First(p => p.PartnerCode == "P001");
+                var hoaphat = context.Partners.First(p => p.PartnerCode == "P002");
+                var duytan = context.Partners.First(p => p.PartnerCode == "P003");
 
                 context.Materials.AddRange(
                     new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", PartnerId = goviet.PartnerId, CategoryId = woodCat.CategoryId },
@@ -182,13 +191,13 @@ namespace Infrastructure.Persistence
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
-                var goviet = context.Partners.First(p => p.PartnerName == "Công ty Gỗ Việt");
-                var hoaphat = context.Partners.First(p => p.PartnerName == "Thép Hòa Phát");
-                var duytan = context.Partners.First(p => p.PartnerName == "Nhựa Duy Tân");
-                var minhtam = context.Partners.First(p => p.PartnerName == "Đại lý Minh Tâm");
-                var saigonbuild = context.Partners.First(p => p.PartnerName == "Công ty xây dựng Sài Gòn");
-                var levan = context.Partners.First(p => p.PartnerName == "Khách hàng Lê Văn A");
-                var nguyenb = context.Partners.First(p => p.PartnerName == "Cộng tác viên Nguyễn Thị B");
+                var goviet = context.Partners.First(p => p.PartnerCode == "P001");
+                var hoaphat = context.Partners.First(p => p.PartnerCode == "P002");
+                var duytan = context.Partners.First(p => p.PartnerCode == "P003");
+                var minhtam = context.Partners.First(p => p.PartnerCode == "P004");
+                var saigonbuild = context.Partners.First(p => p.PartnerCode == "P006");
+                var levan = context.Partners.First(p => p.PartnerCode == "P005");
+                var nguyenb = context.Partners.First(p => p.PartnerCode == "P007");
 
                 context.Invoices.AddRange(
                     new Invoice { InvoiceCode = "INV-001", InvoiceType = "Import", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), Status = "Pending", CreatedAt = DateTime.Now },
@@ -239,7 +248,7 @@ namespace Infrastructure.Persistence
                         WarehouseId = wh1.WarehouseId,
                         CreatedBy = invoice.CreatedBy,
                         Notes = $"Tự động nhập từ hóa đơn {invoice.InvoiceCode}",
-                        Status = "Pending", // Đổi trạng thái sang Pending
+                        Status = "Pending",
                         CreatedAt = DateTime.Now
                     };
                     context.Imports.Add(import);
@@ -302,9 +311,9 @@ namespace Infrastructure.Persistence
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
-                var minhtam = context.Partners.First(p => p.PartnerName == "Đại lý Minh Tâm");
-                var saigonbuild = context.Partners.First(p => p.PartnerName == "Công ty xây dựng Sài Gòn");
-                var levan = context.Partners.First(p => p.PartnerName == "Khách hàng Lê Văn A");
+                var minhtam = context.Partners.First(p => p.PartnerCode == "P004");
+                var saigonbuild = context.Partners.First(p => p.PartnerCode == "P006");
+                var levan = context.Partners.First(p => p.PartnerCode == "P005");
 
                 context.Exports.AddRange(
                     new Export { ExportCode = "EXP-001", ExportDate = DateTime.Now.AddDays(-5), WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Xuất cho đại lý Minh Tâm", Status = "Success", CreatedAt = DateTime.Now },

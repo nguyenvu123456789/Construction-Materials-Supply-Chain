@@ -42,7 +42,8 @@ namespace Application.MappingProfile
 
             CreateMap<Import, ImportResponseDto>()
                 .ForMember(d => d.InvoiceCode, o => o.Ignore())
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.UtcNow));
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.UtcNow))
+                .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails)); 
             CreateMap<ImportRequestDto, Import>().ReverseMap();
 
             CreateMap<Material, MaterialDto>()

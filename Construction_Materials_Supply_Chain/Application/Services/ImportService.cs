@@ -34,9 +34,9 @@ namespace Services.Implementations
                 // Nhập theo hóa đơn
                 var invoice = _invoices.GetByCode(invoiceCode);
                 if (invoice == null)
-                    throw new Exception("Invoice not found.");
+                    throw new Exception("Hóa đơn không tồn tại.");
                 if (invoice.Status == "Success")
-                    throw new Exception("Invoice already imported.");
+                    throw new Exception("Hóa đơn đã được nhập.");
 
                 var import = new Import
                 {
@@ -122,17 +122,18 @@ namespace Services.Implementations
                 throw new Exception("Bạn phải cung cấp ít nhất một mã: invoiceCode hoặc importCode.");
             }
         }
+
         public Import ConfirmPendingImport(string importCode, string? notes)
         {
             var import = _imports.GetAll()
                 .FirstOrDefault(i => i.ImportCode == importCode && i.Status == "Pending");
 
             if (import == null)
-                throw new Exception("Pending import not found.");
+                throw new Exception("Phiếu nhập đang chờ không tồn tại.");
 
             var details = _importDetails.GetByImportId(import.ImportId);
             if (details == null || !details.Any())
-                throw new Exception("No details found for this import.");
+                throw new Exception("Không tìm thấy chi tiết cho phiếu nhập này.");
 
             foreach (var detail in details)
             {
@@ -164,15 +165,38 @@ namespace Services.Implementations
             return import;
         }
 
+        public Import? GetById(int id)
+        {
+            var import = _imports.GetById(id);
+            return import; // Không bao gồm ImportDetails để phân biệt với GetByIdWithDetails
+        }
 
-        public Import? GetById(int id) => _imports.GetById(id);
+        public Import? GetByIdWithDetails(int id)
+        {
+            var import = _imports.GetById(id);
+            if (import != null)
+            {
+                // Lấy danh sách ImportDetails
+                import.ImportDetails = _importDetails.GetByImportId(id);
+            }
+            return import;
+        }
 
-        public List<Import> GetAll() => _imports.GetAll();
+        public List<Import> GetAll()
+        {
+            var imports = _imports.GetAll();
+            foreach (var import in imports)
+            {
+                // Lấy danh sách ImportDetails cho mỗi Import
+                import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
+            }
+            return imports;
+        }
 
         public Import CreatePendingImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials)
         {
             if (materials == null || !materials.Any())
-                throw new Exception("At least one material is required.");
+                throw new Exception("Cần ít nhất một vật tư.");
 
             var import = new Import
             {
@@ -190,7 +214,7 @@ namespace Services.Implementations
             {
                 var material = _materialRepository.GetById(m.MaterialId);
                 if (material == null)
-                    throw new Exception($"MaterialId {m.MaterialId} not found.");
+                    throw new Exception($"MaterialId {m.MaterialId} không tồn tại.");
 
                 var detail = new ImportDetail
                 {
@@ -208,8 +232,20 @@ namespace Services.Implementations
 
             return import;
         }
+        public Import? RejectImport(int id)
+        {
+            var import = _imports.GetByIdWithDetails(id);
+            if (import == null)
+                return null;
 
+            if (import.Status != "Pending")
+                throw new Exception("Only pending imports can be rejected.");
 
+            import.Status = "Rejected";
+            import.UpdatedAt = DateTime.UtcNow;
+            _imports.Update(import);
+
+            return import;
+        }
     }
-
 }

@@ -24,7 +24,6 @@ namespace Services.Implementations
             _materialRepository = materialRepository;
         }
 
-        // Tạo phiếu export tạm thời
         public Export CreatePendingExport(ExportRequestDto dto)
         {
             if (dto.Materials == null || !dto.Materials.Any())
@@ -65,7 +64,6 @@ namespace Services.Implementations
             return export;
         }
 
-        // Thực hiện xuất kho (Success) → giảm số lượng trong kho
         public Export ConfirmExport(string exportCode, string? notes)
         {
             var export = _exports.GetAll()
@@ -91,13 +89,37 @@ namespace Services.Implementations
 
             export.Status = "Success";
             export.Notes = notes ?? export.Notes;
+            export.ExportDate = DateTime.UtcNow;
             export.UpdatedAt = DateTime.UtcNow;
             _exports.Update(export);
 
             return export;
         }
 
-        public Export? GetById(int id) => _exports.GetExportById(id);
-        public List<Export> GetAll() => _exports.GetAll();
+        public Export? RejectExport(int id)
+        {
+            var export = _exports.GetExportById(id);
+            if (export == null)
+                return null;
+
+            if (export.Status != "Pending")
+                throw new Exception("Only pending exports can be rejected.");
+
+            export.Status = "Rejected";
+            export.UpdatedAt = DateTime.UtcNow;
+            _exports.Update(export);
+
+            return export;
+        }
+
+        public Export? GetById(int id)
+        {
+            return _exports.GetExportById(id);
+        }
+
+        public List<Export> GetAll()
+        {
+            return _exports.GetAll();
+        }
     }
 }

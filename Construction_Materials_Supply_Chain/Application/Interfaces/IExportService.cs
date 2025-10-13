@@ -9,5 +9,6 @@ namespace Application.Interfaces
         Export ConfirmExport(string exportCode, string? notes);
         Export? GetById(int id);
         List<Export> GetAll();
+        Export? RejectExport(int id);
     }
 }

@@ -20,6 +20,8 @@
         public string? Notes { get; set; }
         public DateTime ImportDate { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        public List<PendingImportMaterialResponseDto> Materials { get; set; } = new();
     }
     public class PendingImportMaterialDto
     {

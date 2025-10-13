@@ -14,5 +14,10 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.Include(e => e.ExportDetails).FirstOrDefault(e => e.ExportId == id);
         }
+
+        public override List<Export> GetAll()
+        {
+            return _dbSet.Include(e => e.ExportDetails).ToList();
+        }
     }
 }

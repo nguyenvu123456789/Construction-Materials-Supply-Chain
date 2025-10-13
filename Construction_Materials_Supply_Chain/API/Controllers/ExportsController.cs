@@ -18,6 +18,26 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+
+        // Lấy export theo ID
+        [HttpGet("{id}")]
+        public IActionResult GetExport(int id)
+        {
+            var export = _exportService.GetById(id);
+            if (export == null) return NotFound();
+            var result = _mapper.Map<ExportResponseDto>(export);
+            return Ok(result);
+        }
+
+        // Lấy danh sách tất cả export
+        [HttpGet]
+        public IActionResult GetAllExports()
+        {
+            var exports = _exportService.GetAll();
+            var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);
+            return Ok(result);
+        }
+
         // 🔹 Tạo Pending Export
         [HttpPost("request")]
         public IActionResult CreatePendingExport([FromBody] ExportRequestDto dto)
@@ -57,23 +77,23 @@ namespace API.Controllers
         }
 
 
-        // Lấy export theo ID
-        [HttpGet("{id}")]
-        public IActionResult GetExport(int id)
+        // 🔹 Cập nhật trạng thái sang Rejected
+        [HttpPut("reject/{id}")]
+        public IActionResult RejectExport(int id)
         {
-            var export = _exportService.GetById(id);
-            if (export == null) return NotFound();
-            var result = _mapper.Map<ExportResponseDto>(export);
-            return Ok(result);
-        }
+            try
+            {
+                var export = _exportService.RejectExport(id);
+                if (export == null)
+                    return NotFound("Export not found.");
 
-        // Lấy danh sách tất cả export
-        [HttpGet]
-        public IActionResult GetAllExports()
-        {
-            var exports = _exportService.GetAll();
-            var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);
-            return Ok(result);
+                var result = _mapper.Map<ExportResponseDto>(export);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

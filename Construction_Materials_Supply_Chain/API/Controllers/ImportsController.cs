@@ -67,17 +67,15 @@ namespace API.Controllers
         }
 
 
-        /// Lấy phiếu nhập theo ID
         [HttpGet("{id:int}")]
         public IActionResult GetImport(int id)
         {
-            var import = _importService.GetById(id);
+            var import = _importService.GetByIdWithDetails(id); 
             if (import == null) return NotFound();
             var result = _mapper.Map<ImportResponseDto>(import);
             return Ok(result);
         }
 
-        /// Lấy danh sách tất cả phiếu nhập
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -97,6 +95,23 @@ namespace API.Controllers
                 var import = _importService.CreatePendingImport(dto.WarehouseId, dto.CreatedBy, dto.Notes, dto.Materials);
                 var result = _mapper.Map<PendingImportResponseDto>(import);
                 return CreatedAtAction(nameof(GetImport), new { id = import.ImportId }, result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPut("reject/{id}")]
+        public IActionResult RejectImport(int id)
+        {
+            try
+            {
+                var import = _importService.RejectImport(id);
+                if (import == null)
+                    return NotFound("Import not found.");
+
+                var result = _mapper.Map<ImportResponseDto>(import);
+                return Ok(result);
             }
             catch (Exception ex)
             {

@@ -54,8 +54,8 @@ namespace Services.Implementations
             return invoice;
         }
 
-        public Invoice? GetById(int id) => _invoices.GetById(id);
+        public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
 
-        public List<Invoice> GetAll() => _invoices.GetAll();
+        public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
     }
 }

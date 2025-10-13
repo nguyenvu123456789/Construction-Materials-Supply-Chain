@@ -15,6 +15,23 @@ namespace API.Controllers
             _invoiceService = invoiceService;
         }
 
+        
+
+        [HttpGet("{id:int}")]
+        public IActionResult GetInvoice(int id)
+        {
+            var invoice = _invoiceService.GetByIdWithDetails(id); 
+            if (invoice == null) return NotFound();
+            return Ok(invoice);
+        }
+
+        [HttpGet]
+        public IActionResult GetAllInvoices()
+        {
+            var invoices = _invoiceService.GetAllWithDetails(); 
+            return Ok(invoices);
+        }
+
         [HttpPost("create")]
         public IActionResult CreateInvoice([FromBody] CreateInvoiceDto dto)
         {
@@ -31,19 +48,21 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("{id:int}")]
-        public IActionResult GetInvoice(int id)
+        [HttpPut("reject/{id}")]
+        public IActionResult RejectInvoice(int id)
         {
-            var invoice = _invoiceService.GetByIdWithDetails(id); 
-            if (invoice == null) return NotFound();
-            return Ok(invoice);
-        }
+            try
+            {
+                var invoice = _invoiceService.RejectInvoice(id);
+                if (invoice == null)
+                    return NotFound("Invoice not found.");
 
-        [HttpGet]
-        public IActionResult GetAllInvoices()
-        {
-            var invoices = _invoiceService.GetAllWithDetails(); 
-            return Ok(invoices);
+                return Ok(invoice);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

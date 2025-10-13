@@ -9,11 +9,19 @@ namespace Services.Implementations
     {
         private readonly IInvoiceRepository _invoices;
         private readonly IMaterialRepository _materials;
+        private readonly IInventoryRepository _inventories;
+        private readonly IImportRepository _imports;
 
-        public InvoiceService(IInvoiceRepository invoices, IMaterialRepository materials)
+        public InvoiceService(
+            IInvoiceRepository invoices, 
+            IMaterialRepository materials,
+            IInventoryRepository inventories,
+            IImportRepository imports)
         {
             _invoices = invoices;
             _materials = materials;
+            _inventories = inventories;
+            _imports = imports;
         }
 
         public Invoice CreateInvoice(CreateInvoiceDto dto)
@@ -57,5 +65,17 @@ namespace Services.Implementations
         public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
 
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
+
+        public Invoice? RejectInvoice(int id)
+        {
+            var invoice = _invoices.GetByIdWithDetails(id);
+            if (invoice == null)
+                return null;
+            invoice.Status = "Rejected";
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoices.Update(invoice);
+
+            return invoice;
+        }
     }
 }

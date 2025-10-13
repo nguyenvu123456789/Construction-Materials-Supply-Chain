@@ -8,5 +8,6 @@ namespace Application.Interfaces
         Invoice CreateInvoice(CreateInvoiceDto dto);
         Invoice? GetByIdWithDetails(int id);
         List<Invoice> GetAllWithDetails();
+        Invoice? RejectInvoice(int id);
     }
 }

@@ -2,6 +2,7 @@ using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations
 {
@@ -9,12 +10,7 @@ namespace Infrastructure.Implementations
     {
         public AuditLogRepository(ScmVlxdContext context) : base(context) { }
 
-        public List<AuditLog> GetAuditLogs() => _dbSet.ToList();
-
-        public void SaveAuditLog(AuditLog log)
-        {
-            _dbSet.Add(log);
-            _context.SaveChanges();
-        }
+        public IQueryable<AuditLog> QueryWithUser()
+            => _dbSet.Include(a => a.User);
     }
 }

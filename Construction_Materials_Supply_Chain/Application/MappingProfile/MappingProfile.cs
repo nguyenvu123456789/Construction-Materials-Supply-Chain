@@ -26,6 +26,9 @@ namespace Application.MappingProfile
             CreateMap<RoleUpdateDto, Role>()
                 .ForMember(d => d.RoleId, o => o.Ignore());
 
+            CreateMap<AuditLog, AuditLogDto>()
+                .ForMember(d => d.UserName, o => o.MapFrom(s => s.User != null ? s.User.UserName : null));
+
             CreateMap<User, AuthResponseDto>();
 
             CreateMap<ActivityLog, ActivityLogDto>()

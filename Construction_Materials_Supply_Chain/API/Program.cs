@@ -1,7 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.MappingProfile;
 using Application.Services;
-using Application.Validation;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Partners;
@@ -18,17 +17,13 @@ using Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AutoMapper configuration
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
 
-// Register DbContext
-builder.Services.AddDbContext<ScmVlxdContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
-
-// Đăng ký Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -50,8 +45,6 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
-
-// Đăng ký Service
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -69,16 +62,8 @@ builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IPartnerService, PartnerService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IStockCheckService, StockCheckService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
-
-// Audit Log Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
 
 builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
@@ -88,10 +73,13 @@ builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
            .AddInterceptors(interceptor);
 });
 
-// Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
 
-// Swagger/OpenAPI
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -111,7 +99,6 @@ using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
 SeedData.Initialize(context);
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -119,11 +106,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

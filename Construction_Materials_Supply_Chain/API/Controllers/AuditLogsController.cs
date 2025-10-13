@@ -19,7 +19,6 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/auditlogs?SearchTerm=...&PageNumber=1&PageSize=20
         [HttpGet]
         public ActionResult<PagedResultDto<AuditLogDto>> GetAuditLogs([FromQuery] PagedQueryDto query)
         {

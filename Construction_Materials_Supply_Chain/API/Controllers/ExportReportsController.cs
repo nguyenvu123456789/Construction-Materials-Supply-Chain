@@ -1,9 +1,5 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using AutoMapper;
-using Domain.Models;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace API.Controllers
 {

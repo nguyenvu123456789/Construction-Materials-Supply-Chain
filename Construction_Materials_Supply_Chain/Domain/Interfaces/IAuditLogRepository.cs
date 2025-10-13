@@ -5,7 +5,6 @@ namespace Domain.Interface
 {
     public interface IAuditLogRepository : IGenericRepository<AuditLog>
     {
-        List<AuditLog> GetAuditLogs();
-        void SaveAuditLog(AuditLog log);
+        IQueryable<AuditLog> QueryWithUser();
     }
 }

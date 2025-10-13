@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Application.Interfaces;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -9,23 +10,25 @@ namespace Infrastructure.Persistence.Interceptors
 {
     public sealed class AuditLogInterceptor : SaveChangesInterceptor
     {
+        private readonly ICurrentUserService _currentUser;
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = false
         };
 
+        public AuditLogInterceptor(ICurrentUserService currentUser)
+        {
+            _currentUser = currentUser;
+        }
+
         public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
         {
-            if (eventData.Context is not DbContext ctx) return base.SavingChanges(eventData, result);
-            CaptureAuditLogs(ctx);
+            if (eventData.Context is DbContext ctx) CaptureAuditLogs(ctx);
             return base.SavingChanges(eventData, result);
         }
 
-        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
-            DbContextEventData eventData,
-            InterceptionResult<int> result,
-            CancellationToken cancellationToken = default)
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
             if (eventData.Context is DbContext ctx) CaptureAuditLogs(ctx);
             return base.SavingChangesAsync(eventData, result, cancellationToken);
@@ -35,9 +38,7 @@ namespace Infrastructure.Persistence.Interceptors
         {
             var entries = ctx.ChangeTracker
                 .Entries()
-                .Where(e =>
-                    e.Entity is not AuditLog &&
-                    e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                .Where(e => e.Entity is not AuditLog && e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
                 .ToList();
 
             if (entries.Count == 0) return;
@@ -56,7 +57,8 @@ namespace Infrastructure.Persistence.Interceptors
                     EntityId = entityId,
                     Action = action,
                     Changes = changesJson,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = _currentUser.UserId
                 });
             }
 
@@ -126,12 +128,8 @@ namespace Infrastructure.Persistence.Interceptors
             var key = entry.Properties.FirstOrDefault(p => p.Metadata.IsPrimaryKey());
             if (key == null || key.CurrentValue is null) return 0;
 
-            try
-            {
-                if (key.CurrentValue is int i) return i;
-                if (int.TryParse(key.CurrentValue.ToString(), out var parsed)) return parsed;
-            }
-            catch { }
+            if (key.CurrentValue is int i) return i;
+            if (int.TryParse(key.CurrentValue.ToString(), out var parsed)) return parsed;
 
             return 0;
         }

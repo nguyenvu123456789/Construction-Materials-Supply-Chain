@@ -1,9 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace API.Controllers
 {
@@ -50,7 +48,7 @@ namespace API.Controllers
             {
                 var export = _exportService.ConfirmExport(dto.ExportCode, dto.Notes);
                 var result = _mapper.Map<ExportResponseDto>(export);
-                return Ok(result); 
+                return Ok(result);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 

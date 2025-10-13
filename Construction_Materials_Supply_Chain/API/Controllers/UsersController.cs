@@ -1,98 +1,63 @@
-﻿using Application.DTOs;
-using Application.Common.Pagination;
+﻿using Application.Common.Pagination;
+using Application.DTOs;
 using Application.Interfaces;
-using AutoMapper;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using Services.Implementations;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
-        private readonly IMapper _mapper;
+        private readonly IUserService _users;
 
-        public UsersController(IUserService userService, IRoleService roleService, IMapper mapper)
+        public UsersController(IUserService users)
         {
-            _userService = userService;
-            _roleService = roleService;
-            _mapper = mapper;
+            _users = users;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<UserDto>> GetUsers()
         {
-            var users = _userService.GetAllWithRoles();
-            var result = _mapper.Map<IEnumerable<UserDto>>(users);
-            return Ok(result);
-        }
-
-        [HttpGet("roles")]
-        public ActionResult<IEnumerable<RoleDto>> GetRoles()
-        {
-            var roles = _roleService.GetAll();
-            var result = _mapper.Map<IEnumerable<RoleDto>>(roles);
+            var result = _users.GetAll();
             return Ok(result);
         }
 
         [HttpGet("{id:int}")]
         public ActionResult<UserDto> GetUser(int id)
         {
-            var user = _userService.GetByIdWithRoles(id);
+            var user = _users.GetById(id);
             if (user == null) return NotFound();
-            return Ok(_mapper.Map<UserDto>(user));
+            return Ok(user);
         }
 
         [HttpPost]
-        public IActionResult PostUser(UserDto userDto)
+        public ActionResult<UserDto> CreateUser([FromBody] UserCreateDto dto)
         {
-            var user = _mapper.Map<User>(userDto);
-            _userService.Create(user);
-            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, _mapper.Map<UserDto>(user));
+            var created = _users.Create(dto);
+            return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
         }
 
         [HttpPut("{id:int}")]
-        public IActionResult UpdateUser(int id, UserDto userDto)
+        public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto dto)
         {
-            var existing = _userService.GetById(id);
-            if (existing == null) return NotFound();
-
-            var user = _mapper.Map<User>(userDto);
-            user.UserId = id;
-            _userService.Update(user);
-
+            _users.Update(id, dto);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public IActionResult DeleteUser(int id)
         {
-            var existing = _userService.GetById(id);
-            if (existing == null) return NotFound();
-
-            _userService.Delete(id);
+            _users.Delete(id);
             return NoContent();
         }
 
-        // GET: api/users/filter?SearchTerm=...&PageNumber=1&PageSize=10&Roles=Admin&Roles=Manager
         [HttpGet("filter")]
-        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto queryParams)
+        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto query)
         {
-            var users = _userService.GetUsersFiltered(queryParams.SearchTerm, queryParams.Roles, queryParams.PageNumber, queryParams.PageSize, out var totalCount);
-
-            var result = new PagedResultDto<UserDto>
-            {
-                Data = _mapper.Map<IEnumerable<UserDto>>(users),
-                TotalCount = totalCount,
-                PageNumber = queryParams.PageNumber,
-                PageSize = queryParams.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
-            };
-
-            return Ok(result);
+            var page = _users.GetUsersFiltered(query);
+            return Ok(page);
         }
     }
 }

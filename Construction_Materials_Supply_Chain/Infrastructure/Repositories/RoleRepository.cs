@@ -9,6 +9,7 @@ namespace Infrastructure.Implementations
     {
         public RoleRepository(ScmVlxdContext context) : base(context) { }
 
-        public List<Role> GetRoles() => _dbSet.ToList();
+        public IQueryable<Role> Query()
+            => _dbSet.AsQueryable();
     }
 }

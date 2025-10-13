@@ -1,18 +1,15 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
+using Application.Common.Pagination;
 
 namespace Application.Interfaces
 {
     public interface IUserService
     {
-        List<User> GetAll();
-        User? GetById(int id);
-        void Create(User user);
-        void Update(User user);
+        List<UserDto> GetAll();
+        UserDto? GetById(int id);
+        UserDto Create(UserCreateDto dto);
+        void Update(int id, UserUpdateDto dto);
         void Delete(int id);
-
-        List<User> GetAllWithRoles();
-        User? GetByIdWithRoles(int id);
-
-        List<User> GetUsersFiltered(string? searchTerm, List<string>? roles, int pageNumber, int pageSize, out int totalCount);
+        PagedResultDto<UserDto> GetUsersFiltered(UserPagedQueryDto query);
     }
 }

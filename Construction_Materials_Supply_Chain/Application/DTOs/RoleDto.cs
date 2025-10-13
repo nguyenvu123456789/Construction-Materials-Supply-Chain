@@ -6,4 +6,16 @@
         public string RoleName { get; set; } = string.Empty;
         public string? Description { get; set; }
     }
+
+    public class RoleCreateDto
+    {
+        public string RoleName { get; set; } = string.Empty;
+        public string? Description { get; set; }
+    }
+
+    public class RoleUpdateDto
+    {
+        public string? RoleName { get; set; }
+        public string? Description { get; set; }
+    }
 }

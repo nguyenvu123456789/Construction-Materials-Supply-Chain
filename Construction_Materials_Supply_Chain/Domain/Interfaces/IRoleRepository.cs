@@ -5,6 +5,6 @@ namespace Domain.Interface
 {
     public interface IRoleRepository : IGenericRepository<Role>
     {
-        List<Role> GetRoles();
+        IQueryable<Role> Query();
     }
 }

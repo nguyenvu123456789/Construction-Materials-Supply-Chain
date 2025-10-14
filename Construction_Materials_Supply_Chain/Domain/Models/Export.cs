@@ -8,9 +8,9 @@
 
         public int WarehouseId { get; set; }
 
-        public string Status { get; set; } = "Pending";  // Pending, Success, Cancelled
+        public string Status { get; set; } = "Pending";
 
-        public int CreatedBy { get; set; } // người xuất (UserId)
+        public int CreatedBy { get; set; }
 
         public string? Notes { get; set; }
 

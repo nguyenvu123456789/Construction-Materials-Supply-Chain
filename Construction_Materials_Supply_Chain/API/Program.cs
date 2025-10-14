@@ -46,6 +46,7 @@ builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IHandleRequestRepository, HandleRequestRepository>();
+builder.Services.AddScoped<IAnalystService, AnalystService>();
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -67,7 +68,7 @@ builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ITransportRepository, TransportRepository>();
-
+builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
 
 builder.Services.AddScoped<AuditLogInterceptor>();
 

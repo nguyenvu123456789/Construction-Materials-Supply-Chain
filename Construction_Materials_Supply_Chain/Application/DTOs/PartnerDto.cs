@@ -4,6 +4,7 @@
     {
         public int PartnerId { get; set; }
         public string PartnerName { get; set; } = string.Empty;
+        public string PartnerCode { get; set; } = null!;
         public string? ContactEmail { get; set; }
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }

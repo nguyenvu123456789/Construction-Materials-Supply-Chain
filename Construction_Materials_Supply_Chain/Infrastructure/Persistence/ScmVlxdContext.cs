@@ -25,6 +25,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; }
     public virtual DbSet<Order> Orders { get; set; }
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
+    public virtual DbSet<HandleRequest> HandleRequests { get; set; }
     public virtual DbSet<Permission> Permissions { get; set; }
     public virtual DbSet<Material> Materials { get; set; }
     public virtual DbSet<MaterialCheck> MaterialChecks { get; set; }
@@ -395,13 +396,13 @@ public partial class ScmVlxdContext : DbContext
         {
             entity.HasKey(e => e.OrderId).HasName("PK__Order__C3905BAF0731C5D2");
             entity.ToTable("Order");
-            entity.HasIndex(e => e.OrderNumber, "UQ__Order__CAC5E743BD8032BF").IsUnique();
+            entity.HasIndex(e => e.OrderCode, "UQ__Order__CAC5E743BD8032BF").IsUnique();
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.CustomerName).HasMaxLength(100);
-            entity.Property(e => e.OrderNumber).HasMaxLength(50);
+            entity.Property(e => e.OrderCode).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Orders)
@@ -430,6 +431,18 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__OrderDeta__Mater__6383C8BA");
         });
+
+        modelBuilder.Entity<HandleRequest>(entity =>
+        {
+            entity.HasKey(e => e.HandleRequestId);
+
+            entity.HasOne(d => d.HandledByNavigation)
+                .WithMany() 
+                .HasForeignKey(d => d.HandledBy)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_HandleRequests_User_HandledByNavigationUserId");
+        });
+
 
         modelBuilder.Entity<Permission>(entity =>
         {

@@ -7,8 +7,11 @@ namespace Infrastructure.Implementations
 {
     public class HandleRequestRepository : GenericRepository<HandleRequest>, IHandleRequestRepository
     {
-        public HandleRequestRepository(ScmVlxdContext context) : base(context)
+        public HandleRequestRepository(ScmVlxdContext context) : base(context) { }
+
+        public List<HandleRequest> GetByRequest(string requestType, int requestId)
         {
+            return _dbSet.Where(r => r.RequestType == requestType && r.RequestId == requestId).ToList();
         }
     }
 }

@@ -56,6 +56,16 @@ namespace Application.MappingProfile
             CreateMap<Import, PendingImportResponseDto>()
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
             CreateMap<ImportDetail, PendingImportMaterialResponseDto>();
+            CreateMap<ImportReport, ImportReportResponseDto>()
+    .ForMember(d => d.Details, o => o.MapFrom(s => s.ImportReportDetails));
+
+            CreateMap<ImportReportDetail, ImportReportDetailDto>()
+                .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.Material.MaterialCode))
+                .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName));
+
+            CreateMap<Import, SimpleImportDto>();
+
+            CreateMap<Invoice, SimpleInvoiceDto>();
 
             CreateMap<Export, ExportResponseDto>()
                 .ForMember(d => d.Details, o => o.MapFrom(s => s.ExportDetails));
@@ -74,5 +84,6 @@ namespace Application.MappingProfile
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
         }
+
     }
 }

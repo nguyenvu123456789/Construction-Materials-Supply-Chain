@@ -9,5 +9,8 @@ namespace Domain.Interface
         List<Invoice> GetAllWithDetails();
         void Add(Invoice entity);
         void Update(Invoice entity);
+        void AddInvoiceDetail(InvoiceDetail detail);                  
+        List<InvoiceDetail> GetInvoiceDetailsByInvoiceId(int invoiceId);
+        List<Invoice> GetAll();
     }
 }

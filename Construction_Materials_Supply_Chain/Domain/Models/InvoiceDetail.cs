@@ -16,7 +16,6 @@ public partial class InvoiceDetail
 
     public decimal? LineTotal { get; set; }
 
-    [JsonIgnore]
     public virtual Invoice Invoice { get; set; } = null!;
 
     public virtual Material Material { get; set; } = null!;

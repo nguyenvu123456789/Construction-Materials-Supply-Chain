@@ -22,6 +22,21 @@
         public int MaterialId { get; set; }
         public int Quantity { get; set; }
     }
+    public class OrderDetailDto
+    {
+        public int MaterialId { get; set; }
+        public string MaterialName { get; set; } = null!;
+        public int Quantity { get; set; }
+        public decimal? UnitPrice { get; set; }
+    }
+
+    public class OrderWithDetailsDto
+    {
+        public string OrderCode { get; set; } = null!;
+        public int PartnerId { get; set; }
+        public List<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();
+    }
+
     public class HandleOrderRequestDto
     {
         public int OrderId { get; set; }

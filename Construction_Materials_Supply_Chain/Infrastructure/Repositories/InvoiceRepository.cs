@@ -31,6 +31,20 @@ namespace Infrastructure.Implementations
                          .ToList();
         }
 
-        // Phương thức Add kế thừa từ GenericRepository, không cần triển khai lại
+        public List<Invoice> GetAll() => _dbSet.ToList();
+        public void AddInvoiceDetail(InvoiceDetail detail)
+        {
+            _context.Set<InvoiceDetail>().Add(detail);
+            _context.SaveChanges();
+        }
+
+        public List<InvoiceDetail> GetInvoiceDetailsByInvoiceId(int invoiceId)
+        {
+            return _context.Set<InvoiceDetail>()
+                .Where(d => d.InvoiceId == invoiceId)
+                .Include(d => d.Material)
+                .ToList();
+        }
+
     }
 }

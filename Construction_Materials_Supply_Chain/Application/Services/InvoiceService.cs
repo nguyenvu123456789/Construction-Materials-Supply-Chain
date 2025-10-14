@@ -11,17 +11,20 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IInventoryRepository _inventories;
         private readonly IImportRepository _imports;
+        private readonly IOrderRepository _orderRepository;
 
         public InvoiceService(
             IInvoiceRepository invoices, 
             IMaterialRepository materials,
             IInventoryRepository inventories,
-            IImportRepository imports)
+            IImportRepository imports,
+            IOrderRepository orderRepository)
         {
             _invoices = invoices;
             _materials = materials;
             _inventories = inventories;
             _imports = imports;
+            _orderRepository = orderRepository;
         }
 
         public Invoice CreateInvoice(CreateInvoiceDto dto)
@@ -77,5 +80,59 @@ namespace Services.Implementations
 
             return invoice;
         }
+
+        public Invoice CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
+        {
+            var order = _orderRepository.GetByCode(dto.OrderCode);
+            if (order == null)
+                throw new Exception("Order not found.");
+
+            if (order.Status != "Approved")
+                throw new Exception("Order must be approved to create invoice.");
+
+            // Cập nhật UnitPrice từ DTO
+            foreach (var od in order.OrderDetails)
+            {
+                var unitPriceDto = dto.UnitPrices?.FirstOrDefault(u => u.MaterialId == od.MaterialId);
+                if (unitPriceDto != null)
+                {
+                    od.UnitPrice = unitPriceDto.UnitPrice;
+                }
+
+                if (!od.UnitPrice.HasValue)
+                    throw new Exception($"UnitPrice not provided for MaterialId {od.MaterialId} in order.");
+            }
+
+            var invoice = new Invoice
+            {
+                InvoiceCode = $"INV-{_invoices.GetAllWithDetails().Count + 1:D3}",
+                InvoiceType = "Order",
+                PartnerId = order.CreatedBy ?? 0,
+                CreatedBy = dto.CreatedBy,
+                IssueDate = dto.IssueDate,
+                DueDate = dto.DueDate,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Thêm chi tiết invoice
+            foreach (var item in order.OrderDetails)
+            {
+                invoice.InvoiceDetails.Add(new InvoiceDetail
+                {
+                    MaterialId = item.MaterialId,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice!.Value,
+                    LineTotal = item.Quantity * item.UnitPrice!.Value
+                });
+            }
+
+            invoice.TotalAmount = invoice.InvoiceDetails.Sum(d => d.LineTotal ?? 0);
+
+            _invoices.Add(invoice);
+
+            return invoice;
+        }
+
     }
 }

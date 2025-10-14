@@ -1,10 +1,12 @@
-﻿namespace Domain.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace Domain.Models;
 
 public partial class Order
 {
     public int OrderId { get; set; }
 
-    public string OrderNumber { get; set; } = null!;
+    public string OrderCode { get; set; } = null!;
 
     public string? CustomerName { get; set; }
 
@@ -14,13 +16,14 @@ public partial class Order
 
     public DateTime? CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }    
 
+    [JsonIgnore]
     public virtual User? CreatedByNavigation { get; set; }
-
+    [JsonIgnore]
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
-
+    [JsonIgnore]
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-
+    [JsonIgnore]
     public virtual ICollection<ShippingLog> ShippingLogs { get; set; } = new List<ShippingLog>();
 }

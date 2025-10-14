@@ -364,6 +364,21 @@ namespace Infrastructure.Persistence
                     context.SaveChanges();
                 }
             }
+
+            // 13️⃣ Seed Transports
+            if (!context.Transports.Any())
+            {
+                context.Transports.AddRange(
+                    new Transport { Vehicle = "Xe tải 5 tấn VN-12345", Driver = "Nguyễn Văn Hùng", Porter = "Trần Văn Nam", Route = "Kho Hà Nội -> Đại lý Minh Tâm", Status = "Completed" },
+                    new Transport { Vehicle = "Xe tải 10 tấn VN-67890", Driver = "Lê Minh Tuấn", Porter = "Phạm Văn Khánh", Route = "Kho TP.HCM -> Công ty xây dựng Sài Gòn", Status = "InProgress" },
+                    new Transport { Vehicle = "Xe tải 3.5 tấn VN-54321", Driver = "Đỗ Quang Vinh", Porter = "Vũ Văn Tâm", Route = "Kho Đà Nẵng -> Kho Hà Nội", Status = "Pending" },
+                    new Transport { Vehicle = "Xe container VN-98765", Driver = "Ngô Đình Long", Porter = "Hoàng Văn Đức", Route = "Kho Hải Phòng -> Kho Cần Thơ", Status = "Completed" },
+                    new Transport { Vehicle = "Xe tải 8 tấn VN-24680", Driver = "Phan Văn Hải", Porter = "Lý Văn Bình", Route = "Kho Hà Nội -> Kho Vũng Tàu", Status = "InProgress" },
+                    new Transport { Vehicle = "Xe tải 2.5 tấn VN-13579", Driver = "Trương Văn An", Porter = "Nguyễn Văn Khoa", Route = "Kho Nha Trang -> Khách hàng Lê Văn A", Status = "Completed" },
+                    new Transport { Vehicle = "Xe tải 6 tấn VN-11223", Driver = "Bùi Văn Cường", Porter = "Đặng Văn Tùng", Route = "Kho TP.HCM -> Kho Đà Nẵng", Status = "Pending" }
+                );
+                context.SaveChanges();
+            }
         }
     }
 }

@@ -10,5 +10,6 @@ namespace Application.Interfaces
         Export? GetById(int id);
         List<Export> GetAll();
         Export? RejectExport(int id);
+        Export CreateExportFromInvoice(ExportFromInvoiceDto dto);
     }
 }

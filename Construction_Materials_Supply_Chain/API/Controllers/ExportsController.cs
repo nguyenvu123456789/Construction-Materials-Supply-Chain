@@ -95,5 +95,23 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("from-invoice")]
+        public IActionResult CreateExportFromInvoice([FromBody] ExportFromInvoiceDto dto)
+        {
+            if (dto == null || string.IsNullOrEmpty(dto.InvoiceCode))
+                return BadRequest("Invalid request data.");
+
+            try
+            {
+                var export = _exportService.CreateExportFromInvoice(dto);
+                var result = _mapper.Map<ExportResponseDto>(export);
+                return CreatedAtAction(nameof(GetExport), new { id = export.ExportId }, result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

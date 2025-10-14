@@ -41,4 +41,11 @@
         public decimal UnitPrice { get; set; }
         public decimal LineTotal { get; set; }
     }
+    public class ExportFromInvoiceDto
+    {
+        public string InvoiceCode { get; set; } = string.Empty;
+        public int WarehouseId { get; set; }
+        public int CreatedBy { get; set; }
+        public string? Notes { get; set; }
+    }
 }

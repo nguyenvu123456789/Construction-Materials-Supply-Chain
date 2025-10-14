@@ -11,17 +11,20 @@ namespace Services.Implementations
         private readonly IExportDetailRepository _exportDetails;
         private readonly IInventoryRepository _inventories;
         private readonly IMaterialRepository _materialRepository;
+        private readonly IInvoiceRepository _invoiceRepository;
 
         public ExportService(
             IExportRepository exports,
             IExportDetailRepository exportDetails,
             IInventoryRepository inventories,
-            IMaterialRepository materialRepository)
+            IMaterialRepository materialRepository,
+            IInvoiceRepository invoiceRepository)
         {
             _exports = exports;
             _exportDetails = exportDetails;
             _inventories = inventories;
             _materialRepository = materialRepository;
+            _invoiceRepository = invoiceRepository;
         }
 
         public Export CreatePendingExport(ExportRequestDto dto)
@@ -121,5 +124,48 @@ namespace Services.Implementations
         {
             return _exports.GetAll();
         }
+        public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
+        {
+            var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
+
+            if (invoice == null)
+                throw new Exception("Invoice not found.");
+
+            if (invoice.InvoiceDetails == null || !invoice.InvoiceDetails.Any())
+                throw new Exception("Invoice has no details.");
+
+            // Tạo export
+            var export = new Export
+            {
+                ExportCode = "EXP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                WarehouseId = dto.WarehouseId,
+                CreatedBy = dto.CreatedBy,
+                Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _exports.Add(export);
+
+            foreach (var item in invoice.InvoiceDetails)
+            {
+                var detail = new ExportDetail
+                {
+                    ExportId = export.ExportId,
+                    MaterialId = item.MaterialId,
+                    MaterialCode = item.Material?.MaterialCode ?? "",
+                    MaterialName = item.Material?.MaterialName ?? "",
+                    Unit = item.Material?.Unit,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    LineTotal = item.Quantity * item.UnitPrice
+                };
+
+                _exportDetails.Add(detail);
+            }
+
+            return export;
+        }
+
     }
 }

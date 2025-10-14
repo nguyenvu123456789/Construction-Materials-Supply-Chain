@@ -180,30 +180,41 @@ namespace Services.Implementations
         public List<ConsumptionForecastDto> ForecastConsumptionByProject(ReportFilterDto f, int days)
         {
             var q = _repo.ExportDetailsWithExport();
-            if (f.From.HasValue) q = q.Where(x => x.Export.CreatedAt >= f.From.Value);
-            if (f.To.HasValue) q = q.Where(x => x.Export.CreatedAt <= f.To.Value);
-            if (f.MaterialId.HasValue) q = q.Where(x => x.MaterialId == f.MaterialId.Value);
-            var code = f.ProjectCode ?? "";
-            if (!string.IsNullOrWhiteSpace(code)) q = q.Where(x => (x.Export.ExportCode ?? "").Contains(code));
 
-            var daily = q.GroupBy(x => new { Day = x.Export.CreatedAt!.Value.Date, x.Export.ExportCode, x.MaterialId, x.MaterialName })
+            if (f.From.HasValue) q = q.Where(x => x.Export.ExportDate >= f.From.Value);
+            if (f.To.HasValue) q = q.Where(x => x.Export.ExportDate <= f.To.Value);
+            q = q.Where(x => x.Export.Status == "Approved" || x.Export.Status == "Success");
+
+            if (f.MaterialId.HasValue) q = q.Where(x => x.MaterialId == f.MaterialId.Value);
+            if (!string.IsNullOrWhiteSpace(f.ProjectCode))
+                q = q.Where(x => x.Export.ExportCode == f.ProjectCode);
+
+            var daily = q.GroupBy(x => new { Day = x.Export.ExportDate.Date, x.Export.ExportCode, x.MaterialId, x.MaterialName })
                 .Select(g => new { g.Key.ExportCode, g.Key.MaterialId, g.Key.MaterialName, Qty = g.Sum(i => i.Quantity), Day = g.Key.Day })
                 .OrderBy(x => x.Day)
                 .ToList();
 
             var result = new List<ConsumptionForecastDto>();
+
             foreach (var grp in daily.GroupBy(x => new { x.ExportCode, x.MaterialId, x.MaterialName }))
             {
                 var s = grp.OrderBy(x => x.Day).ToList();
-                if (s.Count < 3) continue;
+                if (s.Count < 1) continue;
+
                 var xs = Enumerable.Range(0, s.Count).Select(i => (double)i).ToArray();
                 var ys = s.Select(i => (double)i.Qty).ToArray();
-                double xAvg = xs.Average();
-                double yAvg = ys.Average();
-                double slope = xs.Zip(ys, (x, y) => (x - xAvg) * (y - yAvg)).Sum() / xs.Sum(x => Math.Pow(x - xAvg, 2));
+
+                double xAvg = xs.Average(), yAvg = ys.Average();
+                double denom = xs.Sum(x => Math.Pow(x - xAvg, 2));
+                double slope = denom == 0 ? 0 : xs.Zip(ys, (x, y) => (x - xAvg) * (y - yAvg)).Sum() / denom;
                 double intercept = yAvg - slope * xAvg;
-                double nextX = s.Count + days;
-                double predicted = Math.Max(0, slope * nextX + intercept);
+
+                double forecastTotal = 0;
+                for (int k = 1; k <= days; k++)
+                {
+                    double yk = Math.Max(0, slope * (s.Count - 1 + k) + intercept);
+                    forecastTotal += yk;
+                }
 
                 result.Add(new ConsumptionForecastDto
                 {
@@ -211,7 +222,7 @@ namespace Services.Implementations
                     MaterialId = grp.Key.MaterialId,
                     MaterialName = grp.Key.MaterialName,
                     AvgDailyUse = (decimal)ys.Average(),
-                    ForecastUseNextDays = (decimal)predicted
+                    ForecastUseNextDays = (decimal)forecastTotal
                 });
             }
             return result;
@@ -239,7 +250,7 @@ namespace Services.Implementations
             foreach (var grp in perDay.GroupBy(x => new { x.PartnerId, x.PartnerName }))
             {
                 var s = grp.OrderBy(x => x.Day).ToList();
-                if (s.Count < 3) continue;
+                if (s.Count < 1) continue;
                 var xs = Enumerable.Range(0, s.Count).Select(i => (double)i).ToArray();
                 var ys = s.Select(i => (double)i.AvgPrice).ToArray();
                 double xAvg = xs.Average();

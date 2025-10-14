@@ -7,6 +7,7 @@ namespace Domain.Interface
     {
         Order? GetByCode(string orderCode);
         Order? GetByCodeWithDetails(string orderCode);
+        List<Order> GetAllWithDetails();
 
     }
 }

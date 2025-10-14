@@ -32,21 +32,6 @@ namespace API.Controllers
             return Ok(invoices);
         }
 
-        [HttpPost("create")]
-        public IActionResult CreateInvoice([FromBody] CreateInvoiceDto dto)
-        {
-            if (dto == null) return BadRequest("Invalid request data");
-
-            try
-            {
-                var invoice = _invoiceService.CreateInvoice(dto);
-                return CreatedAtAction(nameof(GetInvoice), new { id = invoice.InvoiceId }, invoice);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
         [HttpPost("from-order")]
         public IActionResult CreateInvoiceFromOrder([FromBody] CreateInvoiceFromOrderDto dto)

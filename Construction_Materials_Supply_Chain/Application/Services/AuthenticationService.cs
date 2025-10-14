@@ -16,19 +16,23 @@ namespace Services.Implementations
         private readonly IMapper _mapper;
         private readonly IValidator<RegisterRequestDto> _registerValidator;
         private readonly IValidator<LoginRequestDto> _loginValidator;
+        private readonly IJwtTokenGenerator _jwt;
 
         public AuthenticationService(
             IUserRepository users,
             IActivityLogRepository activityLogs,
             IMapper mapper,
             IValidator<RegisterRequestDto> registerValidator,
-            IValidator<LoginRequestDto> loginValidator)
+            IValidator<LoginRequestDto> loginValidator,
+            IJwtTokenGenerator jwt
+        )
         {
             _users = users;
             _activityLogs = activityLogs;
             _mapper = mapper;
             _registerValidator = registerValidator;
             _loginValidator = loginValidator;
+            _jwt = jwt;
         }
 
         public AuthResponseDto Register(RegisterRequestDto request)
@@ -49,7 +53,14 @@ namespace Services.Implementations
             };
 
             _users.Add(user);
-            return _mapper.Map<AuthResponseDto>(user);
+
+            var dto = _mapper.Map<AuthResponseDto>(user);
+
+            var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
+            dto.Roles = roles;
+            dto.Token = _jwt.GenerateToken(user, roles);
+
+            return dto;
         }
 
         public AuthResponseDto? Login(LoginRequestDto request)
@@ -68,7 +79,14 @@ namespace Services.Implementations
                 return null;
 
             _activityLogs.LogAction(user.UserId, "User logged in", "User", user.UserId);
-            return _mapper.Map<AuthResponseDto>(user);
+
+            var dto = _mapper.Map<AuthResponseDto>(user);
+
+            var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
+            dto.Roles = roles;
+            dto.Token = _jwt.GenerateToken(user, roles);
+
+            return dto;
         }
 
         public void Logout(int userId)

@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.DTOs.Common;
+using Application.Interfaces;
 using Application.MappingProfile;
 using Application.Services;
 using Application.Validation.ActivityLogs;
@@ -12,8 +13,14 @@ using Infrastructure.Implementations;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Services.Implementations;
+using System.IdentityModel.Tokens.Jwt;          // ✅ thêm
+using System.Security.Claims;                  // ✅ thêm
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +31,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<MappingProfile>();
 });
 
+// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -46,8 +54,10 @@ builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IHandleRequestRepository, HandleRequestRepository>();
-builder.Services.AddScoped<IAnalystService, AnalystService>();
+builder.Services.AddScoped<ITransportRepository, TransportRepository>();
+builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
 
+// Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
@@ -67,11 +77,12 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<ITransportRepository, TransportRepository>();
-builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
+builder.Services.AddScoped<IAnalystService, AnalystService>();
 
+// Audit interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
 
+// DbContext + interceptor
 builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
 {
     var interceptor = sp.GetRequiredService<AuditLogInterceptor>();
@@ -79,12 +90,14 @@ builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
            .AddInterceptors(interceptor);
 });
 
+// FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
 
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -92,9 +105,39 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+// Swagger + JWT security (nút Authorize)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SCM API", Version = "v1" });
 
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Nhập JWT theo dạng: Bearer {token}"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type  = ReferenceType.SecurityScheme,
+                    Id    = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -105,12 +148,60 @@ builder.Services.AddCors(options =>
     });
 });
 
+// JWT Options (đọc section "Jwt")
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var keyValue = jwtSection["Key"];
+if (string.IsNullOrWhiteSpace(keyValue))
+    throw new InvalidOperationException("Missing Jwt:Key in configuration.");
+var key = Encoding.UTF8.GetBytes(keyValue);
+
+// ✅ Rất quan trọng: tắt auto-map claims & khai báo Name/Role claim type
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;   // bật true ở production
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSection["Issuer"],
+            ValidAudience = jwtSection["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.FromMinutes(1),
+
+            // 👇 để [Authorize(Roles="...")] hiểu claim "role" trong token
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Token generator
+builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
-SeedData.Initialize(context);
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ScmVlxdContext>();
+    SeedData.Initialize(context);
+}
 
+// Middlewares
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -119,6 +210,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

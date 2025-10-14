@@ -13,5 +13,7 @@ namespace Domain.Interface
         IQueryable<User> QueryWithRoles();
         IQueryable<User> QueryWithRolesIncludeDeleted();
         void SoftDelete(User entity);
+        IEnumerable<string> GetRoleNamesByUserId(int userId);
+        void AssignRoles(int userId, IEnumerable<int> roleIds);
     }
 }

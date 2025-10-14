@@ -13,39 +13,41 @@ using System.Linq;
 public class UserService : IUserService
 {
     private readonly IUserRepository _users;
+    private readonly IRoleRepository _roles;
     private readonly IMapper _mapper;
 
-    public UserService(IUserRepository users, IMapper mapper)
+    public UserService(IUserRepository users, IRoleRepository roles, IMapper mapper)
     {
         _users = users;
+        _roles = roles;
         _mapper = mapper;
     }
 
-    public List<UserDto> GetAll()
-        => _users.QueryWithRoles()
-                 .AsNoTracking()
-                 .Where(u => u.Status != "Deleted")
-                 .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-                 .ToList();
+    public List<UserDto> GetAll() =>
+        _users.QueryWithRoles()
+              .AsNoTracking()
+              .Where(u => u.Status != "Deleted")
+              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+              .ToList();
 
-    public UserDto? GetById(int id)
-        => _users.QueryWithRoles()
-                 .AsNoTracking()
-                 .Where(u => u.UserId == id && u.Status != "Deleted")
-                 .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-                 .FirstOrDefault();
+    public UserDto? GetById(int id) =>
+        _users.QueryWithRoles()
+              .AsNoTracking()
+              .Where(u => u.UserId == id && u.Status != "Deleted")
+              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+              .FirstOrDefault();
 
-    public List<UserDto> GetAllWithRoles()
-        => _users.QueryWithRoles()
-                 .Where(u => u.Status != "Deleted")
-                 .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-                 .ToList();
+    public List<UserDto> GetAllWithRoles() =>
+        _users.QueryWithRoles()
+              .Where(u => u.Status != "Deleted")
+              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+              .ToList();
 
-    public UserDto? GetByIdWithRoles(int id)
-        => _users.QueryWithRoles()
-                 .Where(u => u.UserId == id && u.Status != "Deleted")
-                 .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-                 .FirstOrDefault();
+    public UserDto? GetByIdWithRoles(int id) =>
+        _users.QueryWithRoles()
+              .Where(u => u.UserId == id && u.Status != "Deleted")
+              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+              .FirstOrDefault();
 
     public UserDto Create(UserCreateDto dto)
     {
@@ -54,6 +56,8 @@ public class UserService : IUserService
         entity.Status = "Active";
         _users.Add(entity);
         var created = _users.QueryWithRolesIncludeDeleted().First(u => u.UserId == entity.UserId);
+        if (dto.RoleIds != null && dto.RoleIds.Any())
+            _users.AssignRoles(entity.UserId, dto.RoleIds);
         return _mapper.Map<UserDto>(created);
     }
 
@@ -65,6 +69,8 @@ public class UserService : IUserService
         _mapper.Map(dto, existing);
         existing.UpdatedAt = DateTime.UtcNow;
         _users.Update(existing);
+        if (dto.RoleIds != null)
+            _users.AssignRoles(existing.UserId, dto.RoleIds);
     }
 
     public void Delete(int id)
@@ -95,7 +101,6 @@ public class UserService : IUserService
     public PagedResultDto<UserDto> GetUsersFiltered(UserPagedQueryDto query, List<string>? statuses = null)
     {
         var q = _users.QueryWithRoles().AsNoTracking().Where(u => u.Status != "Deleted");
-
         if (statuses != null && statuses.Count > 0)
         {
             var set = new HashSet<string>(statuses.Where(s => !string.IsNullOrWhiteSpace(s))
@@ -104,7 +109,6 @@ public class UserService : IUserService
             if (set.Count > 0)
                 q = q.Where(u => set.Contains(u.Status.ToLower()));
         }
-
         if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
             var term = query.SearchTerm.Trim();
@@ -113,31 +117,25 @@ public class UserService : IUserService
                 (u.Email ?? "").Contains(term) ||
                 (u.FullName ?? "").Contains(term));
         }
-
         if (query.Roles != null && query.Roles.Count > 0)
         {
             var rset = query.Roles
                 .Where(r => !string.IsNullOrWhiteSpace(r))
                 .Select(r => r.Trim().ToLowerInvariant())
                 .ToHashSet();
-
             q = q.Where(u => u.UserRoles.Any(ur =>
                 rset.Contains(ur.Role.RoleName.ToLower()) ||
                 rset.Contains(ur.Role.RoleId.ToString())
             ));
         }
-
         var pageNumber = query.PageNumber > 0 ? query.PageNumber : 1;
         var pageSize = query.PageSize > 0 ? query.PageSize : 10;
-
         var totalCount = q.Count();
-
         var data = q
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .ToList();
-
         return new PagedResultDto<UserDto>
         {
             Data = data,
@@ -151,17 +149,14 @@ public class UserService : IUserService
     public PagedResultDto<UserDto> GetUsersFilteredIncludeDeleted(UserPagedQueryDto query, List<string>? statuses = null)
     {
         var q = _users.QueryWithRolesIncludeDeleted().AsNoTracking();
-
         if (statuses != null && statuses.Count > 0)
         {
             var set = new HashSet<string>(statuses
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.Trim().ToLowerInvariant()));
-
             if (set.Count > 0)
                 q = q.Where(u => set.Contains(u.Status.ToLower()));
         }
-
         if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
             var term = query.SearchTerm.Trim();
@@ -170,31 +165,25 @@ public class UserService : IUserService
                 (u.Email ?? "").Contains(term) ||
                 (u.FullName ?? "").Contains(term));
         }
-
         if (query.Roles != null && query.Roles.Count > 0)
         {
             var rset = query.Roles
                 .Where(r => !string.IsNullOrWhiteSpace(r))
                 .Select(r => r.Trim().ToLowerInvariant())
                 .ToHashSet();
-
             q = q.Where(u => u.UserRoles.Any(ur =>
                 rset.Contains(ur.Role.RoleName.ToLower()) ||
                 rset.Contains(ur.Role.RoleId.ToString())
             ));
         }
-
         var pageNumber = query.PageNumber > 0 ? query.PageNumber : 1;
         var pageSize = query.PageSize > 0 ? query.PageSize : 10;
-
         var totalCount = q.Count();
-
         var data = q
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .ToList();
-
         return new PagedResultDto<UserDto>
         {
             Data = data,

@@ -36,5 +36,25 @@ namespace Infrastructure.Implementations
             _dbSet.Update(entity);
             _context.SaveChanges();
         }
+
+        public IEnumerable<string> GetRoleNamesByUserId(int userId) =>
+            _context.UserRoles
+                .Where(ur => ur.UserId == userId)
+                .Include(ur => ur.Role)
+                .Select(ur => ur.Role.RoleName!.Trim())
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct()
+                .ToList();
+
+        public void AssignRoles(int userId, IEnumerable<int> roleIds)
+        {
+            var existing = _context.UserRoles.Where(ur => ur.UserId == userId).ToList();
+            _context.UserRoles.RemoveRange(existing);
+            foreach (var rid in roleIds.Distinct())
+            {
+                _context.UserRoles.Add(new UserRole { UserId = userId, RoleId = rid });
+            }
+            _context.SaveChanges();
+        }
     }
 }

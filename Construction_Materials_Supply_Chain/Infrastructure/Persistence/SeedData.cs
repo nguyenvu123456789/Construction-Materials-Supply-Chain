@@ -366,8 +366,8 @@ namespace Infrastructure.Persistence
 
 
 
-                var prj1 = context.Exports.First(e => e.ExportCode == "PRJ-001");
-                var prj2 = context.Exports.First(e => e.ExportCode == "PRJ-002");
+                var prj1 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-001");
+                var prj2 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-002");
 
                 // dời ngày để có 2 điểm dữ liệu trong 14 ngày gần nhất
                 prj1.ExportDate = DateTime.Now.AddDays(-12);

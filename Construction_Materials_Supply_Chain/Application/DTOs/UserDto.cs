@@ -20,7 +20,7 @@
         public string Email { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public string? AvatarUrl { get; set; }
-        public List<string>? Roles { get; set; }
+        public List<int> RoleIds { get; set; } = new();
     }
 
     public class UserUpdateDto
@@ -29,7 +29,7 @@
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public string? AvatarUrl { get; set; }
-        public List<string>? Roles { get; set; }
+        public List<int> RoleIds { get; set; } = new();
         public string? Status { get; set; }
         //public int? PartnerId { get; set; }
     }

@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Partners;
+﻿using Application.DTOs;
 using FluentValidation;
 
 namespace Application.Validation.Partners

@@ -42,9 +42,10 @@ namespace Services.Implementations
             var user = new User
             {
                 UserName = request.UserName,
-                PasswordHash = Hash(request.Password),
+                PasswordHash = HashBase64(request.Password),
                 Email = request.Email,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Status = "Active"
             };
 
             _users.Add(user);
@@ -58,9 +59,13 @@ namespace Services.Implementations
 
             var user = _users.GetByUsername(request.UserName);
             if (user is null) return null;
+            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase)) return null;
 
-            var hash = Hash(request.Password);
-            if (!string.Equals(user.PasswordHash, hash, StringComparison.Ordinal)) return null;
+            var hashB64 = HashBase64(request.Password);
+            var hashHex = HashHex(request.Password);
+            if (!string.Equals(user.PasswordHash, hashB64, StringComparison.Ordinal) &&
+                !string.Equals(user.PasswordHash, hashHex, StringComparison.OrdinalIgnoreCase))
+                return null;
 
             _activityLogs.LogAction(user.UserId, "User logged in", "User", user.UserId);
             return _mapper.Map<AuthResponseDto>(user);
@@ -71,12 +76,22 @@ namespace Services.Implementations
             _activityLogs.LogAction(userId, "User logged out", "User", userId);
         }
 
-        private static string Hash(string input)
+        private static string HashBase64(string input)
         {
             using var sha = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(input);
             var hash = sha.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
+        }
+
+        private static string HashHex(string input)
+        {
+            using var sha = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hash = sha.ComputeHash(bytes);
+            var sb = new StringBuilder(hash.Length * 2);
+            foreach (var b in hash) sb.Append(b.ToString("x2"));
+            return sb.ToString();
         }
     }
 }

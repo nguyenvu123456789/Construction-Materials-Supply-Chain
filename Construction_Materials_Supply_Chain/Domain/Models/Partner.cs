@@ -8,7 +8,7 @@
         public string? ContactEmail { get; set; }
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
-        public string? Status { get; set; }
+        public string? Status { get; set; } = "Active";
         public virtual PartnerType PartnerType { get; set; } = null!;
 
         public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();

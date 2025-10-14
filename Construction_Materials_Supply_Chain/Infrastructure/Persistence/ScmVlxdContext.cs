@@ -576,6 +576,10 @@ public partial class ScmVlxdContext : DbContext
                 .WithMany(p => p.Partners)
                 .HasForeignKey(d => d.PartnerTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.Property(p => p.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Active");
         });
 
 
@@ -606,6 +610,16 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.UserName).HasMaxLength(50);
+
+            entity.HasOne(u => u.Partner)
+                .WithMany(p => p.Users)
+                .HasForeignKey(u => u.PartnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(u => u.PartnerId);
+            entity.Property(u => u.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Active");
         });
 
         modelBuilder.Entity<UserRole>(entity =>

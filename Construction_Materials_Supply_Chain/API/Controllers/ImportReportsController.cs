@@ -18,18 +18,22 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public IActionResult Create([FromBody] CreateImportReportDto dto)
         {
             try
             {
                 var report = _service.CreateReport(dto);
-                return Ok(report);
+                var response = _mapper.Map<ImportReportResponseDto>(report);
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpPost("{id}/review")]
         public IActionResult Review(int id, [FromBody] ReviewImportReportDto dto)

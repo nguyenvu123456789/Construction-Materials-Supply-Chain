@@ -13,6 +13,8 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IImportRepository _imports;
         private readonly IImportService _importService;
+        private readonly IImportDetailRepository _importDetails;
+        private readonly IHandleRequestRepository _handleRequests;
 
 
         public ImportReportService(
@@ -22,7 +24,9 @@ namespace Services.Implementations
             IImportReportDetailRepository reportDetails,
             IMaterialRepository materials,
             IImportRepository imports,
-            IImportService importService)
+            IImportService importService,
+            IImportDetailRepository importDetails,
+            IHandleRequestRepository handleRequests)
         {
             _reports = reports;
             _invoices = invoices;
@@ -30,29 +34,33 @@ namespace Services.Implementations
             _reportDetails = reportDetails;
             _materials = materials;
             _imports = imports;
-            _importService = importService; // lưu instance
+            _importService = importService;
+            _importDetails = importDetails;
+            _handleRequests = handleRequests;
         }
 
 
-        // 🔹 Tạo phiếu báo cáo theo InvoiceId
         public ImportReport CreateReport(CreateImportReportDto dto)
         {
             if (string.IsNullOrEmpty(dto.InvoiceCode))
                 throw new Exception("InvoiceCode is required.");
 
+            // 🔹 Lấy invoice theo code
             var invoice = _invoices.GetByCode(dto.InvoiceCode)
                 ?? throw new Exception("Invoice not found.");
 
-            // 🔹 Tạo Import tự sinh
+            // 🔹 Tạo Import mới (Pending)
             var import = new Import
             {
                 ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
-                WarehouseId = invoice.PartnerId, // hoặc warehouse mặc định
+                WarehouseId = invoice.PartnerId,
                 CreatedBy = dto.CreatedBy,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Status = "Pending"
             };
-            _imports.Add(import);
+            _imports.Add(import); // SaveChanges được gọi bên trong
 
+            // 🔹 Tạo ImportReport mới
             var report = new ImportReport
             {
                 ImportId = import.ImportId,
@@ -62,86 +70,134 @@ namespace Services.Implementations
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
-            _reports.Add(report);
+            _reports.Add(report); // SaveChanges → report.ImportReportId có giá trị
 
-            // 🔹 Tạo chi tiết report từ Invoice + dữ liệu client
-            foreach (var invoiceDetail in invoice.InvoiceDetails)
+            // 🔹 Tạo chi tiết report từ client DTO
+            foreach (var clientDetail in dto.Details)
             {
-                // Tìm chi tiết do client gửi theo MaterialId
-                var clientDetail = dto.Details.FirstOrDefault(d => d.MaterialId == invoiceDetail.MaterialId);
-                if (clientDetail == null)
-                    throw new Exception($"Missing detail for MaterialId {invoiceDetail.MaterialId}");
-
                 var detail = new ImportReportDetail
                 {
                     ImportReportId = report.ImportReportId,
-                    MaterialId = invoiceDetail.MaterialId,
-                    TotalQuantity = invoiceDetail.Quantity,
+                    MaterialId = clientDetail.MaterialId,
+                    TotalQuantity = clientDetail.TotalQuantity,
                     GoodQuantity = clientDetail.GoodQuantity,
                     DamagedQuantity = clientDetail.DamagedQuantity,
                     Comment = clientDetail.Comment
                 };
 
-                _reportDetails.Add(detail);
-                report.ImportReportDetails.Add(detail);
+                _reportDetails.Add(detail); // SaveChanges bên trong
             }
 
-            return report;
+            // 🔹 Load lại report từ DB với Include đầy đủ để trả về
+            var savedReport = _reports.GetByIdWithDetails(report.ImportReportId)
+                ?? throw new Exception("Failed to load created report details.");
+
+            return savedReport;
         }
 
 
-
-
-
-        // 🔹 Duyệt phiếu báo cáo và tự nhập kho sản phẩm tốt
         public ImportReport ReviewReport(int reportId, ReviewImportReportDto dto)
         {
-            // Lấy report
-            var report = _reports.GetById(reportId);
-            if (report == null) throw new Exception("Report not found.");
+            var report = _reports.GetByIdWithDetails(reportId)
+                         ?? throw new Exception("Report not found.");
 
-            // Cập nhật trạng thái review
             report.Status = dto.Status;
             report.ReviewedBy = dto.ReviewedBy;
-            report.ReviewedAt = DateTime.Now;
+            report.ReviewedAt = DateTime.UtcNow;
             report.RejectReason = dto.Status == "Rejected" ? dto.RejectReason : null;
 
             _reports.Update(report);
 
-            // Nếu Approved, tạo PendingImport và tự xác nhận nhập kho
+            // Lưu lịch sử handle
+            var handle = new HandleRequest
+            {
+                RequestType = "ImportReport",
+                RequestId = report.ImportReportId,
+                HandledBy = dto.ReviewedBy,
+                ActionType = dto.Status,
+                Note = dto.Status == "Rejected" ? dto.RejectReason : report.Notes,
+                HandledAt = DateTime.UtcNow
+            };
+            _handleRequests.Add(handle);
+
             if (dto.Status == "Approved")
             {
-                var goodMaterials = report.ImportReportDetails
-                    .Where(d => d.GoodQuantity > 0)
-                    .Select(d => new Application.DTOs.PendingImportMaterialDto
-                    {
-                        MaterialId = d.MaterialId,
-                        Quantity = d.GoodQuantity
-                    })
-                    .ToList();
-
-                if (goodMaterials.Any())
+                var import = report.Import;
+                if (import == null)
                 {
-                    // 1️⃣ Tạo phiếu Pending Import
-                    var pendingImport = _importService.CreatePendingImport(
-                        warehouseId: report.Import.WarehouseId,
-                        createdBy: dto.ReviewedBy,
-                        notes: $"Auto-generated from approved report #{reportId}",
-                        materials: goodMaterials
-                    );
+                    import = new Import
+                    {
+                        ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                        WarehouseId = report.Invoice?.PartnerId ?? 0,
+                        CreatedBy = dto.ReviewedBy,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = "Success"
+                    };
+                    _imports.Add(import);
+                    report.ImportId = import.ImportId;
+                    _reports.Update(report);
+                }
 
-                    // 2️⃣ Xác nhận Pending Import để thực sự nhập kho
-                    _importService.ConfirmPendingImport(
-                        importCode: pendingImport.ImportCode,
-                        notes: $"Auto-import from approved report #{reportId}"
-                    );
+                // Chuyển vật tư tốt vào ImportDetail + cập nhật tồn kho
+                foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
+                {
+                    var material = _materials.GetById(detail.MaterialId)
+                                   ?? throw new Exception($"Material {detail.MaterialId} not found");
+
+                    var importDetail = new ImportDetail
+                    {
+                        ImportId = import.ImportId,
+                        MaterialId = material.MaterialId,
+                        MaterialCode = material.MaterialCode ?? "",
+                        MaterialName = material.MaterialName,
+                        Unit = material.Unit,
+                        Quantity = detail.GoodQuantity,
+                        UnitPrice = 0,
+                        LineTotal = 0
+                    };
+                    _importDetails.Add(importDetail);
+
+                    var inventory = _inventories.GetByWarehouseAndMaterial(import.WarehouseId, material.MaterialId);
+                    if (inventory == null)
+                    {
+                        inventory = new Inventory
+                        {
+                            WarehouseId = import.WarehouseId,
+                            MaterialId = material.MaterialId,
+                            Quantity = detail.GoodQuantity,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        _inventories.Add(inventory);
+                    }
+                    else
+                    {
+                        inventory.Quantity += detail.GoodQuantity;
+                        inventory.UpdatedAt = DateTime.UtcNow;
+                        _inventories.Update(inventory);
+                    }
+                }
+            }
+            else if (dto.Status == "Rejected")
+            {
+                // Nếu reject → hủy trạng thái invoice về reject
+
+                if (report.Invoice != null)
+                {
+                    report.Invoice.Status = "Rejected";
+                    _invoices.Update(report.Invoice);
                 }
             }
 
             return report;
         }
+    
 
-        public ImportReport? GetById(int reportId) => _reports.GetById(reportId);
+
+
+        public ImportReport? GetById(int reportId)
+        {
+            return _reports.GetByIdWithDetails(reportId);
+        }
 
         public List<ImportReport> GetAllPending() =>
             _reports.GetAll().Where(r => r.Status == "Pending").ToList();

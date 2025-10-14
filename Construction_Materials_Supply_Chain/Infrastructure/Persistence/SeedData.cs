@@ -363,6 +363,77 @@ namespace Infrastructure.Persistence
                     );
                     context.SaveChanges();
                 }
+
+
+
+                var prj1 = context.Exports.First(e => e.ExportCode == "PRJ-001");
+                var prj2 = context.Exports.First(e => e.ExportCode == "PRJ-002");
+
+                // dời ngày để có 2 điểm dữ liệu trong 14 ngày gần nhất
+                prj1.ExportDate = DateTime.Now.AddDays(-12);
+                prj2.ExportDate = DateTime.Now.AddDays(-6);
+                context.Exports.Update(prj1);
+                context.Exports.Update(prj2);
+                context.SaveChanges();
+
+                if (!context.ExportDetails.Any(d => d.ExportId == prj1.ExportId))
+                {
+                    context.ExportDetails.AddRange(
+                        new ExportDetail
+                        {
+                            ExportId = prj1.ExportId,
+                            MaterialId = wood.MaterialId,
+                            MaterialCode = wood.MaterialCode ?? "",
+                            MaterialName = wood.MaterialName,
+                            Unit = wood.Unit,
+                            UnitPrice = 250000m,
+                            Quantity = 18m,
+                            LineTotal = 18m * 250000m
+                        },
+                        new ExportDetail
+                        {
+                            ExportId = prj1.ExportId,
+                            MaterialId = cement.MaterialId,
+                            MaterialCode = cement.MaterialCode ?? "",
+                            MaterialName = cement.MaterialName,
+                            Unit = cement.Unit,
+                            UnitPrice = 90000m,
+                            Quantity = 35m,
+                            LineTotal = 35m * 90000m
+                        }
+                    );
+                }
+
+                if (!context.ExportDetails.Any(d => d.ExportId == prj2.ExportId))
+                {
+                    context.ExportDetails.AddRange(
+                        new ExportDetail
+                        {
+                            ExportId = prj2.ExportId,
+                            MaterialId = brick.MaterialId,
+                            MaterialCode = brick.MaterialCode ?? "",
+                            MaterialName = brick.MaterialName,
+                            Unit = brick.Unit,
+                            UnitPrice = 1200m,
+                            Quantity = 800m,
+                            LineTotal = 800m * 1200m
+                        },
+                        new ExportDetail
+                        {
+                            ExportId = prj2.ExportId,
+                            MaterialId = wood.MaterialId,
+                            MaterialCode = wood.MaterialCode ?? "",
+                            MaterialName = wood.MaterialName,
+                            Unit = wood.Unit,
+                            UnitPrice = 250000m,
+                            Quantity = 10m,
+                            LineTotal = 10m * 250000m
+                        }
+                    );
+                }
+
+                context.SaveChanges();
+
             }
 
             // 13️⃣ Seed Transports
@@ -379,6 +450,109 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
+
+            // A) PURCHASE invoices + details (for purchases/payables/efficiency)
+            if (!context.Invoices.Any(i => i.InvoiceType == "Purchase"))
+            {
+                var manager = context.Users.First(u => u.UserName == "manager1");
+                var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");
+                var pHoaPhat = context.Partners.First(p => p.PartnerCode == "P002");
+
+                var invP1 = new Invoice { InvoiceCode = "PUR-001", InvoiceType = "Purchase", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
+                var invP2 = new Invoice { InvoiceCode = "PUR-002", InvoiceType = "Purchase", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(+2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
+                var invP3 = new Invoice { InvoiceCode = "PUR-003", InvoiceType = "Purchase", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(+4), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
+                context.Invoices.AddRange(invP1, invP2, invP3);
+                context.SaveChanges();
+
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+                var metal = context.Materials.First(m => m.MaterialCode == "M001");
+
+                context.InvoiceDetails.AddRange(
+                    new InvoiceDetail { InvoiceId = invP1.InvoiceId, MaterialId = wood.MaterialId, Quantity = 40, UnitPrice = 240000m, LineTotal = 40m * 240000m },
+                    new InvoiceDetail { InvoiceId = invP1.InvoiceId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 310000m, LineTotal = 10m * 310000m },
+
+                    new InvoiceDetail { InvoiceId = invP2.InvoiceId, MaterialId = wood.MaterialId, Quantity = 60, UnitPrice = 255000m, LineTotal = 60m * 255000m },
+                    new InvoiceDetail { InvoiceId = invP2.InvoiceId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 315000m, LineTotal = 12m * 315000m },
+
+                    new InvoiceDetail { InvoiceId = invP3.InvoiceId, MaterialId = metal.MaterialId, Quantity = 25, UnitPrice = 325000m, LineTotal = 25m * 325000m }
+                );
+                context.SaveChanges();
+
+                // cập nhật TotalAmount
+                var ids = new[] { invP1.InvoiceId, invP2.InvoiceId, invP3.InvoiceId };
+                var sums = context.InvoiceDetails
+                    .Where(d => ids.Contains(d.InvoiceId))
+                    .GroupBy(d => d.InvoiceId)
+                    .Select(g => new { Id = g.Key, Sum = g.Sum(x => x.LineTotal ?? 0m) })
+                    .ToList();
+                foreach (var s in sums)
+                {
+                    var inv = context.Invoices.First(i => i.InvoiceId == s.Id);
+                    inv.TotalAmount = s.Sum;
+                }
+                context.SaveChanges();
+            }
+
+            // B) OVERDUE purchase invoices
+            if (!context.Invoices.Any(i => i.InvoiceType == "Purchase" && i.Status == "Overdue"))
+            {
+                var manager = context.Users.First(u => u.UserName == "manager1");
+                var supplier = context.Partners.First(p => p.PartnerCode == "P001");
+
+                context.Invoices.AddRange(
+                    new Invoice { InvoiceCode = "PUR-OD-001", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), DueDate = DateTime.Now.AddDays(-10), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-20), TotalAmount = 15000000m },
+                    new Invoice { InvoiceCode = "PUR-OD-002", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-14), DueDate = DateTime.Now.AddDays(-4), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-14), TotalAmount = 18000000m },
+                    new Invoice { InvoiceCode = "PUR-OD-003", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(-1), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 22000000m }
+                );
+                context.SaveChanges();
+            }
+
+            // C) Inventory snapshots for forecast (W001 @ Kho Hà Nội)
+            {
+                var whHN = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+
+                bool hasHistory = context.Inventories.Any(i =>
+                    i.WarehouseId == whHN.WarehouseId && i.MaterialId == wood.MaterialId && i.CreatedAt < DateTime.Now.AddDays(-1));
+
+                if (!hasHistory)
+                {
+                    context.Inventories.AddRange(
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 150m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-7) },
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 135m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-4) },
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-1) }
+                    );
+                    context.SaveChanges();
+                }
+            }
+
+            // D) Project-coded exports (PRJ-001/PRJ-002) for consumption/forecast-consumption
+            if (!context.Exports.Any(e => e.ExportCode.StartsWith("PRJ-")))
+            {
+                var staff = context.Users.First(u => u.UserName == "staff01");
+                var whHN = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
+
+                var ex1 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-10), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10) };
+                var ex2 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-7), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-7) };
+                var ex3 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-4), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4) };
+                var ex4 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-1), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-1) };
+                context.Exports.AddRange(ex1, ex2, ex3, ex4);
+                context.SaveChanges();
+
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+                var metal = context.Materials.First(m => m.MaterialCode == "M001");
+
+                context.ExportDetails.AddRange(
+                    new ExportDetail { ExportId = ex1.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode, MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 255000m, Quantity = 10m, LineTotal = 10m * 255000m },
+                    new ExportDetail { ExportId = ex1.ExportId, MaterialId = metal.MaterialId, MaterialCode = metal.MaterialCode, MaterialName = metal.MaterialName, Unit = metal.Unit, UnitPrice = 320000m, Quantity = 5m, LineTotal = 5m * 320000m },
+                    new ExportDetail { ExportId = ex2.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode, MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 255000m, Quantity = 12m, LineTotal = 12m * 255000m },
+                    new ExportDetail { ExportId = ex3.ExportId, MaterialId = metal.MaterialId, MaterialCode = metal.MaterialCode, MaterialName = metal.MaterialName, Unit = metal.Unit, UnitPrice = 325000m, Quantity = 7m, LineTotal = 7m * 325000m },
+                    new ExportDetail { ExportId = ex4.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode, MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 255000m, Quantity = 9m, LineTotal = 9m * 255000m }
+                );
+                context.SaveChanges();
+            }
+
+
         }
     }
 }

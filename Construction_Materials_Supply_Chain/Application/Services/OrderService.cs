@@ -140,6 +140,10 @@ namespace Services.Implementations
 
             return dto;
         }
+        public List<Order> GetAllWithDetails()
+        {
+            return _orderRepository.GetAllWithDetails().ToList();
+        }
 
     }
 }

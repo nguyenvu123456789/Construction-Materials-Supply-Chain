@@ -19,6 +19,13 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("all")]
+        public IActionResult GetAllOrders()
+        {
+            var orders = _orderService.GetAllWithDetails();
+            return Ok(orders);
+        }
+
         [HttpGet("{orderCode}/details")]
         public IActionResult GetOrderDetails(string orderCode)
         {

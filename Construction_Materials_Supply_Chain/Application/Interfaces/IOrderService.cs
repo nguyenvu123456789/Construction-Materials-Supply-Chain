@@ -9,5 +9,7 @@ namespace Application.Interfaces
         Order HandleOrder(HandleOrderRequestDto dto);
 
         OrderWithDetailsDto? GetOrderWithDetails(string orderCode);
+        List<Order> GetAllWithDetails();
+
     }
 }

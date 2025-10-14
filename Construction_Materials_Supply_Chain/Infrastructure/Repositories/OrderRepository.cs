@@ -28,6 +28,14 @@ namespace Infrastructure.Repositories
                 .ThenInclude(od => od.Material)
                 .FirstOrDefault(o => o.OrderCode == orderCode);
         }
+        public List<Order> GetAllWithDetails()
+        {
+            return _dbSet
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Material)
+                .Include(o => o.CreatedByNavigation)
+                .ToList();
+        }
 
     }
 }

@@ -119,5 +119,27 @@ namespace Services.Implementations
 
             return order;
         }
+
+        public OrderWithDetailsDto? GetOrderWithDetails(string orderCode)
+        {
+            var order = _orderRepository.GetByCodeWithDetails(orderCode);
+            if (order == null) return null;
+
+            var dto = new OrderWithDetailsDto
+            {
+                OrderCode = order.OrderCode,
+                PartnerId = order.CreatedBy ?? 0,
+                OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
+                {
+                    MaterialId = od.MaterialId,
+                    MaterialName = od.Material.MaterialName,
+                    Quantity = od.Quantity,
+                    UnitPrice = od.UnitPrice
+                }).ToList()
+            };
+
+            return dto;
+        }
+
     }
 }

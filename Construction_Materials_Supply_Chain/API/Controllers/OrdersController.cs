@@ -19,6 +19,16 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("{orderCode}/details")]
+        public IActionResult GetOrderDetails(string orderCode)
+        {
+            var orderDto = _orderService.GetOrderWithDetails(orderCode);
+            if (orderDto == null) return NotFound(new { message = "Order not found" });
+
+            return Ok(orderDto);
+        }
+
+
         [HttpPost("create-purchase-order")]
         public IActionResult CreatePurchaseOrder([FromBody] CreateOrderDto dto)
         {

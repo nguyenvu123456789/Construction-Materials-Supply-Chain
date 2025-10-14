@@ -18,12 +18,8 @@ public partial class Order
 
     public DateTime? UpdatedAt { get; set; }    
 
-    [JsonIgnore]
     public virtual User? CreatedByNavigation { get; set; }
-    [JsonIgnore]
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
-    [JsonIgnore]
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-    [JsonIgnore]
     public virtual ICollection<ShippingLog> ShippingLogs { get; set; } = new List<ShippingLog>();
 }

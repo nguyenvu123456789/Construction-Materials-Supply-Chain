@@ -5,5 +5,8 @@ namespace Domain.Interface
 {
     public interface IOrderRepository : IGenericRepository<Order>
     {
+        Order? GetByCode(string orderCode);
+        Order? GetByCodeWithDetails(string orderCode);
+
     }
 }

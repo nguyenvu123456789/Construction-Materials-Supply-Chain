@@ -1,7 +1,8 @@
 ﻿using Application.Common.Pagination;
-using Application.DTOs.Partners;
+using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace API.Controllers
 {
@@ -43,6 +44,13 @@ namespace API.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id:int}/restore")]
+        public IActionResult Restore(int id, [FromQuery] string status = "Active")
+        {
+            _service.Restore(id, status);
+            return NoContent();
+        }
+
         [HttpGet("grouped-by-type")]
         public ActionResult<IEnumerable<PartnerTypeDto>> GroupedByType() => Ok(_service.GetPartnerTypesWithPartnersDto());
 
@@ -50,7 +58,12 @@ namespace API.Controllers
         public ActionResult<IEnumerable<PartnerDto>> ByType(int partnerTypeId) => Ok(_service.GetPartnersByTypeDto(partnerTypeId));
 
         [HttpGet("filter")]
-        public ActionResult<PagedResultDto<PartnerDto>> Filter([FromQuery] PartnerPagedQueryDto query) => Ok(_service.GetPartnersFiltered(query));
+        public ActionResult<PagedResultDto<PartnerDto>> Filter([FromQuery] PartnerPagedQueryDto query, [FromQuery] List<string>? statuses)
+            => Ok(_service.GetPartnersFiltered(query, statuses));
+
+        [HttpGet("filter-all")]
+        public ActionResult<PagedResultDto<PartnerDto>> FilterAll([FromQuery] PartnerPagedQueryDto query, [FromQuery] List<string>? statuses)
+            => Ok(_service.GetPartnersFilteredIncludeDeleted(query, statuses));
 
         [HttpGet("types")]
         public ActionResult<IEnumerable<PartnerTypeDto>> Types() => Ok(_service.GetPartnerTypesDto());

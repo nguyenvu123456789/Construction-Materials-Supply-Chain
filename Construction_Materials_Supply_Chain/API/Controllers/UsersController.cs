@@ -2,6 +2,7 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace API.Controllers
 {
@@ -31,12 +32,12 @@ namespace API.Controllers
             return Ok(user);
         }
 
-        [HttpPost]
-        public ActionResult<UserDto> CreateUser([FromBody] UserCreateDto dto)
-        {
-            var created = _users.Create(dto);
-            return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
-        }
+        //[HttpPost]
+        //public ActionResult<UserDto> CreateUser([FromBody] UserCreateDto dto)
+        //{
+        //    var created = _users.Create(dto);
+        //    return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
+        //}
 
         [HttpPut("{id:int}")]
         public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto dto)
@@ -52,10 +53,24 @@ namespace API.Controllers
             return NoContent();
         }
 
-        [HttpGet("filter")]
-        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto query)
+        [HttpPost("{id:int}/restore")]
+        public IActionResult RestoreUser(int id, [FromQuery] string status = "Active")
         {
-            var page = _users.GetUsersFiltered(query);
+            _users.Restore(id, status);
+            return NoContent();
+        }
+
+        [HttpGet("filter")]
+        public ActionResult<PagedResultDto<UserDto>> GetUsersFiltered([FromQuery] UserPagedQueryDto query, [FromQuery] List<string>? statuses)
+        {
+            var page = _users.GetUsersFiltered(query, statuses);
+            return Ok(page);
+        }
+
+        [HttpGet("filter-all")]
+        public ActionResult<PagedResultDto<UserDto>> GetUsersFilteredIncludeDeleted([FromQuery] UserPagedQueryDto query, [FromQuery] List<string>? statuses)
+        {
+            var page = _users.GetUsersFilteredIncludeDeleted(query, statuses);
             return Ok(page);
         }
     }

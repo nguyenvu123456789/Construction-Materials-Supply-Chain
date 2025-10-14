@@ -3,6 +3,7 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Infrastructure.Implementations
 {
@@ -10,19 +11,30 @@ namespace Infrastructure.Implementations
     {
         public UserRepository(ScmVlxdContext context) : base(context) { }
 
-        public User GetByUsername(string username)
-        {
-            return _dbSet.FirstOrDefault(u => u.UserName == username);
-        }
+        public List<User> GetAllNotDeleted() =>
+            _dbSet.AsNoTracking().Where(u => u.Status != "Deleted").ToList();
 
-        public bool ExistsByUsername(string username)
-        {
-            return _dbSet.Any(u => u.UserName == username);
-        }
+        public User? GetByIdNotDeleted(int id) =>
+            _dbSet.FirstOrDefault(u => u.UserId == id && u.Status != "Deleted");
 
-        public IQueryable<User> QueryWithRoles()
-        => _dbSet
-            .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role);
+        public User? GetByUsername(string username) =>
+            _dbSet.FirstOrDefault(u => u.UserName == username && u.Status != "Deleted");
+
+        public bool ExistsByUsername(string username) =>
+            _dbSet.Any(u => u.UserName == username && u.Status != "Deleted");
+
+        public IQueryable<User> QueryWithRoles() =>
+            _dbSet.Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                  .Where(u => u.Status != "Deleted");
+
+        public IQueryable<User> QueryWithRolesIncludeDeleted() =>
+            _dbSet.Include(u => u.UserRoles).ThenInclude(ur => ur.Role);
+
+        public void SoftDelete(User entity)
+        {
+            entity.Status = "Deleted";
+            _dbSet.Update(entity);
+            _context.SaveChanges();
+        }
     }
 }

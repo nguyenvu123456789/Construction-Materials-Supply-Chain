@@ -1,13 +1,17 @@
 using Domain.Interface.Base;
 using Domain.Models;
+using System.Linq;
 
 namespace Domain.Interface
 {
     public interface IUserRepository : IGenericRepository<User>
     {
-        User GetByUsername(string username);
+        List<User> GetAllNotDeleted();
+        User? GetByIdNotDeleted(int id);
+        User? GetByUsername(string username);
         bool ExistsByUsername(string username);
-
         IQueryable<User> QueryWithRoles();
+        IQueryable<User> QueryWithRolesIncludeDeleted();
+        void SoftDelete(User entity);
     }
 }

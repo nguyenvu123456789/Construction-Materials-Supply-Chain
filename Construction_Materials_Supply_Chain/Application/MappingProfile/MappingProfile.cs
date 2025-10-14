@@ -1,5 +1,4 @@
 ﻿using Application.DTOs;
-using Application.DTOs.Partners;
 using AutoMapper;
 using Domain.Models;
 
@@ -10,7 +9,8 @@ namespace Application.MappingProfile
         public MappingProfile()
         {
             CreateMap<User, UserDto>()
-                .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles.Select(ur => ur.Role.RoleName).ToList()));
+                .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles.Select(ur => ur.Role.RoleName).ToList()))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
             CreateMap<UserDto, User>()
                 .ForMember(d => d.UserRoles, o => o.Ignore());
             CreateMap<UserCreateDto, User>()
@@ -65,9 +65,12 @@ namespace Application.MappingProfile
             CreateMap<Category, CategoryDto>().ReverseMap();
 
             CreateMap<Partner, PartnerDto>()
-                .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType.TypeName));
-            CreateMap<PartnerCreateDto, Partner>();
-            CreateMap<PartnerUpdateDto, Partner>();
+                .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType.TypeName))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
+            CreateMap<PartnerCreateDto, Partner>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status));
+            CreateMap<PartnerUpdateDto, Partner>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status));
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
         }

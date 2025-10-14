@@ -9,6 +9,7 @@
         public string Phone { get; set; } = string.Empty;
         public string AvatarUrl { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public string Status { get; set; } = string.Empty;
         public List<string> Roles { get; set; } = new List<string>();
     }
 
@@ -29,5 +30,7 @@
         public string? Phone { get; set; }
         public string? AvatarUrl { get; set; }
         public List<string>? Roles { get; set; }
+        public string? Status { get; set; }
+        //public int? PartnerId { get; set; }
     }
 }

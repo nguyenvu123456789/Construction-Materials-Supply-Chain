@@ -1,10 +1,13 @@
 ﻿using Application.Common.Pagination;
-using Application.DTOs.Partners;
+using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Services.Implementations
 {
@@ -52,7 +55,7 @@ namespace Services.Implementations
 
             var entity = _mapper.Map<Partner>(dto);
             _partners.Add(entity);
-            var created = _partners.QueryWithType().FirstOrDefault(x => x.PartnerId == entity.PartnerId) ?? entity;
+            var created = _partners.QueryWithTypeIncludeDeleted().FirstOrDefault(x => x.PartnerId == entity.PartnerId) ?? entity;
             return _mapper.Map<PartnerDto>(created);
         }
 
@@ -61,13 +64,20 @@ namespace Services.Implementations
             var vr = _updateValidator.Validate(dto);
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
-            var entity = _partners.GetById(id);
+            var entity = _partners.QueryWithTypeIncludeDeleted().FirstOrDefault(x => x.PartnerId == id);
             if (entity == null) throw new KeyNotFoundException("Partner not found");
+            if (entity.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted partner");
 
             entity.PartnerName = dto.PartnerName;
             entity.ContactEmail = dto.ContactEmail;
             entity.ContactPhone = dto.ContactPhone;
             entity.PartnerTypeId = dto.PartnerTypeId;
+
+            if (!string.IsNullOrWhiteSpace(dto.Status) && !string.Equals(dto.Status, "Deleted", StringComparison.OrdinalIgnoreCase))
+            {
+                var s = dto.Status.Trim();
+                entity.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
+            }
 
             _partners.Update(entity);
         }
@@ -76,7 +86,22 @@ namespace Services.Implementations
         {
             var entity = _partners.GetById(id);
             if (entity == null) return;
-            _partners.Delete(entity);
+            if (entity.Status == "Deleted") return;
+            _partners.SoftDelete(entity);
+        }
+
+        public void Restore(int id, string status)
+        {
+            var s = (status ?? string.Empty).Trim();
+            if (!string.Equals(s, "Active", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(s, "Inactive", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("Status must be Active or Inactive");
+
+            var p = _partners.QueryWithTypeIncludeDeleted().FirstOrDefault(x => x.PartnerId == id);
+            if (p == null) throw new KeyNotFoundException("Partner not found");
+            if (p.Status != "Deleted") return;
+            p.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
+            _partners.Update(p);
         }
 
         public IEnumerable<PartnerTypeDto> GetPartnerTypesWithPartnersDto()
@@ -110,12 +135,63 @@ namespace Services.Implementations
             return _mapper.Map<IEnumerable<PartnerDto>>(items);
         }
 
-        public PagedResultDto<PartnerDto> GetPartnersFiltered(PartnerPagedQueryDto query)
+        public PagedResultDto<PartnerDto> GetPartnersFiltered(PartnerPagedQueryDto query, List<string>? statuses = null)
         {
             var vr = _filterValidator.Validate(query);
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
             var q = _partners.QueryWithType();
+
+            if (statuses != null && statuses.Count > 0)
+            {
+                var set = new HashSet<string>(statuses.Where(s => !string.IsNullOrWhiteSpace(s))
+                                                      .Select(s => s.Trim().ToLowerInvariant()));
+                set.Remove("deleted");
+                if (set.Count > 0)
+                    q = q.Where(p => set.Contains(p.Status.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+                q = q.Where(p => (p.PartnerName ?? string.Empty).Contains(query.SearchTerm));
+
+            if (query.PartnerTypes != null && query.PartnerTypes.Any())
+            {
+                var typeIds = _types.GetAll()
+                    .Where(t => query.PartnerTypes.Contains(t.TypeName))
+                    .Select(t => t.PartnerTypeId)
+                    .ToHashSet();
+                q = q.Where(p => typeIds.Contains(p.PartnerTypeId));
+            }
+
+            var total = q.Count();
+            if (query.PageNumber > 0 && query.PageSize > 0)
+                q = q.Skip((query.PageNumber - 1) * query.PageSize).Take(query.PageSize);
+
+            var items = _mapper.Map<IEnumerable<PartnerDto>>(q.ToList());
+
+            return new PagedResultDto<PartnerDto>
+            {
+                Data = items,
+                TotalCount = total,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                TotalPages = (int)Math.Ceiling(total / (double)query.PageSize)
+            };
+        }
+
+        public PagedResultDto<PartnerDto> GetPartnersFilteredIncludeDeleted(PartnerPagedQueryDto query, List<string>? statuses = null)
+        {
+            var vr = _filterValidator.Validate(query);
+            if (!vr.IsValid) throw new ValidationException(vr.Errors);
+
+            var q = _partners.QueryWithTypeIncludeDeleted();
+
+            if (statuses != null && statuses.Count > 0)
+            {
+                var set = new HashSet<string>(statuses.Where(s => !string.IsNullOrWhiteSpace(s))
+                                                      .Select(s => s.Trim().ToLowerInvariant()));
+                q = q.Where(p => set.Contains(p.Status.ToLower()));
+            }
 
             if (!string.IsNullOrWhiteSpace(query.SearchTerm))
                 q = q.Where(p => (p.PartnerName ?? string.Empty).Contains(query.SearchTerm));

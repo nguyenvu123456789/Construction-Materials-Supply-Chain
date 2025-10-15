@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Domain.Models;
+﻿namespace Domain.Models;
 
 public partial class Order
 {
@@ -16,7 +14,7 @@ public partial class Order
 
     public DateTime? CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }    
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual User? CreatedByNavigation { get; set; }
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();

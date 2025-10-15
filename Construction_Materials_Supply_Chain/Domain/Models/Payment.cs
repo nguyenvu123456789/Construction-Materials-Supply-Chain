@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Models
+﻿namespace Domain.Models
 {
     public class Payment
     {
@@ -17,5 +11,5 @@ namespace Domain.Models
         public int? MoneyAccountId { get; set; }
         public string? Reference { get; set; }
         public string Status { get; set; } = "Draft"; // Draft|Posted|Canceled
-    }   
+    }
 }

@@ -1,6 +1,4 @@
 ﻿using Domain.Models;
-using System;
-using System.Linq;
 
 namespace Infrastructure.Persistence
 {

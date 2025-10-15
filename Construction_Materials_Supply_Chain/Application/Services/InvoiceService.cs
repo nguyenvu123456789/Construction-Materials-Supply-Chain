@@ -14,7 +14,7 @@ namespace Services.Implementations
         private readonly IOrderRepository _orderRepository;
 
         public InvoiceService(
-            IInvoiceRepository invoices, 
+            IInvoiceRepository invoices,
             IMaterialRepository materials,
             IInventoryRepository inventories,
             IImportRepository imports,

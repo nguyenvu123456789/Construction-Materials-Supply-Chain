@@ -5,9 +5,6 @@ using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Services.Implementations
 {

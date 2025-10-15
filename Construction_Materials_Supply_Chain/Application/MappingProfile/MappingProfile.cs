@@ -43,7 +43,7 @@ namespace Application.MappingProfile
             CreateMap<Import, ImportResponseDto>()
                 .ForMember(d => d.InvoiceCode, o => o.Ignore())
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.UtcNow))
-                .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails)); 
+                .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
             CreateMap<ImportRequestDto, Import>().ReverseMap();
 
             CreateMap<Material, MaterialDto>()
@@ -83,7 +83,46 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status));
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
-        }
 
+            CreateMap<JournalLine, LedgerLineDto>()
+                .ForMember(d => d.PostingDate, o => o.MapFrom(s => s.JournalEntry.PostingDate))
+                .ForMember(d => d.SourceType, o => o.MapFrom(s => s.JournalEntry.SourceType))
+                .ForMember(d => d.SourceId, o => o.MapFrom(s => s.JournalEntry.SourceId))
+                .ForMember(d => d.ReferenceNo, o => o.MapFrom(s => s.JournalEntry.ReferenceNo))
+                .ForMember(d => d.PartnerId, o => o.MapFrom(s => s.PartnerId))
+                .ForMember(d => d.InvoiceId, o => o.MapFrom(s => s.InvoiceId))
+                .ForMember(d => d.Debit, o => o.MapFrom(s => s.Debit))
+                .ForMember(d => d.Credit, o => o.MapFrom(s => s.Credit));
+
+            CreateMap<Receipt, CashbookItemDto>()
+                .ForMember(d => d.Type, o => o.MapFrom(_ => "Receipt"))
+                .ForMember(d => d.Date, o => o.MapFrom(s => s.Date))
+                .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount))
+                .ForMember(d => d.Method, o => o.MapFrom(s => s.Method))
+                .ForMember(d => d.PartnerId, o => o.MapFrom(s => s.PartnerId))
+                .ForMember(d => d.InvoiceId, o => o.MapFrom(s => s.InvoiceId))
+                .ForMember(d => d.Reference, o => o.MapFrom(s => s.Reference))
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.ReceiptId));
+
+            CreateMap<Payment, CashbookItemDto>()
+                .ForMember(d => d.Type, o => o.MapFrom(_ => "Payment"))
+                .ForMember(d => d.Date, o => o.MapFrom(s => s.Date))
+                .ForMember(d => d.Amount, o => o.MapFrom(s => -s.Amount))
+                .ForMember(d => d.Method, o => o.MapFrom(s => s.Method))
+                .ForMember(d => d.PartnerId, o => o.MapFrom(s => s.PartnerId))
+                .ForMember(d => d.InvoiceId, o => o.MapFrom(s => s.InvoiceId))
+                .ForMember(d => d.Reference, o => o.MapFrom(s => s.Reference))
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.PaymentId));
+
+            CreateMap<BankStatementLine, BankReconLineDto>()
+                .ForMember(d => d.BankStatementLineId, o => o.MapFrom(s => s.BankStatementLineId))
+                .ForMember(d => d.Date, o => o.MapFrom(s => s.Date))
+                .ForMember(d => d.Amount, o => o.MapFrom(s => s.Amount))
+                .ForMember(d => d.Description, o => o.MapFrom(s => s.Description))
+                .ForMember(d => d.ExternalRef, o => o.MapFrom(s => s.ExternalRef))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.ReceiptId, o => o.MapFrom(s => s.ReceiptId))
+                .ForMember(d => d.PaymentId, o => o.MapFrom(s => s.PaymentId));
+        }
     }
 }

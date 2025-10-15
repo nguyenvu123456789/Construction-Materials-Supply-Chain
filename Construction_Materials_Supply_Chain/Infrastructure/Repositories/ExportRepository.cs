@@ -19,5 +19,7 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.Include(e => e.ExportDetails).ToList();
         }
+
+        public Export GetWithDetails(int id) => _dbSet.Include(e => e.ExportDetails).First(x => x.ExportId == id);
     }
 }

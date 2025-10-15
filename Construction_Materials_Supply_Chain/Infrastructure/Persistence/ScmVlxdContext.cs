@@ -448,7 +448,7 @@ public partial class ScmVlxdContext : DbContext
             entity.HasKey(e => e.HandleRequestId);
 
             entity.HasOne(d => d.HandledByNavigation)
-                .WithMany() 
+                .WithMany()
                 .HasForeignKey(d => d.HandledBy)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_HandleRequests_User_HandledByNavigationUserId");
@@ -751,7 +751,7 @@ public partial class ScmVlxdContext : DbContext
             e.ToTable("SubLedgerEntry");
             e.Property(x => x.SubLedgerType).HasMaxLength(5);
             e.Property(x => x.Date).HasColumnType("datetime");
-            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");    
+            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
             e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
             e.Property(x => x.Reference).HasMaxLength(120);
             // PartnerId, InvoiceId soft link — không FK

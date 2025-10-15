@@ -15,12 +15,12 @@ namespace API.Controllers
             _invoiceService = invoiceService;
         }
 
-        
+
 
         [HttpGet("{id:int}")]
         public IActionResult GetInvoice(int id)
         {
-            var invoice = _invoiceService.GetByIdWithDetails(id); 
+            var invoice = _invoiceService.GetByIdWithDetails(id);
             if (invoice == null) return NotFound();
             return Ok(invoice);
         }
@@ -28,7 +28,7 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetAllInvoices()
         {
-            var invoices = _invoiceService.GetAllWithDetails(); 
+            var invoices = _invoiceService.GetAllWithDetails();
             return Ok(invoices);
         }
 

@@ -1,15 +1,15 @@
-﻿using System;
-using Domain.Models;
+﻿using Application.DTOs;
 
 namespace Domain.Interfaces
 {
     public interface IAccountingPostingService
     {
-        void PostSalesInvoice(int invoiceId);
-        void PostPurchaseInvoice(int invoiceId);
-        void PostExportCogs(int exportId);
-        void PostReceipt(int receiptId);
-        void PostPayment(int paymentId);
-        void Unpost(string sourceType, int sourceId);
+        PostResultDto PostSalesInvoice(int invoiceId);
+        PostResultDto PostSalesInvoiceByCode(string invoiceCode);
+        PostResultDto PostPurchaseInvoice(int invoiceId);
+        PostResultDto PostExportCogs(int exportId);
+        PostResultDto PostReceipt(int receiptId);
+        PostResultDto PostPayment(int paymentId);
+        PostResultDto Unpost(string sourceType, int sourceId);
     }
 }

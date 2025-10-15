@@ -70,7 +70,7 @@ namespace API.Controllers
         [HttpGet("{id:int}")]
         public IActionResult GetImport(int id)
         {
-            var import = _importService.GetByIdWithDetails(id); 
+            var import = _importService.GetByIdWithDetails(id);
             if (import == null) return NotFound();
             var result = _mapper.Map<ImportResponseDto>(import);
             return Ok(result);

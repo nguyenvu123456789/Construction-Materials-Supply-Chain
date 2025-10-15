@@ -6,9 +6,6 @@ using AutoMapper.QueryableExtensions;
 using Domain.Interface;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 public class UserService : IUserService
 {

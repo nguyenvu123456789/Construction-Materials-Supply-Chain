@@ -7,12 +7,15 @@ using Application.Validation.Auth;
 using Application.Validation.Partners;
 using Application.Validation.Stock;
 using Domain.Interface;
+using Domain.Interface.Base;
+using Domain.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.Implementations;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Base;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -56,6 +59,10 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IHandleRequestRepository, HandleRequestRepository>();
 builder.Services.AddScoped<ITransportRepository, TransportRepository>();
 builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
+builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
+builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -78,6 +85,9 @@ builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAnalystService, AnalystService>();
+builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
+builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Audit interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();

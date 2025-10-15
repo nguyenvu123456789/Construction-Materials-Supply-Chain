@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Domain.Models;
+﻿namespace Domain.Models;
 
 public partial class InvoiceDetail
 {

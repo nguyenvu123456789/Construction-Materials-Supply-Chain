@@ -6,5 +6,6 @@ namespace Domain.Interface
     public interface IExportRepository : IGenericRepository<Export>
     {
         Export GetExportById(int id);
+        Export GetWithDetails(int id);
     }
 }

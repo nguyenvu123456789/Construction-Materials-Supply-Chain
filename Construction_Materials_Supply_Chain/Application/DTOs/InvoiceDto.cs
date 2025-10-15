@@ -19,8 +19,8 @@
     }
     public class CreateInvoiceFromOrderDto
     {
-        public string OrderCode { get; set; } = null!;   
-        public int CreatedBy { get; set; }               
+        public string OrderCode { get; set; } = null!;
+        public int CreatedBy { get; set; }
         public DateTime IssueDate { get; set; }
         public DateTime? DueDate { get; set; }
 

@@ -552,7 +552,43 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            using var tx = context.Database.BeginTransaction();
 
+            if (!context.Accounts.Any())
+            {
+                context.Accounts.AddRange(
+                    new Account { Code = "111", Name = "Tiền mặt", Type = "Asset", IsPosting = true },
+                    new Account { Code = "112", Name = "Tiền gửi ngân hàng", Type = "Asset", IsPosting = true },
+                    new Account { Code = "131", Name = "Phải thu khách hàng", Type = "Asset", IsPosting = true },
+                    new Account { Code = "331", Name = "Phải trả nhà cung cấp", Type = "Liability", IsPosting = true },
+                    new Account { Code = "156", Name = "Hàng hóa tồn kho", Type = "Asset", IsPosting = true },
+                    new Account { Code = "511", Name = "Doanh thu bán hàng", Type = "Revenue", IsPosting = true },
+                    new Account { Code = "632", Name = "Giá vốn hàng bán", Type = "Expense", IsPosting = true },
+                    new Account { Code = "133", Name = "Thuế GTGT đầu vào", Type = "Asset", IsPosting = true },
+                    new Account { Code = "3331", Name = "Thuế GTGT đầu ra", Type = "Liability", IsPosting = true }
+                );
+                context.SaveChanges();
+            }
+
+            var acc = context.Accounts.ToDictionary(a => a.Code, a => a.AccountId);
+
+            if (!context.PostingPolicies.Any())
+            {
+                context.PostingPolicies.AddRange(
+                    new PostingPolicy { DocumentType = "SalesInvoice", RuleKey = "Revenue", DebitAccountId = acc["131"], CreditAccountId = acc["511"] },
+                    new PostingPolicy { DocumentType = "SalesInvoice", RuleKey = "VATOut", DebitAccountId = acc["131"], CreditAccountId = acc["3331"] },
+                    new PostingPolicy { DocumentType = "PurchaseInvoice", RuleKey = "Inventory", DebitAccountId = acc["156"], CreditAccountId = acc["331"] },
+                    new PostingPolicy { DocumentType = "PurchaseInvoice", RuleKey = "VATIn", DebitAccountId = acc["133"], CreditAccountId = acc["331"] },
+                    new PostingPolicy { DocumentType = "ExportCOGS", RuleKey = "COGS", DebitAccountId = acc["632"], CreditAccountId = acc["156"] },
+                    new PostingPolicy { DocumentType = "Receipt", RuleKey = "Cash", DebitAccountId = acc["111"], CreditAccountId = acc["131"] },
+                    new PostingPolicy { DocumentType = "Receipt", RuleKey = "Bank", DebitAccountId = acc["112"], CreditAccountId = acc["131"] },
+                    new PostingPolicy { DocumentType = "Payment", RuleKey = "Cash", DebitAccountId = acc["331"], CreditAccountId = acc["111"] },
+                    new PostingPolicy { DocumentType = "Payment", RuleKey = "Bank", DebitAccountId = acc["331"], CreditAccountId = acc["112"] }
+                );
+                context.SaveChanges();
+            }
+
+            tx.Commit();
         }
     }
 }

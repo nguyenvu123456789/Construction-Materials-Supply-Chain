@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.MappingProfile;
 using Application.Services;
+using Application.Services.Auth;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Partners;

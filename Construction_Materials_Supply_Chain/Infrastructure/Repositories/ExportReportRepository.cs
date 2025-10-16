@@ -2,6 +2,7 @@
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations
 {
@@ -9,6 +10,12 @@ namespace Infrastructure.Implementations
     {
         public ExportReportRepository(ScmVlxdContext context) : base(context) { }
 
-        // Các method custom nếu cần
+        public ExportReport? GetByIdWithDetails(int id)
+        {
+            return _context.ExportReports
+                .Include(r => r.ExportReportDetails)
+                    .ThenInclude(d => d.Material)
+                .FirstOrDefault(r => r.ExportReportId == id);
+        }
     }
 }

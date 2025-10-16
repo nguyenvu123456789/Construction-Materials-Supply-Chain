@@ -21,5 +21,11 @@ namespace Infrastructure.Implementations
             return _context.Inventories
                            .FirstOrDefault(i => i.MaterialId == materialId && i.WarehouseId == warehouseId);
         }
+        public List<Inventory> GetAllByMaterialId(int materialId)
+        {
+            return _context.Inventories
+                           .Where(i => i.MaterialId == materialId)
+                           .ToList();
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using Application.DTOs;
+using AutoMapper;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -16,12 +18,12 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        // 🔹 Tạo báo cáo vật tư hỏng
+        // 🔹 POST: /api/ExportReports
         [HttpPost]
         public IActionResult CreateReport([FromBody] CreateExportReportDto dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid request data");
+            if (dto == null || dto.Details.Count == 0)
+                return BadRequest("Invalid report data.");
 
             try
             {
@@ -34,14 +36,14 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Quản lý duyệt báo cáo
+        // 🔹 POST: /api/ExportReports/{id}/review
         [HttpPost("{reportId}/review")]
         public IActionResult ReviewReport(int reportId, [FromBody] ReviewExportReportDto dto)
         {
             try
             {
                 _reportService.ReviewReport(reportId, dto);
-                return Ok(new { message = "Report reviewed successfully" });
+                return Ok(new { message = "Report reviewed successfully." });
             }
             catch (Exception ex)
             {
@@ -49,7 +51,7 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Lấy chi tiết báo cáo theo ID
+        // 🔹 GET: /api/ExportReports/{id}
         [HttpGet("{reportId:int}")]
         public IActionResult GetReport(int reportId)
         {
@@ -58,9 +60,9 @@ namespace API.Controllers
             return Ok(_mapper.Map<ExportReportResponseDto>(report));
         }
 
-        // 🔹 Lấy danh sách các báo cáo Pending
+        // 🔹 GET: /api/ExportReports/pending
         [HttpGet("pending")]
-        public IActionResult GetAllPending()
+        public IActionResult GetPendingReports()
         {
             var reports = _reportService.GetAllPending();
             return Ok(_mapper.Map<IEnumerable<ExportReportResponseDto>>(reports));

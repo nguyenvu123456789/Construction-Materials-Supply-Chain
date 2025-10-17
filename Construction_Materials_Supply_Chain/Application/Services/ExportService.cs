@@ -127,26 +127,40 @@ namespace Services.Implementations
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
         {
             var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
-
             if (invoice == null)
                 throw new Exception("Invoice not found.");
 
             if (invoice.InvoiceDetails == null || !invoice.InvoiceDetails.Any())
                 throw new Exception("Invoice has no details.");
 
-            // Tạo export
+            // 🔹 Kiểm tra tồn kho
+            foreach (var item in invoice.InvoiceDetails)
+            {
+                var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, item.MaterialId);
+                if (inventory == null)
+                    throw new Exception($"Material {item.Material?.MaterialName ?? item.MaterialId.ToString()} is not found in this warehouse.");
+
+                if ((inventory.Quantity ?? 0) < item.Quantity)
+                    throw new Exception($"Not enough quantity in warehouse for material {item.Material?.MaterialName ?? item.MaterialId.ToString()}.\n" +
+                                        $"Available: {inventory.Quantity}, Required: {item.Quantity}");
+            }
+
+            // 🔹 Lấy số lớn nhất hiện tại để sinh mã mới
+            var exportCode = GenerateNextExportCode();
+
+            // 🔹 Tạo phiếu xuất
             var export = new Export
             {
-                ExportCode = "EXP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                ExportCode = exportCode,
                 WarehouseId = dto.WarehouseId,
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
-
             _exports.Add(export);
 
+            // 🔹 Tạo chi tiết phiếu xuất
             foreach (var item in invoice.InvoiceDetails)
             {
                 var detail = new ExportDetail
@@ -160,12 +174,46 @@ namespace Services.Implementations
                     UnitPrice = item.UnitPrice,
                     LineTotal = item.Quantity * item.UnitPrice
                 };
-
                 _exportDetails.Add(detail);
+            }
+
+            // 🔹 Cập nhật trạng thái hóa đơn
+            if (invoice.Status?.ToUpper() == "APPROVED")
+            {
+                invoice.Status = "Exporting";
+                invoice.UpdatedAt = DateTime.UtcNow;
+                _invoiceRepository.Update(invoice);
             }
 
             return export;
         }
+
+
+        private string GenerateNextExportCode()
+        {
+            int nextNumber = 1;
+
+            // Lấy tất cả ExportCode hiện có, parse số
+            var existingNumbers = _exports.GetAll()
+                .Select(e =>
+                {
+                    var parts = e.ExportCode.Split('-');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int n))
+                        return n;
+                    return 0;
+                })
+                .Where(n => n > 0)
+                .OrderBy(n => n)
+                .ToList();
+
+            // Tìm số nhỏ nhất chưa có
+            while (existingNumbers.Contains(nextNumber))
+                nextNumber++;
+
+            return $"EXP-{nextNumber:000}";
+        }
+
+
 
     }
 }

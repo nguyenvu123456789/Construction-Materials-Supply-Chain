@@ -14,8 +14,9 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.Include(i => i.InvoiceDetails)
                          .ThenInclude(d => d.Material)
-                         .FirstOrDefault(i => i.InvoiceCode == invoiceCode);
+                         .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
         }
+
 
         public Invoice? GetByIdWithDetails(int id)
         {

@@ -5,6 +5,7 @@
         public int WarehouseId { get; set; }
         public int CreatedBy { get; set; }
         public string? Notes { get; set; }
+        public string? InvoiceCode { get; set; }
         public List<ExportMaterialDto> Materials { get; set; } = new();
     }
 

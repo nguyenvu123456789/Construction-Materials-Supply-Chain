@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Services.Auth;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;

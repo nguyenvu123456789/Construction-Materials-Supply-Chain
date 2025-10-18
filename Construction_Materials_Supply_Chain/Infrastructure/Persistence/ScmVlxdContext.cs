@@ -912,16 +912,31 @@ public partial class ScmVlxdContext : DbContext
         {
             e.HasKey(x => x.ShippingLogId);
             e.ToTable("ShippingLog");
+
             e.Property(x => x.ShippingLogId).HasColumnName("ShippingLogID");
             e.Property(x => x.OrderId).HasColumnName("OrderID");
             e.Property(x => x.TransportId).HasColumnName("TransportID");
             e.Property(x => x.TransportStopId);
             e.Property(x => x.Status).HasMaxLength(50);
-            e.Property(x => x.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
-            e.HasOne(x => x.Order).WithMany(o => o.ShippingLogs).HasForeignKey(x => x.OrderId);
-            e.HasOne<Transport>().WithMany().HasForeignKey(x => x.TransportId).HasConstraintName("FK_ShippingLog_Transport");
-            e.HasOne<TransportStop>().WithMany().HasForeignKey(x => x.TransportStopId).HasConstraintName("FK_ShippingLog_TransportStop");
+            e.Property(x => x.CreatedAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            e.HasOne(x => x.Order)
+                .WithMany(o => o.ShippingLogs)
+                .HasForeignKey(x => x.OrderId);
+
+            e.HasOne(x => x.Transport)
+                .WithMany()
+                .HasForeignKey(x => x.TransportId)
+                .HasConstraintName("FK_ShippingLog_Transport");
+
+            e.HasOne(x => x.TransportStop)
+                .WithMany()
+                .HasForeignKey(x => x.TransportStopId)
+                .HasConstraintName("FK_ShippingLog_TransportStop");
         });
+
 
         OnModelCreatingPartial(modelBuilder);
     }

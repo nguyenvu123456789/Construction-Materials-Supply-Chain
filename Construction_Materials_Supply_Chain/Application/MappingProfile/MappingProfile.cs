@@ -58,10 +58,14 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
             CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<ImportReport, ImportReportResponseDto>()
-    .ForMember(d => d.Import, o => o.MapFrom(s => s.Import))
-    .ForMember(d => d.Invoice, o => o.MapFrom(s => s.Invoice)) // 👈 bắt buộc phải có
-    .ForMember(d => d.Details, o => o.MapFrom(s => s.ImportReportDetails))
-    .ReverseMap();
+            .ForMember(dest => dest.Invoice, opt => opt.MapFrom(src => src.Invoice))
+            .ForMember(dest => dest.Import, opt => opt.MapFrom(src => src.Import))
+            .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails));
+
+            // Các map phụ
+            CreateMap<Invoice, SimpleInvoiceDto>();
+            CreateMap<Import, SimpleImportDto>();
+            CreateMap<ImportReportDetail, ImportReportDetailDto>();
 
             CreateMap<Import, PendingImportResponseDto>()
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));

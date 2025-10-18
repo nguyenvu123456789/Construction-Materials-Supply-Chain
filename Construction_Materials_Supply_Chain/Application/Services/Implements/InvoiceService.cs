@@ -111,7 +111,7 @@ namespace Services.Implementations
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,
                 DueDate = dto.DueDate,
-                Status = "Approved",
+                Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
 

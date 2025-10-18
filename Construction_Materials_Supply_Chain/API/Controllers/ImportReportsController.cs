@@ -18,7 +18,6 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         public IActionResult Create([FromBody] CreateImportReportDto dto)
         {
             try

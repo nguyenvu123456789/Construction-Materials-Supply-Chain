@@ -7,13 +7,7 @@
         public int? InvoiceId { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        public string Status { get; set; } = "Pending"; // Pending / Approved / Rejected
-        public string? RejectReason { get; set; }
-
-        public string? Notes { get; set; } // ghi chú thêm
-        public DateTime? ReviewedAt { get; set; } // ngày duyệt
-        public int? ReviewedBy { get; set; } // quản lý duyệt
+        public string? Notes { get; set; } // ghi chú thêm của thủ kho báo cáo
 
         // 🔹 Navigation
         public virtual Import Import { get; set; } = null!;

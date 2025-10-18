@@ -13,5 +13,13 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.Where(r => r.RequestType == requestType && r.RequestId == requestId).ToList();
         }
+        public bool Exists(string requestType, int requestId, string[] actionTypes)
+        {
+            return _dbSet.Any(r =>
+                r.RequestType == requestType &&
+                r.RequestId == requestId &&
+                actionTypes.Contains(r.ActionType));
+        }
+
     }
 }

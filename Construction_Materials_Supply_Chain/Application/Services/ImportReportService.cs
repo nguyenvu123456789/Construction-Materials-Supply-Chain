@@ -16,7 +16,6 @@ namespace Services.Implementations
         private readonly IImportDetailRepository _importDetails;
         private readonly IHandleRequestRepository _handleRequests;
 
-
         public ImportReportService(
             IImportReportRepository reports,
             IInvoiceRepository invoices,
@@ -39,17 +38,16 @@ namespace Services.Implementations
             _handleRequests = handleRequests;
         }
 
-
+        // 🔹 Tạo mới ImportReport
         public ImportReport CreateReport(CreateImportReportDto dto)
         {
             if (string.IsNullOrEmpty(dto.InvoiceCode))
                 throw new Exception("InvoiceCode is required.");
 
-            // 🔹 Lấy invoice theo code
             var invoice = _invoices.GetByCode(dto.InvoiceCode)
                 ?? throw new Exception("Invoice not found.");
 
-            // 🔹 Tạo Import mới (Pending)
+            // Tạo import tạm (Pending)
             var import = new Import
             {
                 ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
@@ -58,21 +56,20 @@ namespace Services.Implementations
                 CreatedAt = DateTime.UtcNow,
                 Status = "Pending"
             };
-            _imports.Add(import); // SaveChanges được gọi bên trong
+            _imports.Add(import);
 
-            // 🔹 Tạo ImportReport mới
+            // Tạo report
             var report = new ImportReport
             {
                 ImportId = import.ImportId,
                 InvoiceId = invoice.InvoiceId,
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes,
-                Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
-            _reports.Add(report); // SaveChanges → report.ImportReportId có giá trị
+            _reports.Add(report);
 
-            // 🔹 Tạo chi tiết report từ client DTO
+            // Thêm chi tiết report
             foreach (var clientDetail in dto.Details)
             {
                 var detail = new ImportReportDetail
@@ -84,65 +81,67 @@ namespace Services.Implementations
                     DamagedQuantity = clientDetail.DamagedQuantity,
                     Comment = clientDetail.Comment
                 };
-
-                _reportDetails.Add(detail); // SaveChanges bên trong
+                _reportDetails.Add(detail);
             }
 
-            // 🔹 Load lại report từ DB với Include đầy đủ để trả về
-            var savedReport = _reports.GetByIdWithDetails(report.ImportReportId)
-                ?? throw new Exception("Failed to load created report details.");
+            // Ghi log xử lý (Pending)
+            var handle = new HandleRequest
+            {
+                RequestType = "ImportReport",
+                RequestId = report.ImportReportId,
+                HandledBy = dto.CreatedBy,
+                ActionType = "Pending",
+                Note = "Báo cáo nhập kho được tạo.",
+                HandledAt = DateTime.UtcNow
+            };
+            _handleRequests.Add(handle);
 
-            return savedReport;
+            return _reports.GetByIdWithDetails(report.ImportReportId)
+                ?? throw new Exception("Failed to load created report.");
         }
 
-
-        public ImportReport ReviewReport(int reportId, ReviewImportReportDto dto)
+        // 🔹 Duyệt hoặc từ chối ImportReport
+        public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Report not found.");
 
-            report.Status = dto.Status;
-            report.ReviewedBy = dto.ReviewedBy;
-            report.ReviewedAt = DateTime.UtcNow;
-            report.RejectReason = dto.Status == "Rejected" ? dto.RejectReason : null;
-
-            _reports.Update(report);
-
-            // Lưu lịch sử handle
+            // Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
                 RequestType = "ImportReport",
                 RequestId = report.ImportReportId,
                 HandledBy = dto.ReviewedBy,
                 ActionType = dto.Status,
-                Note = dto.Status == "Rejected" ? dto.RejectReason : report.Notes,
+                Note = dto.Status == "Rejected" ? dto.RejectReason : report.Notes, // 🔹 không dùng dto.Notes nữa
                 HandledAt = DateTime.UtcNow
             };
             _handleRequests.Add(handle);
 
+            // Nếu được duyệt
             if (dto.Status == "Approved")
             {
-                var import = report.Import;
-                if (import == null)
+                var import = report.Import ?? new Import
                 {
-                    import = new Import
-                    {
-                        ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
-                        WarehouseId = report.Invoice?.PartnerId ?? 0,
-                        CreatedBy = dto.ReviewedBy,
-                        CreatedAt = DateTime.UtcNow,
-                        Status = "Success"
-                    };
+                    ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    WarehouseId = report.Invoice?.PartnerId ?? 0,
+                    CreatedBy = dto.ReviewedBy,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = "Success"
+                };
+
+                if (report.Import == null)
+                {
                     _imports.Add(import);
                     report.ImportId = import.ImportId;
                     _reports.Update(report);
                 }
 
-                // Chuyển vật tư tốt vào ImportDetail + cập nhật tồn kho
+                // Cập nhật tồn kho
                 foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
                 {
                     var material = _materials.GetById(detail.MaterialId)
-                                   ?? throw new Exception($"Material {detail.MaterialId} not found");
+                        ?? throw new Exception($"Material {detail.MaterialId} not found");
 
                     var importDetail = new ImportDetail
                     {
@@ -160,14 +159,13 @@ namespace Services.Implementations
                     var inventory = _inventories.GetByWarehouseAndMaterial(import.WarehouseId, material.MaterialId);
                     if (inventory == null)
                     {
-                        inventory = new Inventory
+                        _inventories.Add(new Inventory
                         {
                             WarehouseId = import.WarehouseId,
                             MaterialId = material.MaterialId,
                             Quantity = detail.GoodQuantity,
                             UpdatedAt = DateTime.UtcNow
-                        };
-                        _inventories.Add(inventory);
+                        });
                     }
                     else
                     {
@@ -179,8 +177,6 @@ namespace Services.Implementations
             }
             else if (dto.Status == "Rejected")
             {
-                // Nếu reject → hủy trạng thái invoice về reject
-
                 if (report.Invoice != null)
                 {
                     report.Invoice.Status = "Rejected";
@@ -188,18 +184,67 @@ namespace Services.Implementations
                 }
             }
 
-            return report;
+            // Tạo response DTO
+            return new ImportReportResponseDto
+            {
+                ImportReportId = report.ImportReportId,
+                Notes = report.Notes,
+                CreatedAt = report.CreatedAt,
+                ReviewedAt = DateTime.UtcNow,
+                RejectReason = dto.RejectReason,
+                Status = dto.Status,
+                Import = report.Import != null
+                    ? new SimpleImportDto
+                    {
+                        ImportId = report.Import.ImportId,
+                        ImportCode = report.Import.ImportCode,
+                        CreatedAt = report.Import.CreatedAt ?? DateTime.UtcNow,
+                        Status = report.Import.Status
+                    }
+                    : new SimpleImportDto(),
+                Invoice = report.Invoice != null
+                    ? new SimpleInvoiceDto
+                    {
+                        InvoiceId = report.Invoice.InvoiceId,
+                        InvoiceCode = report.Invoice.InvoiceCode,
+                        InvoiceType = report.Invoice.InvoiceType,
+                        IssueDate = report.Invoice.IssueDate
+                    }
+                    : new SimpleInvoiceDto(),
+                Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
+                {
+                    MaterialId = d.MaterialId,
+                    MaterialCode = d.Material?.MaterialCode ?? "",
+                    MaterialName = d.Material?.MaterialName ?? "",
+                    TotalQuantity = d.TotalQuantity,
+                    GoodQuantity = d.GoodQuantity,
+                    DamagedQuantity = d.DamagedQuantity,
+                    Comment = d.Comment
+                }).ToList()
+            };
         }
 
 
-
-
+        // 🔹 Lấy theo ID
         public ImportReport? GetById(int reportId)
         {
             return _reports.GetByIdWithDetails(reportId);
         }
 
-        public List<ImportReport> GetAllPending() =>
-            _reports.GetAll().Where(r => r.Status == "Pending").ToList();
+        // 🔹 Lấy tất cả báo cáo chưa duyệt (Pending)
+        public List<ImportReport> GetAllPending()
+        {
+            // Lấy toàn bộ ImportReport
+            var allReports = _reports.GetAll();
+
+            // Lọc những cái chưa có HandleRequest Approved/Rejected
+            var pendingIds = allReports
+                .Where(r =>
+                    !_handleRequests.Exists("ImportReport", r.ImportReportId, new[] { "Approved", "Rejected" }))
+                .Select(r => r.ImportReportId)
+                .ToList();
+
+            return allReports.Where(r => pendingIds.Contains(r.ImportReportId)).ToList();
+        }
     }
 }

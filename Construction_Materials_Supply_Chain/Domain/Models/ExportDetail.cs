@@ -14,5 +14,7 @@ public partial class ExportDetail
     public decimal LineTotal { get; set; }
 
     public virtual Export Export { get; set; } = null!;
+    public virtual Material Material { get; set; } = null!;
+
 }
 

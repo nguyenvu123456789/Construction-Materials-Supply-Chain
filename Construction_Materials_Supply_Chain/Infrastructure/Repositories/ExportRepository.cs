@@ -12,8 +12,12 @@ namespace Infrastructure.Implementations
 
         public Export GetExportById(int id)
         {
-            return _dbSet.Include(e => e.ExportDetails).FirstOrDefault(e => e.ExportId == id);
+            return _dbSet
+                .Include(e => e.ExportDetails)        
+                    .ThenInclude(d => d.Material)     
+                .FirstOrDefault(e => e.ExportId == id);
         }
+
 
         public override List<Export> GetAll()
         {

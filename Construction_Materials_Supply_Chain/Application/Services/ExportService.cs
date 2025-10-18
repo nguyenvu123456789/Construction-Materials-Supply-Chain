@@ -27,10 +27,22 @@ namespace Services.Implementations
             _invoiceRepository = invoiceRepository;
         }
 
+        // ✅ Tạo phiếu xuất Pending, có kiểm tra tồn kho
         public Export CreatePendingExport(ExportRequestDto dto)
         {
             if (dto.Materials == null || !dto.Materials.Any())
                 throw new Exception("At least one material is required.");
+
+            // 🔹 Kiểm tra tồn kho trước khi tạo
+            foreach (var m in dto.Materials)
+            {
+                var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, m.MaterialId);
+                if (inventory == null)
+                    throw new Exception($"Material {m.MaterialId} not found in warehouse {dto.WarehouseId}.");
+
+                if ((inventory.Quantity ?? 0) < m.Quantity)
+                    throw new Exception($"Not enough stock for material {m.MaterialId}. Available: {inventory.Quantity}, Required: {m.Quantity}");
+            }
 
             var export = new Export
             {
@@ -44,6 +56,7 @@ namespace Services.Implementations
 
             _exports.Add(export);
 
+            // 🔹 Thêm chi tiết xuất kho
             foreach (var m in dto.Materials)
             {
                 var material = _materialRepository.GetById(m.MaterialId);
@@ -61,12 +74,14 @@ namespace Services.Implementations
                     UnitPrice = m.UnitPrice,
                     LineTotal = m.Quantity * m.UnitPrice
                 };
+
                 _exportDetails.Add(detail);
             }
 
             return export;
         }
 
+        // ✅ Xác nhận xuất kho
         public Export ConfirmExport(string exportCode, string? notes)
         {
             var export = _exports.GetAll()
@@ -99,6 +114,7 @@ namespace Services.Implementations
             return export;
         }
 
+        // ✅ Từ chối phiếu xuất
         public Export? RejectExport(int id)
         {
             var export = _exports.GetExportById(id);
@@ -115,15 +131,19 @@ namespace Services.Implementations
             return export;
         }
 
+        // ✅ Lấy phiếu xuất theo Id
         public Export? GetById(int id)
         {
             return _exports.GetExportById(id);
         }
 
+        // ✅ Lấy tất cả phiếu xuất
         public List<Export> GetAll()
         {
             return _exports.GetAll();
         }
+
+        // ✅ Tạo phiếu xuất từ hóa đơn (Invoice)
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
         {
             var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
@@ -145,10 +165,9 @@ namespace Services.Implementations
                                         $"Available: {inventory.Quantity}, Required: {item.Quantity}");
             }
 
-            // 🔹 Lấy số lớn nhất hiện tại để sinh mã mới
+            // 🔹 Sinh mã xuất mới
             var exportCode = GenerateNextExportCode();
 
-            // 🔹 Tạo phiếu xuất
             var export = new Export
             {
                 ExportCode = exportCode,
@@ -188,12 +207,11 @@ namespace Services.Implementations
             return export;
         }
 
-
+        // ✅ Tạo mã phiếu xuất tăng dần
         private string GenerateNextExportCode()
         {
             int nextNumber = 1;
 
-            // Lấy tất cả ExportCode hiện có, parse số
             var existingNumbers = _exports.GetAll()
                 .Select(e =>
                 {
@@ -206,14 +224,10 @@ namespace Services.Implementations
                 .OrderBy(n => n)
                 .ToList();
 
-            // Tìm số nhỏ nhất chưa có
             while (existingNumbers.Contains(nextNumber))
                 nextNumber++;
 
             return $"EXP-{nextNumber:000}";
         }
-
-
-
     }
 }

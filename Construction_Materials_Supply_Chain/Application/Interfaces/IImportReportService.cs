@@ -1,12 +1,13 @@
-﻿using Domain.Models;
+﻿using Application.DTOs;
+using Domain.Models;
 
 namespace Application.Interfaces
 {
     public interface IImportReportService
     {
         ImportReport CreateReport(CreateImportReportDto dto);
-        ImportReport ReviewReport(int reportId, ReviewImportReportDto dto);
-        ImportReport? GetById(int reportId);
+        ImportReport? GetById(int id);
         List<ImportReport> GetAllPending();
+        ImportReportResponseDto ReviewReport(int id, ReviewImportReportDto dto);
     }
 }

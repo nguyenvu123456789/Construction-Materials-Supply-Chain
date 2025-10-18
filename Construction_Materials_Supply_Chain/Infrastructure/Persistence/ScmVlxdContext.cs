@@ -108,8 +108,6 @@ public partial class ScmVlxdContext : DbContext
 
             entity.Property(e => e.ImportReportId).HasColumnName("ImportReportID");
             entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
-            entity.Property(e => e.RejectReason).HasMaxLength(500);
             entity.Property(e => e.Notes).HasMaxLength(500);
 
             entity.HasOne(e => e.Import)
@@ -124,7 +122,6 @@ public partial class ScmVlxdContext : DbContext
 
             entity.HasOne(e => e.ReviewedByNavigation)
                   .WithMany(u => u.ImportReportsReviewed)
-                  .HasForeignKey(e => e.ReviewedBy)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

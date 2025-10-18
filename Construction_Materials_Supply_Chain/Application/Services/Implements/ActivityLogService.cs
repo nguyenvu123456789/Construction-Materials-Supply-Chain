@@ -5,7 +5,7 @@ using AutoMapper;
 using Domain.Interface;
 using FluentValidation;
 
-namespace Services.Implementations
+namespace Application.Services.Implements
 {
     public class ActivityLogService : IActivityLogService
     {
@@ -32,7 +32,7 @@ namespace Services.Implementations
         public PagedResultDto<ActivityLogDto> GetFiltered(ActivityLogPagedQueryDto query)
         {
             var vr = _validator.Validate(query);
-            if (!vr.IsValid) throw new FluentValidation.ValidationException(vr.Errors);
+            if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
             var q = _repo.GetLogs().AsQueryable();
 

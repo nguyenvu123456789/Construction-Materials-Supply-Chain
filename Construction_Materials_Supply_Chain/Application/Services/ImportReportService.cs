@@ -106,19 +106,19 @@ namespace Services.Implementations
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Report not found.");
 
-            // Lưu lịch sử xử lý
+            // 🔹 Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
                 RequestType = "ImportReport",
                 RequestId = report.ImportReportId,
                 HandledBy = dto.ReviewedBy,
-                ActionType = dto.Status,
-                Note = dto.Status == "Rejected" ? dto.RejectReason : report.Notes, // 🔹 không dùng dto.Notes nữa
+                ActionType = dto.Status,       // "Approved" hoặc "Rejected"
+                Note = dto.Note,               // 🔹 Giờ note sẽ chứa lý do hoặc ghi chú của người duyệt
                 HandledAt = DateTime.UtcNow
             };
             _handleRequests.Add(handle);
 
-            // Nếu được duyệt
+            // 🔹 Nếu được duyệt
             if (dto.Status == "Approved")
             {
                 var import = report.Import ?? new Import
@@ -143,6 +143,7 @@ namespace Services.Implementations
                     var material = _materials.GetById(detail.MaterialId)
                         ?? throw new Exception($"Material {detail.MaterialId} not found");
 
+                    // Tạo ImportDetail
                     var importDetail = new ImportDetail
                     {
                         ImportId = import.ImportId,
@@ -156,6 +157,7 @@ namespace Services.Implementations
                     };
                     _importDetails.Add(importDetail);
 
+                    // Cập nhật tồn kho
                     var inventory = _inventories.GetByWarehouseAndMaterial(import.WarehouseId, material.MaterialId);
                     if (inventory == null)
                     {
@@ -177,6 +179,7 @@ namespace Services.Implementations
             }
             else if (dto.Status == "Rejected")
             {
+                // Nếu bị từ chối, chỉ cập nhật hóa đơn nếu có
                 if (report.Invoice != null)
                 {
                     report.Invoice.Status = "Rejected";
@@ -184,14 +187,13 @@ namespace Services.Implementations
                 }
             }
 
-            // Tạo response DTO
+            // 🔹 Tạo response DTO trả về
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 ReviewedAt = DateTime.UtcNow,
-                RejectReason = dto.RejectReason,
                 Status = dto.Status,
                 Import = report.Import != null
                     ? new SimpleImportDto
@@ -223,6 +225,7 @@ namespace Services.Implementations
                 }).ToList()
             };
         }
+
 
 
         // 🔹 Lấy theo ID

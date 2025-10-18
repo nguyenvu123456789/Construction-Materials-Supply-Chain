@@ -62,5 +62,5 @@ public class ReviewImportReportDto
 {
     public string Status { get; set; } = "Approved"; // Approved / Rejected
     public int ReviewedBy { get; set; }
-    public string? RejectReason { get; set; }
+    public string? Note { get; set; }
 }

@@ -198,12 +198,9 @@ namespace Services.Implementations
             }
 
             // ✅ Cập nhật trạng thái hóa đơn: APPROVED → Exporting
-            if (invoice.Status?.ToUpper() == "APPROVED")
-            {
                 invoice.Status = "Exporting";
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoiceRepository.Update(invoice);
-            }
 
             return export;
         }

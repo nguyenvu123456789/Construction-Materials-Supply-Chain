@@ -65,6 +65,8 @@ builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
 builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
+builder.Services.AddScoped<ITransportRepository, TransportRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -75,7 +77,6 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IShippingLogService, ShippingLogService>();
 builder.Services.AddScoped<IImportService, ImportService>();
-
 builder.Services.AddScoped<IImportReportService, ImportReportService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IExportReportService, ExportReportService>();
@@ -89,6 +90,8 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
+builder.Services.AddScoped<ITransportService, TransportService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

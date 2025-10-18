@@ -170,6 +170,23 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
                 .ForMember(d => d.ReceiptId, o => o.MapFrom(s => s.ReceiptId))
                 .ForMember(d => d.PaymentId, o => o.MapFrom(s => s.PaymentId));
+
+            CreateMap<Address, AddressDto>().ReverseMap();
+
+            CreateMap<TransportStop, TransportStopDto>()
+                .ForMember(d => d.StopType, o => o.MapFrom(s => s.StopType.ToString()))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()));
+
+            CreateMap<TransportOrder, TransportOrderDto>();
+            CreateMap<TransportPorter, TransportPorterDto>();
+
+            CreateMap<Transport, TransportResponseDto>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
+                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters))
+                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)));
+
+            CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }
     }
 }

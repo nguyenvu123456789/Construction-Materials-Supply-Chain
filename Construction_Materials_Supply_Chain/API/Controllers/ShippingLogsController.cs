@@ -24,12 +24,5 @@ namespace API.Controllers
             var logs = _service.GetAll();
             return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
         }
-
-        [HttpGet("search")]
-        public ActionResult<IEnumerable<ShippingLogDto>> Search([FromQuery] string status)
-        {
-            var logs = _service.SearchByStatus(status);
-            return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
-        }
     }
 }

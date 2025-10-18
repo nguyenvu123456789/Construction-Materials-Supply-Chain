@@ -34,7 +34,6 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
     public virtual DbSet<Partner> Partners { get; set; }
     public virtual DbSet<PartnerType> PartnerTypes { get; set; }
-    public virtual DbSet<Transport> Transports { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
@@ -58,6 +57,16 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<PostingPolicy> PostingPolicies { get; set; }
     public virtual DbSet<BankStatement> BankStatements { get; set; }
     public virtual DbSet<BankStatementLine> BankStatementLines { get; set; }
+
+    public DbSet<Address> Addresses { get; set; }
+    public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<Driver> Drivers { get; set; }
+    public DbSet<Porter> Porters { get; set; }
+
+    public DbSet<Transport> Transports { get; set; }
+    public DbSet<TransportStop> TransportStops { get; set; }
+    public DbSet<TransportOrder> TransportOrders { get; set; }
+    public DbSet<TransportPorter> TransportPorters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -554,25 +563,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK__Role_Perm__RoleI__48CFD27E");
         });
 
-        modelBuilder.Entity<ShippingLog>(entity =>
-        {
-            entity.HasKey(e => e.ShippingLogId).HasName("PK__Shipping__2A7E450D5152A772");
-            entity.ToTable("ShippingLog");
-            entity.Property(e => e.ShippingLogId).HasColumnName("ShippingLogID");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.TransportId).HasColumnName("TransportID");
-            entity.HasOne(d => d.Order).WithMany(p => p.ShippingLogs)
-                .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__ShippingL__Order__07C12930");
-            entity.HasOne(d => d.Transport).WithMany(p => p.ShippingLogs)
-                .HasForeignKey(d => d.TransportId)
-                .HasConstraintName("FK__ShippingL__Trans__08B54D69");
-        });
-
         modelBuilder.Entity<PartnerType>(entity =>
         {
             entity.HasKey(e => e.PartnerTypeId);
@@ -601,19 +591,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(p => p.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Active");
-        });
-
-
-        modelBuilder.Entity<Transport>(entity =>
-        {
-            entity.HasKey(e => e.TransportId).HasName("PK__Transpor__19E9A17D730EE80D");
-            entity.ToTable("Transport");
-            entity.Property(e => e.TransportId).HasColumnName("TransportID");
-            entity.Property(e => e.Driver).HasMaxLength(100);
-            entity.Property(e => e.Porter).HasMaxLength(100);
-            entity.Property(e => e.Route).HasMaxLength(255);
-            entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.Vehicle).HasMaxLength(50);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -848,6 +825,92 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.BankStatement).WithMany(b => b.Lines)
                 .HasForeignKey(x => x.BankStatementId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Address>(e =>
+        {
+            e.HasKey(x => x.AddressId);
+            e.ToTable("Address");
+            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        });
+
+        modelBuilder.Entity<Vehicle>(e =>
+        {
+            e.HasKey(x => x.VehicleId);
+            e.ToTable("Vehicle");
+            e.Property(x => x.Code).HasMaxLength(50).IsRequired();
+            e.Property(x => x.PlateNumber).HasMaxLength(50).IsRequired();
+            e.Property(x => x.VehicleClass).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Driver>(e =>
+        {
+            e.HasKey(x => x.DriverId);
+            e.ToTable("Driver");
+            e.Property(x => x.FullName).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Phone).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<Porter>(e =>
+        {
+            e.HasKey(x => x.PorterId);
+            e.ToTable("Porter");
+            e.Property(x => x.FullName).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Phone).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<Transport>(e =>
+        {
+            e.HasKey(x => x.TransportId);
+            e.ToTable("Transport");
+            e.Property(x => x.TransportCode).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Notes).HasMaxLength(500);
+            e.HasOne<Address>().WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Transport_Address_DepotId");
+            e.HasOne<Vehicle>().WithMany().HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne<Driver>().WithMany().HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<TransportStop>(e =>
+        {
+            e.HasKey(x => x.TransportStopId);
+            e.ToTable("TransportStop");
+            e.Property(x => x.StopType).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            e.HasOne(x => x.Transport).WithMany(t => t.Stops).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Address).WithMany().HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TransportOrder>(e =>
+        {
+            e.HasKey(x => new { x.TransportId, x.OrderId });
+            e.ToTable("TransportOrder");
+            e.HasOne(x => x.Transport).WithMany(t => t.TransportOrders).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Order).WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TransportPorter>(e =>
+        {
+            e.HasKey(x => new { x.TransportId, x.PorterId });
+            e.ToTable("TransportPorter");
+            e.Property(x => x.Role).HasMaxLength(20);
+            e.HasOne(x => x.Transport).WithMany(t => t.TransportPorters).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Porter).WithMany().HasForeignKey(x => x.PorterId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ShippingLog>(e =>
+        {
+            e.HasKey(x => x.ShippingLogId);
+            e.ToTable("ShippingLog");
+            e.Property(x => x.ShippingLogId).HasColumnName("ShippingLogID");
+            e.Property(x => x.OrderId).HasColumnName("OrderID");
+            e.Property(x => x.TransportId).HasColumnName("TransportID");
+            e.Property(x => x.TransportStopId);
+            e.Property(x => x.Status).HasMaxLength(50);
+            e.Property(x => x.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+            e.HasOne(x => x.Order).WithMany(o => o.ShippingLogs).HasForeignKey(x => x.OrderId);
+            e.HasOne<Transport>().WithMany().HasForeignKey(x => x.TransportId).HasConstraintName("FK_ShippingLog_Transport");
+            e.HasOne<TransportStop>().WithMany().HasForeignKey(x => x.TransportStopId).HasConstraintName("FK_ShippingLog_TransportStop");
         });
 
         OnModelCreatingPartial(modelBuilder);

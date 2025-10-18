@@ -14,12 +14,5 @@ namespace Application.Services.Implements
         }
 
         public List<ShippingLog> GetAll() => _repo.GetAll();
-
-        public List<ShippingLog> SearchByStatus(string status)
-        {
-            var all = _repo.GetAll();
-            if (string.IsNullOrWhiteSpace(status)) return all;
-            return all.Where(s => (s.Status ?? "").Contains(status)).ToList();
-        }
     }
 }

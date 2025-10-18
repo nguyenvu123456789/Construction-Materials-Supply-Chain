@@ -475,20 +475,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-                // 13️⃣ Seed Transports
-                if (!context.Transports.Any())
-            {
-                context.Transports.AddRange(
-                    new Transport { Vehicle = "Xe tải 5 tấn VN-12345", Driver = "Nguyễn Văn Hùng", Porter = "Trần Văn Nam", Route = "Kho Hà Nội -> Đại lý Minh Tâm", Status = "Completed" },
-                    new Transport { Vehicle = "Xe tải 10 tấn VN-67890", Driver = "Lê Minh Tuấn", Porter = "Phạm Văn Khánh", Route = "Kho TP.HCM -> Công ty xây dựng Sài Gòn", Status = "InProgress" },
-                    new Transport { Vehicle = "Xe tải 3.5 tấn VN-54321", Driver = "Đỗ Quang Vinh", Porter = "Vũ Văn Tâm", Route = "Kho Đà Nẵng -> Kho Hà Nội", Status = "Pending" },
-                    new Transport { Vehicle = "Xe container VN-98765", Driver = "Ngô Đình Long", Porter = "Hoàng Văn Đức", Route = "Kho Hải Phòng -> Kho Cần Thơ", Status = "Completed" },
-                    new Transport { Vehicle = "Xe tải 8 tấn VN-24680", Driver = "Phan Văn Hải", Porter = "Lý Văn Bình", Route = "Kho Hà Nội -> Kho Vũng Tàu", Status = "InProgress" },
-                    new Transport { Vehicle = "Xe tải 2.5 tấn VN-13579", Driver = "Trương Văn An", Porter = "Nguyễn Văn Khoa", Route = "Kho Nha Trang -> Khách hàng Lê Văn A", Status = "Completed" },
-                    new Transport { Vehicle = "Xe tải 6 tấn VN-11223", Driver = "Bùi Văn Cường", Porter = "Đặng Văn Tùng", Route = "Kho TP.HCM -> Kho Đà Nẵng", Status = "Pending" }
-                );
-                context.SaveChanges();
-            }
             // Seed Orders & OrderDetails
             if (!context.Orders.Any())
             {
@@ -819,6 +805,71 @@ namespace Infrastructure.Persistence
                 je.Lines.Add(new JournalLine { AccountId = acc131.AccountId, Debit = 0m, Credit = 2000000m });
 
                 context.JournalEntries.Add(je);
+                context.SaveChanges();
+            }
+
+            // ===== Transport seed =====
+            if (!context.Addresses.Any(a => a.Name == "Main Depot"))
+            {
+                var depot = new Address { Name = "Main Depot", Line1 = "KCN A", City = "HCM", Lat = 10.8, Lng = 106.7 };
+                var whA = new Address { Name = "Kho Partner A", Line1 = "Quận 1", City = "HCM", Lat = 10.78, Lng = 106.70 };
+                var whB = new Address { Name = "Kho Partner B", Line1 = "Quận 7", City = "HCM", Lat = 10.73, Lng = 106.72 };
+                context.Addresses.AddRange(depot, whA, whB);
+                context.SaveChanges();
+
+                var v1 = new Vehicle { Code = "TRK-01", PlateNumber = "51C-00001", VehicleClass = "Truck", Active = true };
+                var v2 = new Vehicle { Code = "TRK-02", PlateNumber = "51C-00002", VehicleClass = "Truck", Active = true };
+                context.Vehicles.AddRange(v1, v2);
+                context.SaveChanges();
+
+                var d1 = new Driver { FullName = "Nguyễn Văn Tài", Phone = "0901111111", Active = true };
+                var d2 = new Driver { FullName = "Trần Văn Lái", Phone = "0902222222", Active = true };
+                context.Drivers.AddRange(d1, d2);
+                context.SaveChanges();
+
+                var p1 = new Porter { FullName = "Lê Văn A", Phone = "0903333333", Active = true };
+                var p2 = new Porter { FullName = "Phạm Văn B", Phone = "0904444444", Active = true };
+                context.Porters.AddRange(p1, p2);
+                context.SaveChanges();
+
+                var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001") ?? context.Orders.OrderBy(o => o.OrderId).First();
+                var ord2 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-002") ?? context.Orders.OrderBy(o => o.OrderId).Skip(1).FirstOrDefault() ?? ord1;
+
+                var t1 = new Transport
+                {
+                    TransportCode = "T-INIT-001",
+                    DepotId = depot.AddressId,
+                    VehicleId = v1.VehicleId,
+                    DriverId = d1.DriverId,
+                    Status = TransportStatus.Assigned,
+                    StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
+                    Notes = "Seed trip"
+                };
+                context.Transports.Add(t1);
+                context.SaveChanges();
+
+                var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };
+                var stop1 = new TransportStop { TransportId = t1.TransportId, Seq = 1, StopType = TransportStopType.Dropoff, AddressId = whA.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
+                var stop2 = new TransportStop { TransportId = t1.TransportId, Seq = 2, StopType = TransportStopType.Dropoff, AddressId = whB.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
+                context.TransportStops.AddRange(stop0, stop1, stop2);
+                context.SaveChanges();
+
+                context.TransportOrders.AddRange(
+                    new TransportOrder { TransportId = t1.TransportId, OrderId = ord1.OrderId },
+                    new TransportOrder { TransportId = t1.TransportId, OrderId = ord2.OrderId }
+                );
+                context.SaveChanges();
+
+                context.TransportPorters.AddRange(
+                    new TransportPorter { TransportId = t1.TransportId, PorterId = p1.PorterId, Role = "Member" },
+                    new TransportPorter { TransportId = t1.TransportId, PorterId = p2.PorterId, Role = "Member" }
+                );
+                context.SaveChanges();
+
+                context.ShippingLogs.AddRange(
+                    new ShippingLog { OrderId = ord1.OrderId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
+                    new ShippingLog { OrderId = ord2.OrderId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
+                );
                 context.SaveChanges();
             }
 

@@ -175,16 +175,30 @@ namespace Application.MappingProfile
 
             CreateMap<TransportStop, TransportStopDto>()
                 .ForMember(d => d.StopType, o => o.MapFrom(s => s.StopType.ToString()))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()));
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.AddressName, o => o.MapFrom(s => s.Address.Name))
+                .ForMember(d => d.AddressLine1, o => o.MapFrom(s => s.Address.Line1))
+                .ForMember(d => d.City, o => o.MapFrom(s => s.Address.City))
+                .ForMember(d => d.Lat, o => o.MapFrom(s => s.Address.Lat))
+                .ForMember(d => d.Lng, o => o.MapFrom(s => s.Address.Lng));
 
-            CreateMap<TransportOrder, TransportOrderDto>();
-            CreateMap<TransportPorter, TransportPorterDto>();
+            CreateMap<TransportOrder, TransportOrderDto>()
+                .ForMember(d => d.OrderCode, o => o.MapFrom(s => s.Order.OrderCode))
+                .ForMember(d => d.CustomerName, o => o.MapFrom(s => s.Order.CustomerName));
+            CreateMap<TransportPorter, TransportPorterDto>()
+                .ForMember(d => d.PorterName, o => o.MapFrom(s => s.Porter.FullName))
+                .ForMember(d => d.Phone, o => o.MapFrom(s => s.Porter.Phone));
 
             CreateMap<Transport, TransportResponseDto>()
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Stops.Where(x => x.Seq == 0).Select(x => x.Address.Name).FirstOrDefault() ?? ""))
+                .ForMember(d => d.VehicleCode, o => o.MapFrom(s => s.VehicleId != null ? s.Vehicle.Code : null))
+                .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.VehicleId != null ? s.Vehicle.PlateNumber : null))
+                .ForMember(d => d.DriverName, o => o.MapFrom(s => s.DriverId != null ? s.Driver.FullName : null))
+                .ForMember(d => d.DriverPhone, o => o.MapFrom(s => s.DriverId != null ? s.Driver.Phone : null))
+                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
                 .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
-                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters))
-                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)));
+                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }

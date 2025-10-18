@@ -866,9 +866,19 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.TransportCode).HasMaxLength(50).IsRequired();
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.Notes).HasMaxLength(500);
-            e.HasOne<Address>().WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Transport_Address_DepotId");
-            e.HasOne<Vehicle>().WithMany().HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
-            e.HasOne<Driver>().WithMany().HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
+
+            e.HasOne<Address>().WithMany()
+                .HasForeignKey(x => x.DepotId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Transport_Address_DepotId");
+
+            e.HasOne(x => x.Vehicle).WithMany()
+                .HasForeignKey(x => x.VehicleId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            e.HasOne(x => x.Driver).WithMany()
+                .HasForeignKey(x => x.DriverId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<TransportStop>(e =>

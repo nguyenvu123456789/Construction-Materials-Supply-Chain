@@ -12,14 +12,22 @@ namespace Infrastructure.Implementations
 
         public Transport? GetDetail(int transportId) =>
             _context.Transports
-                .Include(t => t.Stops)
-                .Include(t => t.TransportOrders)
-                .Include(t => t.TransportPorters)
+                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
+                .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
+                .Include(t => t.Vehicle)
+                .Include(t => t.Driver)
                 .FirstOrDefault(t => t.TransportId == transportId);
 
         public List<Transport> Query(DateOnly? date, string? status, int? vehicleId)
         {
-            var q = _context.Transports.Include(t => t.Stops).Include(t => t.TransportOrders).AsQueryable();
+            var q = _context.Transports
+                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
+                .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
+                .Include(t => t.Vehicle)
+                .Include(t => t.Driver)
+                .AsQueryable();
             if (date is not null)
             {
                 var d0 = date.Value.ToDateTime(TimeOnly.MinValue);

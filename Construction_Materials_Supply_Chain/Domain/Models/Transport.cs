@@ -18,5 +18,8 @@
         public ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
         public ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
         public ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
+
+        public Vehicle? Vehicle { get; set; }
+        public Driver? Driver { get; set; }
     }
 }

@@ -60,10 +60,17 @@
         public string TransportCode { get; set; } = default!;
         public string Status { get; set; } = default!;
         public int DepotId { get; set; }
+        public string DepotName { get; set; } = default!;
         public int? VehicleId { get; set; }
+        public string? VehicleCode { get; set; }
+        public string? VehiclePlate { get; set; }
         public int? DriverId { get; set; }
+        public string? DriverName { get; set; }
+        public string? DriverPhone { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
         public DateTimeOffset? EndTimePlanned { get; set; }
+        public DateTimeOffset? StartTimeActual { get; set; }
+        public DateTimeOffset? EndTimeActual { get; set; }
         public List<TransportStopDto> Stops { get; set; } = new();
         public List<TransportOrderDto> Orders { get; set; } = new();
         public List<TransportPorterDto> Porters { get; set; } = new();
@@ -76,6 +83,11 @@
         public int Seq { get; set; }
         public string StopType { get; set; } = default!;
         public int AddressId { get; set; }
+        public string AddressName { get; set; } = default!;
+        public string? AddressLine1 { get; set; }
+        public string? City { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
         public int ServiceTimeMin { get; set; }
         public string Status { get; set; } = default!;
         public DateTimeOffset? ETA { get; set; }
@@ -88,12 +100,16 @@
     {
         public int TransportId { get; set; }
         public int OrderId { get; set; }
+        public string OrderCode { get; set; } = default!;
+        public string? CustomerName { get; set; }
     }
 
     public class TransportPorterDto
     {
         public int TransportId { get; set; }
         public int PorterId { get; set; }
+        public string PorterName { get; set; } = default!;
+        public string? Phone { get; set; }
         public string? Role { get; set; }
     }
 

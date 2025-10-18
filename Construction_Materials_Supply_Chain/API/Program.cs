@@ -67,6 +67,9 @@ builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
 builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
 builder.Services.AddScoped<ITransportRepository, TransportRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<IDriverRepository, DriverRepository>();
+builder.Services.AddScoped<IPorterRepository, PorterRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -92,6 +95,7 @@ builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
 builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

@@ -622,7 +622,6 @@ public partial class ScmVlxdContext : DbContext
             entity.ToTable("User");
             entity.HasIndex(e => e.UserName, "UQ__User__C9F28456BAF9FD7E").IsUnique();
             entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.Property(e => e.AvatarUrl).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

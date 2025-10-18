@@ -17,16 +17,20 @@ namespace Application.MappingProfile
                     : new List<string>()))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
 
-            CreateMap<UserDto, User>()
-                .ForMember(d => d.UserRoles, o => o.Ignore());
+            CreateMap<User, UserDto>()
+                .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles.Select(ur => ur.Role.RoleName).ToList()))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
 
             CreateMap<UserCreateDto, User>()
                 .ForMember(d => d.UserId, o => o.Ignore())
-                .ForMember(d => d.UserRoles, o => o.Ignore());
+                .ForMember(d => d.UserRoles, o => o.Ignore())
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
 
             CreateMap<UserUpdateDto, User>()
                 .ForMember(d => d.UserId, o => o.Ignore())
-                .ForMember(d => d.UserRoles, o => o.Ignore());
+                .ForMember(d => d.UserRoles, o => o.Ignore())
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
 
             // ===== ROLE =====
             CreateMap<Role, RoleDto>().ReverseMap();

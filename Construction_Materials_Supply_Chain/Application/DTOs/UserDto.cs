@@ -7,9 +7,9 @@
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public string AvatarUrl { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string? AvatarBase64 { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
 
@@ -19,7 +19,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string? Phone { get; set; }
-        public string? AvatarUrl { get; set; }
+        public string? AvatarBase64 { get; set; }
         public List<int> RoleIds { get; set; } = new();
     }
 
@@ -28,9 +28,9 @@
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string? AvatarUrl { get; set; }
         public List<int> RoleIds { get; set; } = new();
         public string? Status { get; set; }
+        public string? AvatarBase64 { get; set; }
         //public int? PartnerId { get; set; }
     }
 }

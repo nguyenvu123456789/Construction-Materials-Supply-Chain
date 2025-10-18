@@ -51,10 +51,15 @@ public class UserService : IUserService
         var entity = _mapper.Map<User>(dto);
         entity.CreatedAt = DateTime.UtcNow;
         entity.Status = "Active";
+
+        entity.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+
         _users.Add(entity);
+
         var created = _users.QueryWithRolesIncludeDeleted().First(u => u.UserId == entity.UserId);
         if (dto.RoleIds != null && dto.RoleIds.Any())
             _users.AssignRoles(entity.UserId, dto.RoleIds);
+
         return _mapper.Map<UserDto>(created);
     }
 
@@ -63,9 +68,15 @@ public class UserService : IUserService
         var existing = _users.QueryWithRolesIncludeDeleted().FirstOrDefault(u => u.UserId == id);
         if (existing == null) throw new KeyNotFoundException("User not found");
         if (existing.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted user");
+
         _mapper.Map(dto, existing);
+
+        if (dto.AvatarBase64 != null)
+            existing.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+
         existing.UpdatedAt = DateTime.UtcNow;
         _users.Update(existing);
+
         if (dto.RoleIds != null)
             _users.AssignRoles(existing.UserId, dto.RoleIds);
     }
@@ -189,5 +200,25 @@ public class UserService : IUserService
             PageSize = pageSize,
             TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         };
+    }
+
+    private static string? NormalizeBase64(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        var s = input.Trim();
+
+        var comma = s.IndexOf(',');
+        if (comma >= 0)
+            s = s[(comma + 1)..];
+
+        try
+        {
+            Convert.FromBase64String(s);
+            return s;
+        }
+        catch
+        {
+            throw new ArgumentException("AvatarBase64 is invalid base64 data.");
+        }
     }
 }

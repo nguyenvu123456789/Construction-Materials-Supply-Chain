@@ -31,12 +31,12 @@ namespace API.Controllers
             return Ok(user);
         }
 
-        //[HttpPost]
-        //public ActionResult<UserDto> CreateUser([FromBody] UserCreateDto dto)
-        //{
-        //    var created = _users.Create(dto);
-        //    return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
-        //}
+        [HttpPost]
+        public ActionResult<UserDto> CreateUser([FromBody] UserCreateDto dto)
+        {
+            var created = _users.Create(dto);
+            return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
+        }
 
         [HttpPut("{id:int}")]
         public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto dto)

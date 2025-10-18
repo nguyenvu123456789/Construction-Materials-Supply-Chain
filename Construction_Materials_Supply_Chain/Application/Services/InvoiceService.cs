@@ -106,7 +106,7 @@ namespace Services.Implementations
             var invoice = new Invoice
             {
                 InvoiceCode = $"INV-{_invoices.GetAllWithDetails().Count + 1:D3}",
-                InvoiceType = "Order",
+                InvoiceType = "Export",
                 PartnerId = order.CreatedBy ?? 0,
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,

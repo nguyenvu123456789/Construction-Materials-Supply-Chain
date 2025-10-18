@@ -3,8 +3,11 @@
     public class CreateOrderDto
     {
         public int CreatedBy { get; set; }
+        public string? DeliveryAddress { get; set; } 
+        public string? Note { get; set; }
         public List<OrderMaterialDto> Materials { get; set; } = new();
     }
+
 
     public class OrderResponseDto
     {
@@ -13,7 +16,8 @@
         public string CustomerName { get; set; } = null!;
         public string Status { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
-
+        public string? DeliveryAddress { get; set; } 
+        public string? Note { get; set; }
         public List<OrderMaterialDto> Materials { get; set; } = new();
     }
 
@@ -34,6 +38,8 @@
     {
         public string OrderCode { get; set; } = null!;
         public int PartnerId { get; set; }
+        public string? DeliveryAddress { get; set; } 
+        public string? Note { get; set; }
         public List<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();
     }
 

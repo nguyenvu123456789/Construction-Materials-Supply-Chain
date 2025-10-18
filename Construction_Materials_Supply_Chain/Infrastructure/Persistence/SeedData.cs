@@ -488,85 +488,75 @@ namespace Infrastructure.Persistence
                 var glass = context.Materials.First(m => m.MaterialCode == "G001");
 
                 var orders = new List<Order>
-                {
-                    new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", Status = "Pending", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
-                    new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", Status = "Approved", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
-                    new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", Status = "Pending", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
-                    new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", Status = "Approved", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
-                    new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", Status = "Success", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
-                    new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", Status = "Pending", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
-                    new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", Status = "Approved", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
-                    new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", Status = "Success", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
-                    new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", Status = "Pending", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
-                    new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", Status = "Approved", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
-                };
+    {
+        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
+        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
+        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
+        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
+        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
+        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
+        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
+        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
+        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
+        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
+    };
 
                 context.Orders.AddRange(orders);
                 context.SaveChanges();
 
                 context.OrderDetails.AddRange(
-                    // Order 1
                     new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m },
                     new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m },
-                    // Order 2
                     new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m },
                     new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m },
-                    // Order 3
                     new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m },
                     new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m },
-                    // Order 4
                     new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m },
                     new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m },
-                    // Order 5
                     new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m },
                     new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m },
-                    // Order 6
                     new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m },
                     new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m },
-                    // Order 7
                     new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m },
                     new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m },
-                    // Order 8
                     new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m },
                     new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m },
-                    // Order 9
                     new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m },
                     new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m },
-                    // Order 10
                     new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m },
                     new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m }
                 );
                 context.SaveChanges();
             }
-            // A) PURCHASE invoices + details (for purchases/payables/efficiency)
-            if (!context.Invoices.Any(i => i.InvoiceType == "Purchase"))
+
+            // A) Import and Export Invoices + Details
+            if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var pHoaPhat = context.Partners.First(p => p.PartnerCode == "P002");
 
-                var invP1 = new Invoice { InvoiceCode = "PUR-001", InvoiceType = "Purchase", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
-                var invP2 = new Invoice { InvoiceCode = "PUR-002", InvoiceType = "Purchase", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(+2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
-                var invP3 = new Invoice { InvoiceCode = "PUR-003", InvoiceType = "Purchase", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(+4), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
-                context.Invoices.AddRange(invP1, invP2, invP3);
+                var invI1 = new Invoice { InvoiceCode = "IMP-001", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
+                var invI2 = new Invoice { InvoiceCode = "IMP-002", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(+2), Status = "Pending", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
+                var invE1 = new Invoice { InvoiceCode = "EXP-001", InvoiceType = "Export", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(+4), Status = "Success", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
+
+                context.Invoices.AddRange(invI1, invI2, invE1);
                 context.SaveChanges();
 
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
 
                 context.InvoiceDetails.AddRange(
-                    new InvoiceDetail { InvoiceId = invP1.InvoiceId, MaterialId = wood.MaterialId, Quantity = 40, UnitPrice = 240000m, LineTotal = 40m * 240000m },
-                    new InvoiceDetail { InvoiceId = invP1.InvoiceId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 310000m, LineTotal = 10m * 310000m },
-
-                    new InvoiceDetail { InvoiceId = invP2.InvoiceId, MaterialId = wood.MaterialId, Quantity = 60, UnitPrice = 255000m, LineTotal = 60m * 255000m },
-                    new InvoiceDetail { InvoiceId = invP2.InvoiceId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 315000m, LineTotal = 12m * 315000m },
-
-                    new InvoiceDetail { InvoiceId = invP3.InvoiceId, MaterialId = metal.MaterialId, Quantity = 25, UnitPrice = 325000m, LineTotal = 25m * 325000m }
+                    new InvoiceDetail { InvoiceId = invI1.InvoiceId, MaterialId = wood.MaterialId, Quantity = 40, UnitPrice = 240000m, LineTotal = 40m * 240000m },
+                    new InvoiceDetail { InvoiceId = invI1.InvoiceId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 310000m, LineTotal = 10m * 310000m },
+                    new InvoiceDetail { InvoiceId = invI2.InvoiceId, MaterialId = wood.MaterialId, Quantity = 60, UnitPrice = 255000m, LineTotal = 60m * 255000m },
+                    new InvoiceDetail { InvoiceId = invI2.InvoiceId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 315000m, LineTotal = 12m * 315000m },
+                    new InvoiceDetail { InvoiceId = invE1.InvoiceId, MaterialId = metal.MaterialId, Quantity = 25, UnitPrice = 325000m, LineTotal = 25m * 325000m }
                 );
                 context.SaveChanges();
 
-                // cập nhật TotalAmount
-                var ids = new[] { invP1.InvoiceId, invP2.InvoiceId, invP3.InvoiceId };
+                // Update TotalAmount
+                var ids = new[] { invI1.InvoiceId, invI2.InvoiceId, invE1.InvoiceId };
                 var sums = context.InvoiceDetails
                     .Where(d => ids.Contains(d.InvoiceId))
                     .GroupBy(d => d.InvoiceId)
@@ -577,20 +567,6 @@ namespace Infrastructure.Persistence
                     var inv = context.Invoices.First(i => i.InvoiceId == s.Id);
                     inv.TotalAmount = s.Sum;
                 }
-                context.SaveChanges();
-            }
-
-            // B) OVERDUE purchase invoices
-            if (!context.Invoices.Any(i => i.InvoiceType == "Purchase" && i.Status == "Overdue"))
-            {
-                var manager = context.Users.First(u => u.UserName == "manager1");
-                var supplier = context.Partners.First(p => p.PartnerCode == "P001");
-
-                context.Invoices.AddRange(
-                    new Invoice { InvoiceCode = "PUR-OD-001", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), DueDate = DateTime.Now.AddDays(-10), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-20), TotalAmount = 15000000m },
-                    new Invoice { InvoiceCode = "PUR-OD-002", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-14), DueDate = DateTime.Now.AddDays(-4), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-14), TotalAmount = 18000000m },
-                    new Invoice { InvoiceCode = "PUR-OD-003", InvoiceType = "Purchase", PartnerId = supplier.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(-1), Status = "Overdue", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 22000000m }
-                );
                 context.SaveChanges();
             }
 

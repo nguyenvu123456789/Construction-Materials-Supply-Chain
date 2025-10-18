@@ -6,7 +6,7 @@ using Domain.Interface;
 using Domain.Models;
 using FluentValidation;
 
-namespace Services.Implementations
+namespace Application.Services.Implements
 {
     public class PartnerService : IPartnerService
     {

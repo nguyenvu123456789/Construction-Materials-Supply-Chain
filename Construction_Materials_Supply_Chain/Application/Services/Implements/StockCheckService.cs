@@ -5,7 +5,7 @@ using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
 
-namespace Application.Services
+namespace Application.Services.Implements
 {
     public class StockCheckService : IStockCheckService
     {
@@ -39,10 +39,10 @@ namespace Application.Services
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.CheckDate).First());
 
             var sysQty = mats.ToDictionary(m => m.MaterialId,
-                m => m.Inventories.Sum(i => (decimal?)i.Quantity ?? 0m));
+                m => m.Inventories.Sum(i => i.Quantity ?? 0m));
 
             var avgPrice = mats.ToDictionary(m => m.MaterialId,
-                m => m.Inventories.Any() ? (m.Inventories.Average(i => (decimal?)i.UnitPrice) ?? 0m) : 0m);
+                m => m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m);
 
             int skuWithChecks = latestByMat.Keys.Intersect(mats.Select(m => m.MaterialId)).Count();
             int skuAccurate = 0;
@@ -98,9 +98,9 @@ namespace Application.Services
                 if (!matLookup.TryGetValue(c.MaterialId, out var m)) continue;
 
                 var wh = m.Inventories.FirstOrDefault()?.Warehouse?.WarehouseName ?? "—";
-                var sysQty = m.Inventories.Sum(i => (decimal?)i.Quantity ?? 0m);
-                var avgPrice = m.Inventories.Any() ? (m.Inventories.Average(i => (decimal?)i.UnitPrice) ?? 0m) : 0m;
-                var diffQty = (decimal)c.QuantityChecked - sysQty;
+                var sysQty = m.Inventories.Sum(i => i.Quantity ?? 0m);
+                var avgPrice = m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m;
+                var diffQty = c.QuantityChecked - sysQty;
                 var diffVal = diffQty * avgPrice;
                 var status = (DateTime.UtcNow - c.CheckDate).TotalHours <= 12 ? "Đang" : "Đã duyệt";
 
@@ -144,9 +144,9 @@ namespace Application.Services
             var result = new List<SkuDiffDto>();
             foreach (var m in mats)
             {
-                var systemQty = (decimal)m.Inventories.Sum(i => (decimal?)i.Quantity ?? 0m);
+                var systemQty = m.Inventories.Sum(i => i.Quantity ?? 0m);
                 var actualQty = latestByMat.TryGetValue(m.MaterialId, out var last)
-                    ? (decimal)last.QuantityChecked
+                    ? last.QuantityChecked
                     : systemQty;
 
                 var diff = actualQty - systemQty;
@@ -160,7 +160,7 @@ namespace Application.Services
                     SystemQty = systemQty,
                     ActualQty = actualQty,
                     DiffQty = diff,
-                    Reason = latestByMat.TryGetValue(m.MaterialId, out var ck) ? (ck.Notes ?? "—") : "—"
+                    Reason = latestByMat.TryGetValue(m.MaterialId, out var ck) ? ck.Notes ?? "—" : "—"
                 });
             }
 

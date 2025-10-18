@@ -2,7 +2,7 @@
 using Domain.Interface;
 using Domain.Models;
 
-namespace Application.Services
+namespace Application.Services.Implements
 {
     public class ExportReportService : IExportReportService
     {

@@ -8,7 +8,7 @@ using FluentValidation;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Services.Implementations
+namespace Application.Services.Implements
 {
     public class AuthenticationService : IAuthenticationService
     {

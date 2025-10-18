@@ -5,7 +5,7 @@ using Domain.Interface.Base;
 using Domain.Interfaces;
 using Domain.Models;
 
-namespace Application.Services
+namespace Application.Services.Implements
 {
     public class AccountingQueryService : IAccountingQueryService
     {

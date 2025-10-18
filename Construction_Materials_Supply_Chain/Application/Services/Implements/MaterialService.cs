@@ -2,7 +2,7 @@
 using Domain.Interface;
 using Domain.Models;
 
-namespace Services.Implementations
+namespace Application.Services.Implements
 {
     public class MaterialService : IMaterialService
     {

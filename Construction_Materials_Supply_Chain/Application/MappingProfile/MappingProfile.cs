@@ -79,7 +79,14 @@ namespace Application.MappingProfile
                 .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName));
 
             CreateMap<Import, SimpleImportDto>();
+            // ===== Invoice
+            CreateMap<CreateInvoiceDto, Invoice>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Pending"))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.InvoiceDetails, opt => opt.MapFrom(src => src.Details));
 
+            CreateMap<CreateInvoiceDetailDto, InvoiceDetail>()
+                .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.Quantity * src.UnitPrice));
             // ===== MATERIAL =====
             CreateMap<Material, MaterialDto>()
                 .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.CategoryName : null))

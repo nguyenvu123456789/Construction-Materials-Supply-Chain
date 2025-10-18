@@ -2,7 +2,7 @@
 using Application.Interfaces;
 using Domain.Interface;
 
-namespace Services.Implementations
+namespace Application.Services.Implements
 {
     public class AnalystService : IAnalystService
     {
@@ -55,7 +55,7 @@ namespace Services.Implementations
                     PartnerId = g.Key.PartnerId,
                     PartnerName = g.Key.PartnerName ?? "",
                     TotalQuantity = g.Sum(i => (decimal)i.Quantity),
-                    TotalAmount = g.Sum(i => (decimal)(i.LineTotal ?? 0)),
+                    TotalAmount = g.Sum(i => i.LineTotal ?? 0),
                     OrdersCount = g.Select(i => i.InvoiceId).Distinct().Count()
                 }).ToList();
         }
@@ -160,7 +160,7 @@ namespace Services.Implementations
 
             var current = (decimal)ys.Last();
             var forecast = (decimal)predicted;
-            var status = (threshold.HasValue && forecast < threshold.Value) ? "Low Stock Warning" : "Normal";
+            var status = threshold.HasValue && forecast < threshold.Value ? "Low Stock Warning" : "Normal";
             var trend = slope < 0 ? "Decreasing" : "Increasing";
 
             return new StockForecastDto
@@ -187,7 +187,7 @@ namespace Services.Implementations
                 q = q.Where(x => x.Export.ExportCode == f.ProjectCode);
 
             var daily = q.GroupBy(x => new { Day = x.Export.ExportDate.Date, x.Export.ExportCode, x.MaterialId, x.MaterialName })
-                .Select(g => new { g.Key.ExportCode, g.Key.MaterialId, g.Key.MaterialName, Qty = g.Sum(i => i.Quantity), Day = g.Key.Day })
+                .Select(g => new { g.Key.ExportCode, g.Key.MaterialId, g.Key.MaterialName, Qty = g.Sum(i => i.Quantity), g.Key.Day })
                 .OrderBy(x => x.Day)
                 .ToList();
 
@@ -237,7 +237,7 @@ namespace Services.Implementations
                 {
                     g.Key.PartnerId,
                     g.Key.PartnerName,
-                    Day = g.Key.Day,
+                    g.Key.Day,
                     AvgPrice = g.Sum(x => x.UnitPrice * x.Quantity) / (g.Sum(x => x.Quantity) == 0 ? 1 : g.Sum(x => x.Quantity))
                 })
                 .OrderBy(x => x.Day)
@@ -281,7 +281,7 @@ namespace Services.Implementations
                 {
                     g.Key.PartnerId,
                     g.Key.PartnerName,
-                    Day = g.Key.Day,
+                    g.Key.Day,
                     Overdue = g.Where(x => x.Status == "Overdue").Sum(x => x.TotalAmount)
                 })
                 .OrderBy(x => x.Day)

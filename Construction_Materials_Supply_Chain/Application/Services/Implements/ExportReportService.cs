@@ -112,11 +112,10 @@ namespace Application.Services.Implements
 
 
         // 🔹 Lấy báo cáo theo ID
-        public ExportReport? GetById(int reportId) =>
-            _reportRepo.GetById(reportId);
+        public ExportReport? GetById(int reportId)
+            => _reportRepo.GetByIdWithDetails(reportId);
 
-        // 🔹 Lấy danh sách báo cáo chờ duyệt
-        public List<ExportReport> GetAllPending() =>
-            _reportRepo.GetAll().Where(r => r.Status == "Pending").ToList();
+        public List<ExportReport> GetAllPending()
+            => _reportRepo.GetAllPendingWithDetails();
     }
 }

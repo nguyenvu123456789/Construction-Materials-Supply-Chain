@@ -168,6 +168,7 @@ namespace Services.Implementations
             // 🔹 Sinh mã xuất mới
             var exportCode = GenerateNextExportCode();
 
+            // ✅ Export là Pending
             var export = new Export
             {
                 ExportCode = exportCode,
@@ -175,7 +176,7 @@ namespace Services.Implementations
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
                 Status = "Pending",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             };
             _exports.Add(export);
 
@@ -196,7 +197,7 @@ namespace Services.Implementations
                 _exportDetails.Add(detail);
             }
 
-            // 🔹 Cập nhật trạng thái hóa đơn
+            // ✅ Cập nhật trạng thái hóa đơn: APPROVED → Exporting
             if (invoice.Status?.ToUpper() == "APPROVED")
             {
                 invoice.Status = "Exporting";
@@ -206,6 +207,7 @@ namespace Services.Implementations
 
             return export;
         }
+
 
         // ✅ Tạo mã phiếu xuất tăng dần
         private string GenerateNextExportCode()

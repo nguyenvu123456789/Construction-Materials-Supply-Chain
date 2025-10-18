@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Common;
 using Application.Interfaces;
 using Application.MappingProfile;
+using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Implements;
 using Application.Validation.ActivityLogs;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Services.Implementations;
 using System.IdentityModel.Tokens.Jwt;          // ✅ thêm
 using System.Security.Claims;                  // ✅ thêm
 using System.Text;
@@ -73,6 +75,7 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IShippingLogService, ShippingLogService>();
 builder.Services.AddScoped<IImportService, ImportService>();
+
 builder.Services.AddScoped<IImportReportService, ImportReportService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IExportReportService, ExportReportService>();
@@ -86,6 +89,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
+
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

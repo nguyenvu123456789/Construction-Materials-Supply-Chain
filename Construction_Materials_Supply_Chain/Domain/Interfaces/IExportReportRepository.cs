@@ -6,8 +6,7 @@ namespace Domain.Interface
     public interface IExportReportRepository : IGenericRepository<ExportReport>
     {
         ExportReport? GetByIdWithDetails(int id);
-        List<ExportReport> GetAllPendingWithDetails();
-        List<ExportReport> GetAllReviewedWithDetails();
+        List<ExportReport> GetAllWithDetails();
 
     }
 }

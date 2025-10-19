@@ -15,5 +15,7 @@ namespace Application.Interfaces
         void CompleteStop(int transportId, TransportStopDoneRequestDto dto);
         void Complete(int transportId, DateTimeOffset at);
         void Cancel(int transportId, string reason);
+        void DeleteStop(int transportId, int transportStopId);
+        void ClearStops(int transportId, bool keepDepot);
     }
 }

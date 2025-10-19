@@ -103,5 +103,35 @@ namespace Infrastructure.Implementations
             t.Notes = (t.Notes is null ? "" : t.Notes + " | ") + $"Cancelled:{reason}";
             _context.SaveChanges();
         }
+
+        private void ResequenceStops(int transportId)
+        {
+            var stops = _context.TransportStops
+                .Where(x => x.TransportId == transportId)
+                .OrderBy(x => x.Seq)
+                .ToList();
+
+            var i = 0;
+            foreach (var s in stops) s.Seq = i++;
+            _context.SaveChanges();
+        }
+
+        public void RemoveStop(int transportId, int transportStopId)
+        {
+            var s = _context.TransportStops.First(x => x.TransportId == transportId && x.TransportStopId == transportStopId);
+            if (s.Seq == 0) throw new InvalidOperationException("Cannot remove depot stop");
+            _context.TransportStops.Remove(s);
+            _context.SaveChanges();
+            ResequenceStops(transportId);
+        }
+
+        public void ClearStops(int transportId, bool keepDepot)
+        {
+            var q = _context.TransportStops.Where(x => x.TransportId == transportId);
+            if (keepDepot) q = q.Where(x => x.Seq != 0);
+            _context.TransportStops.RemoveRange(q);
+            _context.SaveChanges();
+            ResequenceStops(transportId);
+        }
     }
 }

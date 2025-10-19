@@ -68,6 +68,20 @@ namespace Api.Controllers
             return Ok();
         }
 
+        [HttpDelete("{id:int}/stops/{stopId:int}")]
+        public IActionResult DeleteStop(int id, int stopId)
+        {
+            _service.DeleteStop(id, stopId);
+            return Ok();
+        }
+
+        [HttpDelete("{id:int}/stops")]
+        public IActionResult ClearStops(int id, [FromQuery] bool keepDepot = true)
+        {
+            _service.ClearStops(id, keepDepot);
+            return Ok();
+        }
+
         [HttpPost("{id:int}/complete")]
         public IActionResult Complete(int id, [FromQuery] DateTimeOffset? at)
         {

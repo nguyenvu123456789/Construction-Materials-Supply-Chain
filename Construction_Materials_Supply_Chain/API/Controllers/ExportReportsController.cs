@@ -67,5 +67,13 @@ namespace API.Controllers
             var reports = _reportService.GetAllPending();
             return Ok(_mapper.Map<IEnumerable<ExportReportResponseDto>>(reports));
         }
+        // 🔹 GET: /api/ExportReports/reviewed
+        [HttpGet("reviewed")]
+        public IActionResult GetReviewedReports()
+        {
+            var reports = _reportService.GetAllReviewed();
+            return Ok(_mapper.Map<IEnumerable<ExportReportResponseDto>>(reports));
+        }
+
     }
 }

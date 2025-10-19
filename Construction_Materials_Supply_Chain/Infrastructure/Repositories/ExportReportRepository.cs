@@ -30,5 +30,14 @@ namespace Infrastructure.Repositories
                 .Where(r => r.Status == "Pending")
                 .ToList();
         }
+        public List<ExportReport> GetAllReviewedWithDetails()
+        {
+            return _context.ExportReports
+                .Include(r => r.ExportReportDetails)
+                .Where(r => r.Status != "Pending")
+                .OrderByDescending(r => r.ReportDate)
+                .ToList();
+        }
+
     }
 }

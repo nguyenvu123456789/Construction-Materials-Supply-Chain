@@ -9,15 +9,19 @@ namespace Application.Services.Implements
         private readonly IExportReportRepository _reportRepo;
         private readonly IExportRepository _exportRepo;
         private readonly IInventoryRepository _inventoryRepo;
+        private readonly IHandleRequestRepository _handleRequests;
 
         public ExportReportService(
             IExportReportRepository reportRepo,
             IExportRepository exportRepo,
-            IInventoryRepository inventoryRepo)
+            IInventoryRepository inventoryRepo,
+            IHandleRequestRepository handleRequests)
+
         {
             _reportRepo = reportRepo;
             _exportRepo = exportRepo;
             _inventoryRepo = inventoryRepo;
+            _handleRequests = handleRequests;
         }
 
         // 🔹 Nhân viên tạo báo cáo hư hỏng (chưa có quyết định giữ/lỗi)
@@ -54,7 +58,7 @@ namespace Application.Services.Implements
         // 🔹 Quản lý duyệt báo cáo
         public void ReviewReport(int reportId, ReviewExportReportDto dto)
         {
-            var report = _reportRepo.GetByIdWithDetails(reportId) // dùng method có include detail
+            var report = _reportRepo.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
 
             var export = _exportRepo.GetById(report.ExportId)
@@ -64,7 +68,6 @@ namespace Application.Services.Implements
 
             report.DecidedBy = dto.DecidedBy;
             report.DecidedAt = DateTime.UtcNow;
-            report.Notes = dto.Notes;
 
             if (dto.Approve == null)
                 throw new Exception("Phải chọn duyệt hoặc từ chối báo cáo.");
@@ -73,6 +76,17 @@ namespace Application.Services.Implements
             {
                 report.Status = "Rejected";
                 _reportRepo.Update(report);
+
+                _handleRequests.Add(new HandleRequest
+                {
+                    RequestType = "ExportReport",
+                    RequestId = reportId,
+                    HandledBy = dto.DecidedBy,
+                    ActionType = "Rejected",
+                    Note = dto.Notes, // 🔹 Ghi chú của người duyệt
+                    HandledAt = DateTime.Now
+                });
+
                 return;
             }
 
@@ -87,10 +101,9 @@ namespace Application.Services.Implements
 
                 bool keep = decisionDetail.Keep;
 
-                // ❌ Cập nhật quyết định vào chi tiết
                 d.Keep = keep;
 
-                // ✅ Trừ kho nếu vật tư hư hỏng
+                // ✅ Trừ kho nếu không giữ lại
                 if (!keep)
                 {
                     var inventory = _inventoryRepo.GetByMaterialId(d.MaterialId, warehouseId)
@@ -106,16 +119,32 @@ namespace Application.Services.Implements
                 }
             }
 
-            // ✅ Bắt buộc EF Core update các entity con
-            _reportRepo.Update(report); // update cả report và detail
+            // 🔹 Ghi lại hành động duyệt
+            _handleRequests.Add(new HandleRequest
+            {
+                RequestType = "ExportReport",
+                RequestId = reportId,
+                HandledBy = dto.DecidedBy,
+                ActionType = "Approved",
+                Note = dto.Notes, // ✅ Ghi chú của người duyệt
+                HandledAt = DateTime.Now
+            });
+
+            report.Status = "Approved";
+            _reportRepo.Update(report);
         }
 
 
-        // 🔹 Lấy báo cáo theo ID
+
         public ExportReport? GetById(int reportId)
             => _reportRepo.GetByIdWithDetails(reportId);
 
         public List<ExportReport> GetAllPending()
             => _reportRepo.GetAllPendingWithDetails();
+        public List<ExportReport> GetAllReviewed()
+        {
+            return _reportRepo.GetAllReviewedWithDetails();
+        }
+
     }
 }

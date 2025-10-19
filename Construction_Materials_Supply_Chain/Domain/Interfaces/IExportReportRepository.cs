@@ -7,5 +7,7 @@ namespace Domain.Interface
     {
         ExportReport? GetByIdWithDetails(int id);
         List<ExportReport> GetAllPendingWithDetails();
+        List<ExportReport> GetAllReviewedWithDetails();
+
     }
 }

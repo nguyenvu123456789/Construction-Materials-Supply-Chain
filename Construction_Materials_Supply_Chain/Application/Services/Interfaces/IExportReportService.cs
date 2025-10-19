@@ -7,4 +7,6 @@ public interface IExportReportService
     void ReviewReport(int reportId, ReviewExportReportDto dto);
     ExportReport? GetById(int reportId);
     List<ExportReport> GetAllPending();
+    List<ExportReport> GetAllReviewed();
+
 }

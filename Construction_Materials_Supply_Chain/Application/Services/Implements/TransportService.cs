@@ -119,5 +119,17 @@ namespace Application.Services.Implements
             _transportRepo.Cancel(transportId, reason);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = $"Transport.Cancelled:{reason}", CreatedAt = DateTime.UtcNow });
         }
+
+        public void DeleteStop(int transportId, int transportStopId)
+        {
+            _transportRepo.RemoveStop(transportId, transportStopId);
+            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = transportStopId, Status = "Stop.Deleted", CreatedAt = DateTime.UtcNow });
+        }
+
+        public void ClearStops(int transportId, bool keepDepot)
+        {
+            _transportRepo.ClearStops(transportId, keepDepot);
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = keepDepot ? "Stops.ClearedKeepDepot" : "Stops.ClearedAll", CreatedAt = DateTime.UtcNow });
+        }
     }
 }

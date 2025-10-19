@@ -171,7 +171,9 @@ namespace Application.MappingProfile
                 .ForMember(d => d.ReceiptId, o => o.MapFrom(s => s.ReceiptId))
                 .ForMember(d => d.PaymentId, o => o.MapFrom(s => s.PaymentId));
 
-            CreateMap<Address, AddressDto>().ReverseMap();
+            CreateMap<Address, AddressResponseDto>().ReverseMap();
+            CreateMap<Address, AddressCreateDto>().ReverseMap();
+            CreateMap<Address, AddressUpdateDto>().ReverseMap();
 
             CreateMap<TransportStop, TransportStopDto>()
                 .ForMember(d => d.StopType, o => o.MapFrom(s => s.StopType.ToString()))

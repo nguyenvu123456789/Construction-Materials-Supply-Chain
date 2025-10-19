@@ -15,5 +15,7 @@ namespace Domain.Interface
         void UpdateStopDeparture(int transportId, int transportStopId, DateTimeOffset at);
         bool AllNonDepotStopsDone(int transportId);
         void Cancel(int transportId, string reason);
+        void RemoveStop(int transportId, int transportStopId);
+        void ClearStops(int transportId, bool keepDepot);
     }
 }

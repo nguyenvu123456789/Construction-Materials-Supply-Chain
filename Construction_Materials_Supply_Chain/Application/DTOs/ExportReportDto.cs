@@ -38,6 +38,7 @@ namespace Application.DTOs
         public DateTime ReportDate { get; set; }
         public string? Notes { get; set; }
         public List<ExportReportDetailResponseDto> Details { get; set; } = new();
+        public List<HandleRequestDto> HandleHistory { get; set; } = new();
     }
 
     public class ExportReportDetailResponseDto

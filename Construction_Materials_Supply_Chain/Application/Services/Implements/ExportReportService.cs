@@ -10,21 +10,23 @@ namespace Application.Services.Implements
         private readonly IExportRepository _exportRepo;
         private readonly IInventoryRepository _inventoryRepo;
         private readonly IHandleRequestRepository _handleRequests;
+        private readonly IUserRepository _userRepo;
 
         public ExportReportService(
             IExportReportRepository reportRepo,
             IExportRepository exportRepo,
             IInventoryRepository inventoryRepo,
-            IHandleRequestRepository handleRequests)
-
+            IHandleRequestRepository handleRequests,
+            IUserRepository userRepo)
         {
             _reportRepo = reportRepo;
             _exportRepo = exportRepo;
             _inventoryRepo = inventoryRepo;
             _handleRequests = handleRequests;
+            _userRepo = userRepo;
         }
 
-        // 🔹 Nhân viên tạo báo cáo hư hỏng (chưa có quyết định giữ/lỗi)
+        // 🔹 Tạo báo cáo hư hỏng
         public ExportReport CreateReport(CreateExportReportDto dto)
         {
             var export = _exportRepo.GetById(dto.ExportId)
@@ -41,21 +43,20 @@ namespace Application.Services.Implements
 
             foreach (var d in dto.Details)
             {
-                var detail = new ExportReportDetail
+                report.ExportReportDetails.Add(new ExportReportDetail
                 {
                     MaterialId = d.MaterialId,
                     QuantityDamaged = d.QuantityDamaged,
                     Reason = d.Reason,
-                    Keep = null 
-                };
-                report.ExportReportDetails.Add(detail);
+                    Keep = null
+                });
             }
 
             _reportRepo.Add(report);
             return report;
         }
 
-        // 🔹 Quản lý duyệt báo cáo
+        // 🔹 Duyệt báo cáo
         public void ReviewReport(int reportId, ReviewExportReportDto dto)
         {
             var report = _reportRepo.GetByIdWithDetails(reportId)
@@ -65,7 +66,6 @@ namespace Application.Services.Implements
                          ?? throw new Exception("Không tìm thấy phiếu xuất.");
 
             var warehouseId = export.WarehouseId;
-
             report.DecidedBy = dto.DecidedBy;
             report.DecidedAt = DateTime.UtcNow;
 
@@ -83,10 +83,9 @@ namespace Application.Services.Implements
                     RequestId = reportId,
                     HandledBy = dto.DecidedBy,
                     ActionType = "Rejected",
-                    Note = dto.Notes, // 🔹 Ghi chú của người duyệt
+                    Note = dto.Notes,
                     HandledAt = DateTime.Now
                 });
-
                 return;
             }
 
@@ -95,38 +94,31 @@ namespace Application.Services.Implements
 
             foreach (var d in report.ExportReportDetails)
             {
-                var decisionDetail = dto.Details.FirstOrDefault(x => x.MaterialId == d.MaterialId);
-                if (decisionDetail == null)
-                    throw new Exception($"Thiếu quyết định cho vật tư ID {d.MaterialId}.");
+                var decision = dto.Details.FirstOrDefault(x => x.MaterialId == d.MaterialId)
+                               ?? throw new Exception($"Thiếu quyết định cho vật tư ID {d.MaterialId}.");
 
-                bool keep = decisionDetail.Keep;
+                d.Keep = decision.Keep;
 
-                d.Keep = keep;
-
-                // ✅ Trừ kho nếu không giữ lại
-                if (!keep)
+                if (!d.Keep.Value)
                 {
                     var inventory = _inventoryRepo.GetByMaterialId(d.MaterialId, warehouseId)
                         ?? throw new Exception($"Không tìm thấy vật tư {d.MaterialId} trong kho {warehouseId}.");
 
-                    decimal currentQty = inventory.Quantity ?? 0;
-
-                    if (currentQty < d.QuantityDamaged)
+                    if ((inventory.Quantity ?? 0) < d.QuantityDamaged)
                         throw new Exception($"Không đủ vật tư {d.MaterialId} trong kho {warehouseId}.");
 
-                    inventory.Quantity = currentQty - d.QuantityDamaged;
+                    inventory.Quantity -= d.QuantityDamaged;
                     _inventoryRepo.Update(inventory);
                 }
             }
 
-            // 🔹 Ghi lại hành động duyệt
             _handleRequests.Add(new HandleRequest
             {
                 RequestType = "ExportReport",
                 RequestId = reportId,
                 HandledBy = dto.DecidedBy,
                 ActionType = "Approved",
-                Note = dto.Notes, // ✅ Ghi chú của người duyệt
+                Note = dto.Notes,
                 HandledAt = DateTime.Now
             });
 
@@ -134,17 +126,110 @@ namespace Application.Services.Implements
             _reportRepo.Update(report);
         }
 
-
-
-        public ExportReport? GetById(int reportId)
-            => _reportRepo.GetByIdWithDetails(reportId);
-
-        public List<ExportReport> GetAllPending()
-            => _reportRepo.GetAllPendingWithDetails();
-        public List<ExportReport> GetAllReviewed()
+        // 🔹 Lấy báo cáo theo ID
+        public ExportReportResponseDto GetById(int reportId)
         {
-            return _reportRepo.GetAllReviewedWithDetails();
+            var report = _reportRepo.GetByIdWithDetails(reportId)
+                         ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
+
+            var details = report.ExportReportDetails.Select(d => new ExportReportDetailResponseDto
+            {
+                MaterialId = d.MaterialId,
+                MaterialName = d.Material?.MaterialName ?? "",
+                QuantityDamaged = d.QuantityDamaged,
+                Reason = d.Reason,
+                Keep = d.Keep ?? false
+            }).ToList();
+
+            // Chỉ lấy bản ghi handle cuối cùng
+            var lastHandle = _handleRequests.GetByRequest("ExportReport", reportId)
+                .OrderByDescending(h => h.HandledAt)
+                .FirstOrDefault();
+
+            var handleHistory = lastHandle != null
+                ? new List<HandleRequestDto>
+                {
+                    new HandleRequestDto
+                    {
+                        HandledBy = lastHandle.HandledBy,
+                        HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
+                        ActionType = lastHandle.ActionType,
+                        Note = lastHandle.Note,
+                        HandledAt = lastHandle.HandledAt
+                    }
+                }
+                : new List<HandleRequestDto>();
+
+            return new ExportReportResponseDto
+            {
+                ExportReportId = report.ExportReportId,
+                ExportId = report.ExportId,
+                Status = report.Status,
+                ReportDate = report.ReportDate,
+                Notes = report.Notes,
+                Details = details,
+                HandleHistory = handleHistory
+            };
         }
 
+        // 🔹 Lấy tất cả báo cáo (mới nhất cho mỗi ExportId)
+        public List<ExportReportResponseDto> GetAll()
+        {
+            var reports = _reportRepo.GetAllWithDetails()
+                .OrderByDescending(r => r.ReportDate)
+                .ToList();
+
+            // Lấy bản ghi mới nhất cho mỗi ExportId
+            var latestReports = reports
+                .GroupBy(r => r.ExportId)
+                .Select(g => g.First())
+                .ToList();
+
+            var result = new List<ExportReportResponseDto>();
+
+            foreach (var report in latestReports)
+            {
+                var details = report.ExportReportDetails.Select(d => new ExportReportDetailResponseDto
+                {
+                    MaterialId = d.MaterialId,
+                    MaterialName = d.Material?.MaterialName ?? "",
+                    QuantityDamaged = d.QuantityDamaged,
+                    Reason = d.Reason,
+                    Keep = d.Keep ?? false
+                }).ToList();
+
+                // Chỉ lấy bản ghi handle cuối cùng
+                var lastHandle = _handleRequests.GetByRequest("ExportReport", report.ExportReportId)
+                    .OrderByDescending(h => h.HandledAt)
+                    .FirstOrDefault();
+
+                var handleHistory = lastHandle != null
+                    ? new List<HandleRequestDto>
+                    {
+                        new HandleRequestDto
+                        {
+                            HandledBy = lastHandle.HandledBy,
+                            HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
+                            ActionType = lastHandle.ActionType,
+                            Note = lastHandle.Note,
+                            HandledAt = lastHandle.HandledAt
+                        }
+                    }
+                    : new List<HandleRequestDto>();
+
+                result.Add(new ExportReportResponseDto
+                {
+                    ExportReportId = report.ExportReportId,
+                    ExportId = report.ExportId,
+                    Status = report.Status,
+                    ReportDate = report.ReportDate,
+                    Notes = report.Notes,
+                    Details = details,
+                    HandleHistory = handleHistory
+                });
+            }
+
+            return result;
+        }
     }
 }

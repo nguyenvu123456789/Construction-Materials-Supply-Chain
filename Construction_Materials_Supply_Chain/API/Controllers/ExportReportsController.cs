@@ -60,20 +60,14 @@ namespace API.Controllers
             return Ok(_mapper.Map<ExportReportResponseDto>(report));
         }
 
-        // 🔹 GET: /api/ExportReports/pending
-        [HttpGet("pending")]
-        public IActionResult GetPendingReports()
+        [HttpGet]
+        public IActionResult GetAllReports()
         {
-            var reports = _reportService.GetAllPending();
-            return Ok(_mapper.Map<IEnumerable<ExportReportResponseDto>>(reports));
+            var reports = _reportService.GetAll();
+            var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports); 
+            return Ok(reportDtos);
         }
-        // 🔹 GET: /api/ExportReports/reviewed
-        [HttpGet("reviewed")]
-        public IActionResult GetReviewedReports()
-        {
-            var reports = _reportService.GetAllReviewed();
-            return Ok(_mapper.Map<IEnumerable<ExportReportResponseDto>>(reports));
-        }
+
 
     }
 }

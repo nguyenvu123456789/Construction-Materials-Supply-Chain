@@ -42,9 +42,12 @@ namespace Application.Services.Implements
                     }
                 }
             };
+
             _transportRepo.Add(t);
             _logRepo.Add(new ShippingLog { TransportId = t.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow });
-            return _mapper.Map<TransportResponseDto>(t);
+
+            var loaded = _transportRepo.GetDetail(t.TransportId);
+            return _mapper.Map<TransportResponseDto>(loaded!);
         }
 
         public TransportResponseDto? Get(int transportId)

@@ -19,8 +19,8 @@
 
     public class TransportAssignRequestDto
     {
-        public int VehicleId { get; set; }
-        public int DriverId { get; set; }
+        public int? VehicleId { get; set; }
+        public int? DriverId { get; set; }
         public List<int> PorterIds { get; set; } = new();
     }
 

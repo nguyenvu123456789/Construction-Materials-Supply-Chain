@@ -133,5 +133,48 @@ namespace Infrastructure.Implementations
             _context.SaveChanges();
             ResequenceStops(transportId);
         }
+
+        private static readonly string[] ActiveStatuses = new[] { "Planned", "Assigned", "EnRoute" };
+
+        public bool VehicleBusy(int vehicleId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
+        {
+            var e1 = e ?? DateTimeOffset.MaxValue;
+            return _context.Transports.Any(x =>
+                x.TransportId != excludeTransportId &&
+                x.VehicleId == vehicleId &&
+                ActiveStatuses.Contains(x.Status.ToString()) &&
+                (x.StartTimeActual ?? x.StartTimePlanned) < e1 &&
+                (x.EndTimeActual ?? x.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
+            );
+        }
+
+        public bool DriverBusy(int driverId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
+        {
+            var e1 = e ?? DateTimeOffset.MaxValue;
+            return _context.Transports.Any(x =>
+                x.TransportId != excludeTransportId &&
+                x.DriverId == driverId &&
+                ActiveStatuses.Contains(x.Status.ToString()) &&
+                (x.StartTimeActual ?? x.StartTimePlanned) < e1 &&
+                (x.EndTimeActual ?? x.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
+            );
+        }
+
+        public List<int> BusyPorters(List<int> porterIds, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
+        {
+            var e1 = e ?? DateTimeOffset.MaxValue;
+            return _context.TransportPorters
+                .Where(tp => porterIds.Contains(tp.PorterId) &&
+                             tp.TransportId != excludeTransportId &&
+                             ActiveStatuses.Contains(tp.Transport.Status.ToString()) &&
+                             (tp.Transport.StartTimeActual ?? tp.Transport.StartTimePlanned) < e1 &&
+                             (tp.Transport.EndTimeActual ?? tp.Transport.EndTimePlanned ?? DateTimeOffset.MaxValue) > s)
+                .Select(tp => tp.PorterId)
+                .Distinct()
+                .ToList();
+        }
+
+        public List<int> GetPorterIds(int transportId) =>
+            _context.TransportPorters.Where(tp => tp.TransportId == transportId).Select(tp => tp.PorterId).ToList();
     }
 }

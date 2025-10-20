@@ -64,7 +64,23 @@ namespace Application.Services.Implements
 
         public void Assign(int transportId, TransportAssignRequestDto dto)
         {
-            _transportRepo.Assign(transportId, dto.VehicleId, dto.DriverId, dto.PorterIds);
+            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
+            var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
+            var e = t.EndTimePlanned;
+
+            if (dto.VehicleId.HasValue && _transportRepo.VehicleBusy(dto.VehicleId.Value, transportId, s, e))
+                throw new InvalidOperationException("Vehicle is busy in the selected time window");
+
+            if (dto.DriverId.HasValue && _transportRepo.DriverBusy(dto.DriverId.Value, transportId, s, e))
+                throw new InvalidOperationException("Driver is busy in the selected time window");
+
+            var busy = (dto.PorterIds?.Count > 0)
+                ? _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e)
+                : new List<int>();
+            if (busy.Any())
+                throw new InvalidOperationException($"Porters busy: {string.Join(",", busy)}");
+
+            _transportRepo.Assign(transportId, dto.VehicleId ?? 0, dto.DriverId ?? 0, dto.PorterIds ?? new List<int>());
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow });
         }
 
@@ -94,6 +110,19 @@ namespace Application.Services.Implements
 
         public void Start(int transportId, DateTimeOffset at)
         {
+            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
+            var s = at;
+            var e = t.EndTimePlanned;
+
+            if (t.VehicleId.HasValue && _transportRepo.VehicleBusy(t.VehicleId.Value, transportId, s, e))
+                throw new InvalidOperationException("Vehicle is busy");
+            if (t.DriverId.HasValue && _transportRepo.DriverBusy(t.DriverId.Value, transportId, s, e))
+                throw new InvalidOperationException("Driver is busy");
+
+            var porterIds = _transportRepo.GetPorterIds(transportId);
+            if (porterIds.Any() && _transportRepo.BusyPorters(porterIds, transportId, s, e).Any())
+                throw new InvalidOperationException("Porter(s) busy");
+
             _transportRepo.UpdateStatus(transportId, TransportStatus.EnRoute, at, null);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Started", CreatedAt = DateTime.UtcNow });
         }

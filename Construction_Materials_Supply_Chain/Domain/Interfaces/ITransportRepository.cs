@@ -17,5 +17,9 @@ namespace Domain.Interface
         void Cancel(int transportId, string reason);
         void RemoveStop(int transportId, int transportStopId);
         void ClearStops(int transportId, bool keepDepot);
+        bool VehicleBusy(int vehicleId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
+        bool DriverBusy(int driverId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
+        List<int> BusyPorters(List<int> porterIds, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
+        List<int> GetPorterIds(int transportId);
     }
 }

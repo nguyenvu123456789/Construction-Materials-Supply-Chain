@@ -1,22 +1,26 @@
-﻿using Application.DTOs.Common;
+﻿using Application.Services.Auth;
 using Domain.Models;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
-namespace Application.Services.Auth
+namespace Infrastructure.Auth
 {
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
-        private readonly JwtOptions _opt;
-        private readonly SymmetricSecurityKey _key;
+        private readonly SigningCredentials _creds;
+        private readonly string _issuer;
+        private readonly string _audience;
+        private readonly int _expiresMinutes;
 
-        public JwtTokenGenerator(IOptions<JwtOptions> opt)
+        public JwtTokenGenerator(SecurityKey key, string issuer, string audience, int expiresMinutes)
         {
-            _opt = opt.Value;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Key));
+            _creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            _issuer = issuer;
+            _audience = audience;
+            _expiresMinutes = expiresMinutes;
         }
 
         public string GenerateToken(User user, IEnumerable<string> roles)
@@ -25,7 +29,7 @@ namespace Application.Services.Auth
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-                new Claim("username", user.UserName ?? string.Empty),
+                new Claim("username", user.UserName ?? string.Empty)
             };
 
             if (roles != null)
@@ -36,14 +40,26 @@ namespace Application.Services.Auth
                 }
             }
 
-            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
+            if (user.PartnerId != null)
+            {
+                claims.Add(new Claim("partnerId", user.PartnerId.Value.ToString()));
+                if (user.Partner != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(user.Partner.PartnerName))
+                        claims.Add(new Claim("partnerName", user.Partner.PartnerName));
+                    var partnerTypeName = user.Partner.PartnerType?.TypeName;
+                    if (!string.IsNullOrWhiteSpace(partnerTypeName))
+                        claims.Add(new Claim("partnerType", partnerTypeName));
+                }
+            }
+
             var token = new JwtSecurityToken(
-                issuer: _opt.Issuer,
-                audience: _opt.Audience,
+                issuer: _issuer,
+                audience: _audience,
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(_opt.ExpiresMinutes),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(_expiresMinutes),
+                signingCredentials: _creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);

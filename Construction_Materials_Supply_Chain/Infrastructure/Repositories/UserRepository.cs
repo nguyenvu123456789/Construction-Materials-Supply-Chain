@@ -55,5 +55,10 @@ namespace Infrastructure.Implementations
             }
             _context.SaveChanges();
         }
+
+        public IQueryable<User> QueryWithRolesAndPartner()
+            => _dbSet
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Include(u => u.Partner).ThenInclude(p => p.PartnerType);
     }
 }

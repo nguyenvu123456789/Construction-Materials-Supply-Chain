@@ -69,19 +69,23 @@ namespace Application.Services.Implements
             var vr = _loginValidator.Validate(request);
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
-            var user = _users.GetByUsername(request.UserName);
+            var user = _users.QueryWithRolesAndPartner()
+                             .FirstOrDefault(u => u.UserName == request.UserName);
             if (user is null) return null;
             if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase)) return null;
 
             var hashB64 = HashBase64(request.Password);
             var hashHex = HashHex(request.Password);
-            if (!string.Equals(user.PasswordHash, hashB64, StringComparison.Ordinal) &&
-                !string.Equals(user.PasswordHash, hashHex, StringComparison.OrdinalIgnoreCase))
-                return null;
+            var ok = string.Equals(user.PasswordHash, hashB64, StringComparison.Ordinal)
+                     || string.Equals(user.PasswordHash, hashHex, StringComparison.OrdinalIgnoreCase);
+            if (!ok) return null;
 
             _activityLogs.LogAction(user.UserId, "User logged in", "User", user.UserId);
 
             var dto = _mapper.Map<AuthResponseDto>(user);
+            dto.PartnerId = user.PartnerId;
+            dto.PartnerName = user.Partner?.PartnerName;
+            dto.PartnerType = user.Partner?.PartnerType?.TypeName;
 
             var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
             dto.Roles = roles;

@@ -20,5 +20,9 @@
         public string Email { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
+
+        public int? PartnerId { get; set; }
+        public string? PartnerName { get; set; }
+        public string? PartnerType { get; set; }
     }
 }

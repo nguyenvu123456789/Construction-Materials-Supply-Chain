@@ -7,6 +7,7 @@ public partial class Order
     public string OrderCode { get; set; } = null!;
 
     public string? CustomerName { get; set; }
+    public string? PhoneNumber { get; set; }
     public string? DeliveryAddress { get; set; }
     public string? Status { get; set; }
     public string? Note { get; set; }

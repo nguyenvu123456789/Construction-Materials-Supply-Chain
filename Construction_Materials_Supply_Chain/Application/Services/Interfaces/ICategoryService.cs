@@ -10,5 +10,6 @@ namespace Application.Interfaces
         void Update(Category category);
         void Delete(int id);
         List<Category> GetCategoriesFiltered(string? searchTerm, int pageNumber, int pageSize, out int totalCount);
+        List<Category> GetByStatus(string status);
     }
 }

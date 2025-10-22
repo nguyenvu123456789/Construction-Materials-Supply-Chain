@@ -19,21 +19,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<MaterialDto>> GetMaterials()
-        {
-            var materials = _materialService.GetAll();
-            var result = _mapper.Map<IEnumerable<MaterialDto>>(materials);
-            return Ok(result);
-        }
 
-        [HttpGet("{id:int}")]
-        public ActionResult<MaterialDto> GetMaterial(int id)
-        {
-            var material = _materialService.GetById(id);
-            if (material == null) return NotFound();
-            return Ok(_mapper.Map<MaterialDto>(material));
-        }
 
         [HttpPost]
         public IActionResult CreateMaterial(MaterialDto dto)
@@ -59,10 +45,27 @@ namespace API.Controllers
         public IActionResult DeleteMaterial(int id)
         {
             var existing = _materialService.GetById(id);
-            if (existing == null) return NotFound();
+            if (existing == null)
+                return NotFound("Material not found or already deleted.");
 
             _materialService.Delete(id);
-            return NoContent();
+            return Ok("Material has been soft deleted (status = 'Deleted').");
+        }
+
+        [HttpGet("{id:int}")]
+        public ActionResult<MaterialDto> GetMaterial(int id)
+        {
+            var material = _materialService.GetById(id);
+            if (material == null) return NotFound();
+            return Ok(_mapper.Map<MaterialDto>(material));
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<MaterialDto>> GetMaterials()
+        {
+            var materials = _materialService.GetAll();
+            var result = _mapper.Map<IEnumerable<MaterialDto>>(materials);
+            return Ok(result);
         }
 
         // GET: api/materials/filter?SearchTerm=...&PageNumber=1&PageSize=10

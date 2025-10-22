@@ -1,5 +1,7 @@
 ﻿using Application.Common.Pagination;
+using Application.DTOs.Material;
 using Application.Interfaces;
+using Application.Responses;
 using AutoMapper;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -19,58 +21,101 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-
-
+        // POST: api/materials
         [HttpPost]
-        public IActionResult CreateMaterial(MaterialDto dto)
+        public IActionResult CreateMaterial([FromBody] CreateMaterialRequest request)
         {
-            var material = _mapper.Map<Material>(dto);
-            _materialService.Create(material);
-            return CreatedAtAction(nameof(GetMaterial), new { id = material.MaterialId }, _mapper.Map<MaterialDto>(material));
+            try
+            {
+                var material = new Material
+                {
+                    MaterialCode = request.MaterialCode,
+                    MaterialName = request.MaterialName,
+                    CategoryId = request.CategoryId,
+                    PartnerId = request.PartnerId,
+                    Unit = request.Unit
+                };
+
+                _materialService.Create(material);
+                return Ok(ApiResponse<string>.SuccessResponse("Material created successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
+        // PUT: api/materials/{id}
         [HttpPut("{id:int}")]
-        public IActionResult UpdateMaterial(int id, MaterialDto dto)
+        public IActionResult UpdateMaterial(int id, [FromBody] UpdateMaterialRequest request)
         {
-            var existing = _materialService.GetById(id);
-            if (existing == null) return NotFound();
+            try
+            {
+                var existing = _materialService.GetById(id);
+                if (existing == null)
+                    return NotFound(ApiResponse<string>.ErrorResponse("Material not found."));
 
-            var material = _mapper.Map<Material>(dto);
-            material.MaterialId = id;
-            _materialService.Update(material);
-            return NoContent();
+                var updated = new Material
+                {
+                    MaterialId = id,
+                    MaterialCode = request.MaterialCode,
+                    MaterialName = request.MaterialName,
+                    CategoryId = request.CategoryId,
+                    PartnerId = request.PartnerId,
+                    Unit = request.Unit,
+                    Status = request.Status
+                };
+
+                _materialService.Update(updated);
+                return Ok(ApiResponse<string>.SuccessResponse("Material updated successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
+        // DELETE: api/materials/{id}
         [HttpDelete("{id:int}")]
         public IActionResult DeleteMaterial(int id)
         {
-            var existing = _materialService.GetById(id);
-            if (existing == null)
-                return NotFound("Material not found or already deleted.");
+            try
+            {
+                var existing = _materialService.GetById(id);
+                if (existing == null)
+                    return NotFound(ApiResponse<string>.ErrorResponse("Material not found."));
 
-            _materialService.Delete(id);
-            return Ok("Material has been soft deleted (status = 'Deleted').");
+                _materialService.Delete(id);
+                return Ok(ApiResponse<string>.SuccessResponse("Material soft-deleted successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
+        // GET: api/materials/{id}
         [HttpGet("{id:int}")]
-        public ActionResult<MaterialDto> GetMaterial(int id)
+        public IActionResult GetMaterial(int id)
         {
             var material = _materialService.GetById(id);
-            if (material == null) return NotFound();
-            return Ok(_mapper.Map<MaterialDto>(material));
+            if (material == null)
+                return NotFound(ApiResponse<string>.ErrorResponse("Material not found."));
+
+            return Ok(ApiResponse<Material>.SuccessResponse(material));
         }
 
+        // GET: api/materials
         [HttpGet]
-        public ActionResult<IEnumerable<MaterialDto>> GetMaterials()
+        public IActionResult GetMaterials()
         {
             var materials = _materialService.GetAll();
-            var result = _mapper.Map<IEnumerable<MaterialDto>>(materials);
-            return Ok(result);
+            return Ok(ApiResponse<IEnumerable<Material>>.SuccessResponse(materials));
         }
 
         // GET: api/materials/filter?SearchTerm=...&PageNumber=1&PageSize=10
         [HttpGet("filter")]
-        public ActionResult<PagedResultDto<MaterialDto>> GetMaterialsFiltered([FromQuery] PagedQueryDto queryParams)
+        public IActionResult GetMaterialsFiltered([FromQuery] PagedQueryDto queryParams)
         {
             var materials = _materialService.GetMaterialsFiltered(
                 queryParams.SearchTerm,
@@ -79,39 +124,38 @@ namespace API.Controllers
                 out var totalCount
             );
 
-            var result = new PagedResultDto<MaterialDto>
+            var result = new PagedResultDto<Material>
             {
-                Data = _mapper.Map<IEnumerable<MaterialDto>>(materials),
+                Data = materials,
                 TotalCount = totalCount,
                 PageNumber = queryParams.PageNumber,
                 PageSize = queryParams.PageSize,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
             };
 
-            return Ok(result);
+            return Ok(ApiResponse<PagedResultDto<Material>>.SuccessResponse(result));
         }
+
         // GET: api/materials/by-category/{categoryId}
         [HttpGet("by-category/{categoryId:int}")]
-        public ActionResult<IEnumerable<MaterialDto>> GetByCategory(int categoryId)
+        public IActionResult GetByCategory(int categoryId)
         {
             var materials = _materialService.GetByCategory(categoryId);
             if (materials == null || !materials.Any())
-                return NotFound("No materials found for this category.");
+                return NotFound(ApiResponse<string>.ErrorResponse("No materials found for this category."));
 
-            var result = _mapper.Map<IEnumerable<MaterialDto>>(materials);
-            return Ok(result);
+            return Ok(ApiResponse<IEnumerable<Material>>.SuccessResponse(materials));
         }
+
         // GET: api/materials/by-warehouse/{warehouseId}
         [HttpGet("by-warehouse/{warehouseId:int}")]
-        public ActionResult<IEnumerable<MaterialDto>> GetByWarehouse(int warehouseId, [FromQuery] string? term)
+        public IActionResult GetByWarehouse(int warehouseId, [FromQuery] string? term)
         {
             var materials = _materialService.GetByWarehouse(warehouseId, term);
             if (materials == null || !materials.Any())
-                return NotFound("No materials found in this warehouse.");
+                return NotFound(ApiResponse<string>.ErrorResponse("No materials found in this warehouse."));
 
-            var result = _mapper.Map<IEnumerable<MaterialDto>>(materials);
-            return Ok(result);
+            return Ok(ApiResponse<IEnumerable<Material>>.SuccessResponse(materials));
         }
-
     }
 }

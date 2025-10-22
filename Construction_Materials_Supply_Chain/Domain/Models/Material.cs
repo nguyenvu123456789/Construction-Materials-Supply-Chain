@@ -1,9 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Domain.Models
 {
     public partial class Material
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MaterialId { get; set; }
         public string MaterialCode { get; set; } = null!;
         public string MaterialName { get; set; } = null!;

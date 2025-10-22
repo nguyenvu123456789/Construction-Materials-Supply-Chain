@@ -34,8 +34,10 @@ namespace Application.Services.Implements
             if (_categories.ExistsByName(category.CategoryName))
                 throw new Exception("Category name already exists.");
 
-            category.CreatedAt = DateTime.UtcNow;
+            // ID tự tăng trong DB
             category.Status = "Active";
+            category.CreatedAt = DateTime.UtcNow;
+
             _categories.Add(category);
         }
 
@@ -47,30 +49,27 @@ namespace Application.Services.Implements
 
             existing.CategoryName = category.CategoryName;
             existing.Description = category.Description;
-            existing.Status = category.Status; // có thể chuyển giữa Active/Inactive
+            existing.Status = category.Status; // Active / Inactive
 
             _categories.Update(existing);
         }
 
         public void Delete(int id)
         {
-            var cat = _categories.GetById(id);
-            if (cat == null || cat.Status == "Deleted")
+            var category = _categories.GetById(id);
+            if (category == null || category.Status == "Deleted")
                 throw new Exception("Category not found or already deleted.");
 
             // Soft delete category
-            cat.Status = "Deleted";
-            _categories.Update(cat);
+            category.Status = "Deleted";
+            _categories.Update(category);
 
             // Soft delete all related materials
             var materials = _materials.GetByCategory(id);
-            foreach (var material in materials)
+            foreach (var material in materials.Where(m => m.Status != "Deleted"))
             {
-                if (material.Status != "Deleted")
-                {
-                    material.Status = "Deleted";
-                    _materials.Update(material);
-                }
+                material.Status = "Deleted";
+                _materials.Update(material);
             }
         }
 

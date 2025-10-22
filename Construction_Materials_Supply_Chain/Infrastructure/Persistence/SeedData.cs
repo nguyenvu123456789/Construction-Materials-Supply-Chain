@@ -101,18 +101,18 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
-
             // 5️⃣ Seed Categories
             if (!context.Categories.Any())
             {
+                var now = DateTime.Now;
                 context.Categories.AddRange(
-                    new Category { CategoryName = "Gỗ", Description = "Vật liệu từ gỗ tự nhiên và công nghiệp" },
-                    new Category { CategoryName = "Kim loại", Description = "Vật liệu kim loại xây dựng" },
-                    new Category { CategoryName = "Nhựa", Description = "Vật liệu nhựa công nghiệp" },
-                    new Category { CategoryName = "Xi măng", Description = "Vật liệu xi măng xây dựng" },
-                    new Category { CategoryName = "Gạch", Description = "Gạch xây dựng và trang trí" },
-                    new Category { CategoryName = "Sơn", Description = "Sơn xây dựng và công nghiệp" },
-                    new Category { CategoryName = "Kính", Description = "Kính xây dựng và trang trí" }
+                    new Category { CategoryName = "Gỗ", Description = "Vật liệu từ gỗ tự nhiên và công nghiệp", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Kim loại", Description = "Vật liệu kim loại xây dựng", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Nhựa", Description = "Vật liệu nhựa công nghiệp", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Xi măng", Description = "Vật liệu xi măng xây dựng", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Gạch", Description = "Gạch xây dựng và trang trí", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Sơn", Description = "Sơn xây dựng và công nghiệp", Status = "Active", CreatedAt = now },
+                    new Category { CategoryName = "Kính", Description = "Kính xây dựng và trang trí", Status = "Active", CreatedAt = now }
                 );
                 context.SaveChanges();
             }
@@ -136,6 +136,7 @@ namespace Infrastructure.Persistence
             // 7️⃣ Seed Materials
             if (!context.Materials.Any())
             {
+                var now = DateTime.Now;
                 var woodCat = context.Categories.First(c => c.CategoryName == "Gỗ");
                 var metalCat = context.Categories.First(c => c.CategoryName == "Kim loại");
                 var plasticCat = context.Categories.First(c => c.CategoryName == "Nhựa");
@@ -148,13 +149,13 @@ namespace Infrastructure.Persistence
                 var duytan = context.Partners.First(p => p.PartnerCode == "P003");
 
                 context.Materials.AddRange(
-                    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", PartnerId = goviet.PartnerId, CategoryId = woodCat.CategoryId },
-                    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", PartnerId = hoaphat.PartnerId, CategoryId = metalCat.CategoryId },
-                    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", PartnerId = duytan.PartnerId, CategoryId = plasticCat.CategoryId },
-                    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", PartnerId = hoaphat.PartnerId, CategoryId = cementCat.CategoryId },
-                    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", PartnerId = goviet.PartnerId, CategoryId = brickCat.CategoryId },
-                    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", PartnerId = duytan.PartnerId, CategoryId = paintCat.CategoryId },
-                    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", PartnerId = goviet.PartnerId, CategoryId = glassCat.CategoryId }
+                    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", PartnerId = goviet.PartnerId, CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", PartnerId = hoaphat.PartnerId, CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", PartnerId = duytan.PartnerId, CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", PartnerId = hoaphat.PartnerId, CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", PartnerId = goviet.PartnerId, CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", PartnerId = duytan.PartnerId, CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", PartnerId = goviet.PartnerId, CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now }
                 );
                 context.SaveChanges();
             }
@@ -342,7 +343,7 @@ namespace Infrastructure.Persistence
                     new ExportDetail { ExportId = context.Exports.First(e => e.ExportCode == "EXP-PENDING-001").ExportId, MaterialId = glass.MaterialId, MaterialCode = glass.MaterialCode ?? "", MaterialName = glass.MaterialName, Unit = glass.Unit, UnitPrice = 200000, Quantity = 25, LineTotal = 200000 * 25 }
                 );
                 context.SaveChanges();
-
+                    
                 // 12️⃣ Seed MaterialChecks
                 if (!context.MaterialChecks.Any())
                 {
@@ -489,16 +490,16 @@ namespace Infrastructure.Persistence
 
                 var orders = new List<Order>
     {
-        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
-        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
-        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
-        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
-        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
-        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
-        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
-        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
-        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
-        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
+        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
+        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
+        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
+        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
+        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
+        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
+        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
+        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
+        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
+        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
     };
 
                 context.Orders.AddRange(orders);

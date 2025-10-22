@@ -92,12 +92,7 @@ namespace Application.MappingProfile
             CreateMap<CreateInvoiceDetailDto, InvoiceDetail>()
                 .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.Quantity * src.UnitPrice));
             // ===== MATERIAL =====
-            CreateMap<Material, MaterialDto>()
-                .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.CategoryName : null))
-                .ForMember(d => d.PartnerName, o => o.MapFrom(s => s.Partner != null ? s.Partner.PartnerName : null))
-                .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Inventories.FirstOrDefault() != null ? s.Inventories.First().Quantity : 0))
-                .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Inventories.FirstOrDefault() != null ? s.Inventories.First().Warehouse.WarehouseName : null))
-                .ReverseMap();
+           
 
             // ===== EXPORT =====
             CreateMap<Export, ExportResponseDto>()

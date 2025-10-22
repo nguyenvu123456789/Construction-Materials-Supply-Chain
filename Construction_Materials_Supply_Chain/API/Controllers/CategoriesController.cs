@@ -1,6 +1,7 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Responses;
 using AutoMapper;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -20,69 +21,106 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-
+        // POST: api/categories
         [HttpPost]
-        public IActionResult CreateCategory(CategoryDto dto)
+        public IActionResult Create([FromBody] CreateCategoryRequest request)
         {
-            var category = _mapper.Map<Category>(dto);
-            _categoryService.Create(category);
-            return CreatedAtAction(nameof(GetCategory), new { id = category.CategoryId }, _mapper.Map<CategoryDto>(category));
+            try
+            {
+                var category = new Category
+                {
+                    CategoryName = request.CategoryName,
+                    Description = request.Description
+                };
+
+                _categoryService.Create(category);
+
+                return Ok(ApiResponse<string>.SuccessResponse("Category created successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
+
+        // PUT: api/categories/{id}
         [HttpPut("{id:int}")]
-        public IActionResult UpdateCategory(int id, CategoryDto dto)
+        public ActionResult<ApiResponse<Category>> UpdateCategory(int id, [FromBody] CategoryDto dto)
         {
-            var existing = _categoryService.GetById(id);
-            if (existing == null) return NotFound();
+            try
+            {
+                var existing = _categoryService.GetById(id);
+                if (existing == null)
+                    return NotFound(ApiResponse<Category>.ErrorResponse("Category not found."));
 
-            var category = _mapper.Map<Category>(dto);
-            category.CategoryId = id;
-            _categoryService.Update(category);
-            return NoContent();
+                var category = _mapper.Map<Category>(dto);
+                category.CategoryId = id;
+
+                _categoryService.Update(category);
+                return Ok(ApiResponse<Category>.SuccessResponse(category, "Category updated successfully."));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<Category>.ErrorResponse(ex.Message));
+            }
         }
 
+        // DELETE: api/categories/{id}
         [HttpDelete("{id:int}")]
-        public IActionResult DeleteCategory(int id)
+        public ActionResult<ApiResponse<string>> DeleteCategory(int id)
         {
-            var existing = _categoryService.GetById(id);
-            if (existing == null)
-                return NotFound("Category not found or already deleted.");
+            try
+            {
+                var existing = _categoryService.GetById(id);
+                if (existing == null)
+                    return NotFound(ApiResponse<string>.ErrorResponse("Category not found or already deleted."));
 
-            _categoryService.Delete(id);
-            return Ok("Category and related materials have been soft deleted.");
+                _categoryService.Delete(id);
+                return Ok(ApiResponse<string>.SuccessResponse("Deleted successfully.", "Category and related materials have been soft deleted."));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
+        // GET: api/categories
         [HttpGet]
-        public ActionResult<IEnumerable<CategoryDto>> GetCategories()
+        public ActionResult<ApiResponse<IEnumerable<CategoryDto>>> GetCategories()
         {
             var categories = _categoryService.GetAll();
             var result = _mapper.Map<IEnumerable<CategoryDto>>(categories);
-            return Ok(result);
+            return Ok(ApiResponse<IEnumerable<CategoryDto>>.SuccessResponse(result, "Fetched all categories successfully."));
         }
 
+        // GET: api/categories/{id}
         [HttpGet("{id:int}")]
-        public ActionResult<CategoryDto> GetCategory(int id)
+        public ActionResult<ApiResponse<CategoryDto>> GetCategory(int id)
         {
             var category = _categoryService.GetById(id);
-            if (category == null) return NotFound();
-            return Ok(_mapper.Map<CategoryDto>(category));
+            if (category == null)
+                return NotFound(ApiResponse<CategoryDto>.ErrorResponse("Category not found."));
+
+            var result = _mapper.Map<CategoryDto>(category);
+            return Ok(ApiResponse<CategoryDto>.SuccessResponse(result, "Fetched category successfully."));
         }
+
         // GET: api/categories/status/{status}
         [HttpGet("status/{status}")]
-        public ActionResult<IEnumerable<CategoryDto>> GetByStatus(string status)
+        public ActionResult<ApiResponse<IEnumerable<CategoryDto>>> GetByStatus(string status)
         {
             var categories = _categoryService.GetByStatus(status);
             if (categories == null || !categories.Any())
-                return NotFound($"No categories found with status '{status}'.");
+                return NotFound(ApiResponse<IEnumerable<CategoryDto>>.ErrorResponse($"No categories found with status '{status}'."));
 
             var result = _mapper.Map<IEnumerable<CategoryDto>>(categories);
-            return Ok(result);
+            return Ok(ApiResponse<IEnumerable<CategoryDto>>.SuccessResponse(result, "Fetched categories by status successfully."));
         }
-
 
         // GET: api/categories/filter?SearchTerm=...&PageNumber=1&PageSize=10
         [HttpGet("filter")]
-        public ActionResult<PagedResultDto<CategoryDto>> GetCategoriesFiltered([FromQuery] PagedQueryDto queryParams)
+        public ActionResult<ApiResponse<PagedResultDto<CategoryDto>>> GetCategoriesFiltered([FromQuery] PagedQueryDto queryParams)
         {
             var categories = _categoryService.GetCategoriesFiltered(
                 queryParams.SearchTerm,
@@ -100,7 +138,7 @@ namespace API.Controllers
                 TotalPages = (int)Math.Ceiling(totalCount / (double)queryParams.PageSize)
             };
 
-            return Ok(result);
+            return Ok(ApiResponse<PagedResultDto<CategoryDto>>.SuccessResponse(result, "Fetched filtered categories successfully."));
         }
     }
 }

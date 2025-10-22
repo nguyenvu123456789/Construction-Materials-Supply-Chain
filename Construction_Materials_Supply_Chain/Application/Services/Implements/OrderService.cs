@@ -44,8 +44,9 @@ namespace Application.Services.Implements
                 CreatedAt = DateTime.Now,
                 Status = "Pending Approval",
                 CustomerName = user.FullName ?? "",
-                DeliveryAddress = dto.DeliveryAddress, 
-                Note = dto.Note 
+                PhoneNumber = dto.PhoneNumber,
+                DeliveryAddress = dto.DeliveryAddress,
+                Note = dto.Note
             };
 
             order.OrderDetails = dto.Materials.Select(m => new OrderDetail
@@ -63,8 +64,9 @@ namespace Application.Services.Implements
                 CustomerName = user.FullName ?? "",
                 Status = order.Status ?? "",
                 CreatedAt = order.CreatedAt ?? DateTime.Now,
-                DeliveryAddress = order.DeliveryAddress, 
-                Note = order.Note, 
+                PhoneNumber = order.PhoneNumber,
+                DeliveryAddress = order.DeliveryAddress,
+                Note = order.Note,
                 Materials = order.OrderDetails.Select(d => new OrderMaterialDto
                 {
                     MaterialId = d.MaterialId,
@@ -72,6 +74,7 @@ namespace Application.Services.Implements
                 }).ToList()
             };
         }
+
 
         // Xử lý approve/reject
         public Order HandleOrder(HandleOrderRequestDto dto)
@@ -109,7 +112,6 @@ namespace Application.Services.Implements
                 _shippingLogRepository.Add(shippingLog);
             }
 
-            // Ghi log xử lý
             var handle = new HandleRequest
             {
                 RequestType = "Order",
@@ -134,6 +136,7 @@ namespace Application.Services.Implements
                 OrderCode = order.OrderCode,
                 PartnerId = order.CreatedBy ?? 0,
                 DeliveryAddress = order.DeliveryAddress,
+                PhoneNumber = order.PhoneNumber,
                 Note = order.Note,
                 OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {

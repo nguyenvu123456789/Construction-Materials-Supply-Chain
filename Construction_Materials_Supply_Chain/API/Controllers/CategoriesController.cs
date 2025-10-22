@@ -20,21 +20,6 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<CategoryDto>> GetCategories()
-        {
-            var categories = _categoryService.GetAll();
-            var result = _mapper.Map<IEnumerable<CategoryDto>>(categories);
-            return Ok(result);
-        }
-
-        [HttpGet("{id:int}")]
-        public ActionResult<CategoryDto> GetCategory(int id)
-        {
-            var category = _categoryService.GetById(id);
-            if (category == null) return NotFound();
-            return Ok(_mapper.Map<CategoryDto>(category));
-        }
 
         [HttpPost]
         public IActionResult CreateCategory(CategoryDto dto)
@@ -60,11 +45,40 @@ namespace API.Controllers
         public IActionResult DeleteCategory(int id)
         {
             var existing = _categoryService.GetById(id);
-            if (existing == null) return NotFound();
+            if (existing == null)
+                return NotFound("Category not found or already deleted.");
 
             _categoryService.Delete(id);
-            return NoContent();
+            return Ok("Category and related materials have been soft deleted.");
         }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<CategoryDto>> GetCategories()
+        {
+            var categories = _categoryService.GetAll();
+            var result = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return Ok(result);
+        }
+
+        [HttpGet("{id:int}")]
+        public ActionResult<CategoryDto> GetCategory(int id)
+        {
+            var category = _categoryService.GetById(id);
+            if (category == null) return NotFound();
+            return Ok(_mapper.Map<CategoryDto>(category));
+        }
+        // GET: api/categories/status/{status}
+        [HttpGet("status/{status}")]
+        public ActionResult<IEnumerable<CategoryDto>> GetByStatus(string status)
+        {
+            var categories = _categoryService.GetByStatus(status);
+            if (categories == null || !categories.Any())
+                return NotFound($"No categories found with status '{status}'.");
+
+            var result = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return Ok(result);
+        }
+
 
         // GET: api/categories/filter?SearchTerm=...&PageNumber=1&PageSize=10
         [HttpGet("filter")]

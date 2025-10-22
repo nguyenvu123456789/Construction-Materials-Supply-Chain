@@ -38,15 +38,30 @@ namespace API.Controllers
         [HttpPost("create-purchase-order")]
         public IActionResult CreatePurchaseOrder([FromBody] CreateOrderDto dto)
         {
-            var order = _orderService.CreatePurchaseOrder(dto);
-            return Ok(order);
+            try
+            {
+                var order = _orderService.CreatePurchaseOrder(dto);
+                return Ok(Application.Responses.ApiResponse<OrderResponseDto>.SuccessResponse(order, "Tạo đơn hàng thành công"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(Application.Responses.ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
 
         [HttpPost("handle")]
         public IActionResult HandleOrder([FromBody] HandleOrderRequestDto dto)
         {
-            var order = _orderService.HandleOrder(dto);
-            return Ok(order);
+            try
+            {
+                var order = _orderService.HandleOrder(dto);
+                return Ok(Application.Responses.ApiResponse<object>.SuccessResponse(order, "Xử lý đơn hàng thành công"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(Application.Responses.ApiResponse<string>.ErrorResponse(ex.Message));
+            }
         }
+
     }
 }

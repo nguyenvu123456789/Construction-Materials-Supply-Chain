@@ -60,5 +60,13 @@ namespace Infrastructure.Implementations
             => _dbSet
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(u => u.Partner).ThenInclude(p => p.PartnerType);
+        public User? GetByIdWithPartner(int id)
+        {
+            return _dbSet
+                .Include(u => u.Partner)
+                .ThenInclude(p => p.PartnerType) 
+                .FirstOrDefault(u => u.UserId == id && u.Status != "Deleted");
+        }
+
     }
 }

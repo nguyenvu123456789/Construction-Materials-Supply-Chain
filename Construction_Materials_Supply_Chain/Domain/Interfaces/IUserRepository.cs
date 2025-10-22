@@ -15,5 +15,7 @@ namespace Domain.Interface
         IEnumerable<string> GetRoleNamesByUserId(int userId);
         void AssignRoles(int userId, IEnumerable<int> roleIds);
         IQueryable<User> QueryWithRolesAndPartner();
+        User? GetByIdWithPartner(int id);
+
     }
 }

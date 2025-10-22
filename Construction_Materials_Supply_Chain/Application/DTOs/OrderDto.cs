@@ -6,6 +6,7 @@
         public string? DeliveryAddress { get; set; } 
         public string? Note { get; set; }
         public string? PhoneNumber { get; set; }
+        public int SupplierId { get; set; }
         public List<OrderMaterialDto> Materials { get; set; } = new();
     }
 
@@ -14,6 +15,7 @@
     {
         public int OrderId { get; set; }
         public string OrderCode { get; set; } = null!;
+        public string? SupplierName { get; set; }
         public string CustomerName { get; set; } = null!;
         public string Status { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
@@ -41,6 +43,7 @@
         public string OrderCode { get; set; } = null!;
         public int PartnerId { get; set; }
         public string? DeliveryAddress { get; set; }
+        public string? SupplierName { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Note { get; set; }
         public List<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();

@@ -12,28 +12,42 @@ namespace Application.Services.Implements
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly ITransportRepository _transportRepository;
         private readonly IShippingLogRepository _shippingLogRepository;
+        private readonly IPartnerRepository _partnerRepository; 
 
         public OrderService(
             IOrderRepository orderRepository,
             IUserRepository userRepository,
             IHandleRequestRepository handleRequestRepository,
             ITransportRepository transportRepository,
-            IShippingLogRepository shippingLogRepository)
+            IShippingLogRepository shippingLogRepository,
+            IPartnerRepository partnerRepository) 
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
             _handleRequestRepository = handleRequestRepository;
             _transportRepository = transportRepository;
             _shippingLogRepository = shippingLogRepository;
+            _partnerRepository = partnerRepository;
         }
 
-        // Tạo đơn mua hàng
         public OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto)
         {
-            var user = _userRepository.GetById(dto.CreatedBy);
-            if (user == null)
-                throw new Exception("Người tạo không tồn tại");
+            var buyer = _userRepository.GetById(dto.CreatedBy);
+            if (buyer == null)
+                throw new Exception("Người mua không tồn tại");
 
+            var supplier = _partnerRepository.GetById(dto.SupplierId);
+            if (supplier == null)
+                throw new Exception("Nhà cung cấp không tồn tại");
+
+            var buyerPartner = buyer.Partner;
+            if (buyerPartner == null)
+                throw new Exception("Người mua chưa thuộc đối tác nào");
+
+            if (buyerPartner.PartnerTypeId <= supplier.PartnerTypeId)
+                throw new Exception("Không thể mua từ đối tác có cùng hoặc cấp cao hơn");
+
+            // Sinh mã đơn hàng
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";
 
@@ -41,9 +55,10 @@ namespace Application.Services.Implements
             {
                 OrderCode = orderCode,
                 CreatedBy = dto.CreatedBy,
+                SupplierId = dto.SupplierId,
                 CreatedAt = DateTime.Now,
                 Status = "Pending Approval",
-                CustomerName = user.FullName ?? "",
+                CustomerName = buyer.FullName ?? "",
                 PhoneNumber = dto.PhoneNumber,
                 DeliveryAddress = dto.DeliveryAddress,
                 Note = dto.Note
@@ -61,7 +76,7 @@ namespace Application.Services.Implements
             {
                 OrderId = order.OrderId,
                 OrderCode = order.OrderCode,
-                CustomerName = user.FullName ?? "",
+                CustomerName = buyer.FullName ?? "",
                 Status = order.Status ?? "",
                 CreatedAt = order.CreatedAt ?? DateTime.Now,
                 PhoneNumber = order.PhoneNumber,
@@ -75,8 +90,6 @@ namespace Application.Services.Implements
             };
         }
 
-
-        // Xử lý approve/reject
         public Order HandleOrder(HandleOrderRequestDto dto)
         {
             var order = _orderRepository.GetById(dto.OrderId);
@@ -112,6 +125,7 @@ namespace Application.Services.Implements
                 _shippingLogRepository.Add(shippingLog);
             }
 
+            // Ghi log xử lý
             var handle = new HandleRequest
             {
                 RequestType = "Order",
@@ -131,10 +145,13 @@ namespace Application.Services.Implements
             var order = _orderRepository.GetByCodeWithDetails(orderCode);
             if (order == null) return null;
 
+            var supplierName = order.Supplier?.PartnerName ?? "Không xác định";
+
             var dto = new OrderWithDetailsDto
             {
                 OrderCode = order.OrderCode,
                 PartnerId = order.CreatedBy ?? 0,
+                SupplierName = supplierName, 
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,
@@ -149,10 +166,10 @@ namespace Application.Services.Implements
 
             return dto;
         }
+
         public List<Order> GetAllWithDetails()
         {
             return _orderRepository.GetAllWithDetails().ToList();
         }
-
     }
 }

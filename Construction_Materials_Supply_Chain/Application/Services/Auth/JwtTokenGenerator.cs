@@ -1,10 +1,13 @@
-﻿using Application.Services.Auth;
+﻿using Application.DTOs.Common;
+using Application.Services.Auth;
 using Domain.Models;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace Infrastructure.Auth
 {
@@ -15,12 +18,14 @@ namespace Infrastructure.Auth
         private readonly string _audience;
         private readonly int _expiresMinutes;
 
-        public JwtTokenGenerator(SecurityKey key, string issuer, string audience, int expiresMinutes)
+        public JwtTokenGenerator(IOptions<JwtOptions> opts)
         {
-            _creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            _issuer = issuer;
-            _audience = audience;
-            _expiresMinutes = expiresMinutes;
+            var o = opts.Value ?? throw new ArgumentNullException(nameof(opts));
+            if (string.IsNullOrWhiteSpace(o.Key)) throw new InvalidOperationException("JwtOptions.Key is missing");
+            _creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(o.Key)), SecurityAlgorithms.HmacSha256);
+            _issuer = o.Issuer!;
+            _audience = o.Audience!;
+            _expiresMinutes = o.ExpiresMinutes <= 0 ? 60 : o.ExpiresMinutes;
         }
 
         public string GenerateToken(User user, IEnumerable<string> roles)

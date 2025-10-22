@@ -13,6 +13,7 @@ using Domain.Interface.Base;
 using Domain.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.Auth;
 using Infrastructure.Implementations;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
@@ -23,8 +24,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Services.Implementations;
-using System.IdentityModel.Tokens.Jwt;          // ✅ thêm
-using System.Security.Claims;                  // ✅ thêm
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;              
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -189,7 +190,7 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;   // bật true ở production
+        options.RequireHttpsMetadata = false; 
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -202,7 +203,6 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ClockSkew = TimeSpan.FromMinutes(1),
 
-            // 👇 để [Authorize(Roles="...")] hiểu claim "role" trong token
             NameClaimType = ClaimTypes.NameIdentifier,
             RoleClaimType = ClaimTypes.Role
         };
@@ -211,6 +211,7 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // Token generator
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
 var app = builder.Build();

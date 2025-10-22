@@ -10,9 +10,9 @@ namespace Domain.Models
         public int CategoryId { get; set; }
         public int PartnerId { get; set; }
         public string Unit { get; set; } = null!;
+        public string Status { get; set; } = "Active";
         public DateTime CreatedAt { get; set; }
 
-        // Navigation properties
         [JsonIgnore]
         public virtual Category? Category { get; set; }
 

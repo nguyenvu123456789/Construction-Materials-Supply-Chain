@@ -13,12 +13,14 @@ namespace Application.Services.Implements
         private readonly IDriverRepository _drivers;
         private readonly IPorterRepository _porters;
         private readonly IVehicleRepository _vehicles;
+        private readonly ITransportRepository _transport;
 
-        public PersonnelService(IDriverRepository drivers, IPorterRepository porters, IVehicleRepository vehicles)
+        public PersonnelService(IDriverRepository drivers, IPorterRepository porters, IVehicleRepository vehicles, ITransportRepository transport)
         {
             _drivers = drivers;
             _porters = porters;
             _vehicles = vehicles;
+            _transport = transport;
         }
 
         public PersonResponseDto Create(PersonCreateDto dto)
@@ -121,6 +123,65 @@ namespace Application.Services.Implements
             if (type == "porter") { var p = _porters.GetById(id) ?? throw new KeyNotFoundException(); _porters.Delete(p); return; }
             if (type == "vehicle") { var v = _vehicles.GetById(id) ?? throw new KeyNotFoundException(); _vehicles.Delete(v); return; }
             throw new InvalidOperationException("type");
+        }
+
+        public AvailabilityResponseDto GetAvailability(string type, DateTimeOffset at, int durationMin)
+        {
+            var end = at.AddMinutes(durationMin);
+            var res = new AvailabilityResponseDto();
+
+            if (type.Equals("driver", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var d in _drivers.GetAll().Where(x => x.Active))
+                {
+                    var busyUntil = _transport.DriverBusyUntil(d.DriverId, at, end);
+                    var item = new AvailabilityItemDto
+                    {
+                        Type = "driver",
+                        Id = d.DriverId,
+                        NameOrCode = d.FullName,
+                        FreeNow = busyUntil == null,
+                        AvailableAt = busyUntil
+                    };
+                    (busyUntil == null ? res.Free : res.Busy).Add(item);
+                }
+            }
+            else if (type.Equals("porter", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var p in _porters.GetAll().Where(x => x.Active))
+                {
+                    var busyUntil = _transport.PorterBusyUntil(p.PorterId, at, end);
+                    var item = new AvailabilityItemDto
+                    {
+                        Type = "porter",
+                        Id = p.PorterId,
+                        NameOrCode = p.FullName,
+                        FreeNow = busyUntil == null,
+                        AvailableAt = busyUntil
+                    };
+                    (busyUntil == null ? res.Free : res.Busy).Add(item);
+                }
+            }
+            else if (type.Equals("vehicle", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var v in _vehicles.GetAll().Where(x => x.Active))
+                {
+                    var busyUntil = _transport.VehicleBusyUntil(v.VehicleId, at, end);
+                    var item = new AvailabilityItemDto
+                    {
+                        Type = "vehicle",
+                        Id = v.VehicleId,
+                        NameOrCode = v.Code,
+                        Plate = v.PlateNumber,
+                        FreeNow = busyUntil == null,
+                        AvailableAt = busyUntil
+                    };
+                    (busyUntil == null ? res.Free : res.Busy).Add(item);
+                }
+            }
+            res.Free = res.Free.OrderBy(x => x.NameOrCode).ToList();
+            res.Busy = res.Busy.OrderBy(x => x.AvailableAt).ThenBy(x => x.NameOrCode).ToList();
+            return res;
         }
     }
 }

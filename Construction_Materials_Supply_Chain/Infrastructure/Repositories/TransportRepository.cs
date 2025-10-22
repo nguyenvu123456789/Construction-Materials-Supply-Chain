@@ -176,5 +176,35 @@ namespace Infrastructure.Implementations
 
         public List<int> GetPorterIds(int transportId) =>
             _context.TransportPorters.Where(tp => tp.TransportId == transportId).Select(tp => tp.PorterId).ToList();
+
+        private static (DateTimeOffset start, DateTimeOffset end) WindowOf(Transport t)
+        {
+            var s = t.StartTimeActual ?? t.StartTimePlanned ?? DateTimeOffset.MinValue;
+            var e = t.EndTimeActual ?? t.EndTimePlanned ?? DateTimeOffset.MaxValue;
+            return (s, e);
+        }
+
+        public DateTimeOffset? VehicleBusyUntil(int vehicleId, DateTimeOffset s, DateTimeOffset e)
+        {
+            var q = _context.Transports
+                .Where(x => x.VehicleId == vehicleId && ActiveStatuses.Contains(x.Status.ToString()));
+            var hit = q.AsEnumerable().Select(WindowOf).FirstOrDefault(w => w.start < e && w.end > s);
+            return hit == default ? null : hit.end;
+        }
+        public DateTimeOffset? DriverBusyUntil(int driverId, DateTimeOffset s, DateTimeOffset e)
+        {
+            var q = _context.Transports
+                .Where(x => x.DriverId == driverId && ActiveStatuses.Contains(x.Status.ToString()));
+            var hit = q.AsEnumerable().Select(WindowOf).FirstOrDefault(w => w.start < e && w.end > s);
+            return hit == default ? null : hit.end;
+        }
+        public DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e)
+        {
+            var q = _context.TransportPorters
+                .Where(tp => tp.PorterId == porterId && ActiveStatuses.Contains(tp.Transport.Status.ToString()))
+                .Select(tp => tp.Transport);
+            var hit = q.AsEnumerable().Select(WindowOf).FirstOrDefault(w => w.start < e && w.end > s);
+            return hit == default ? null : hit.end;
+        }
     }
 }

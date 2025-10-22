@@ -122,4 +122,20 @@
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
+
+    public class AvailabilityItemDto
+    {
+        public int Id { get; set; }
+        public string NameOrCode { get; set; } = "";
+        public string? Plate { get; set; }
+        public string Type { get; set; } = ""; // driver|porter|vehicle
+        public bool FreeNow { get; set; }
+        public DateTimeOffset? AvailableAt { get; set; }
+    }
+
+    public class AvailabilityResponseDto
+    {
+        public List<AvailabilityItemDto> Free { get; set; } = new();
+        public List<AvailabilityItemDto> Busy { get; set; } = new();
+    }
 }

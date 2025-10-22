@@ -11,5 +11,7 @@ namespace Application.Interfaces
         List<PersonResponseDto> Search(string type, string? q, bool? active, int? top);
         void Update(string type, int id, PersonUpdateDto dto);
         void Delete(string type, int id);
+
+        AvailabilityResponseDto GetAvailability(string type, DateTimeOffset at, int durationMin);
     }
 }

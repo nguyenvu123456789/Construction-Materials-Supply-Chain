@@ -21,5 +21,9 @@ namespace Domain.Interface
         bool DriverBusy(int driverId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
         List<int> BusyPorters(List<int> porterIds, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
         List<int> GetPorterIds(int transportId);
+
+        DateTimeOffset? VehicleBusyUntil(int vehicleId, DateTimeOffset s, DateTimeOffset e);
+        DateTimeOffset? DriverBusyUntil(int driverId, DateTimeOffset s, DateTimeOffset e);
+        DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e);
     }
 }

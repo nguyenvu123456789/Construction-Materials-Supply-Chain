@@ -35,5 +35,14 @@ namespace Api.Controllers
         [HttpDelete("{type:regex(^driver|porter|vehicle$)}/{id:int}")]
         public IActionResult Delete([FromRoute] string type, int id)
         { _svc.Delete(type, id); return Ok(); }
+
+        [HttpGet("availability/{type:regex(^driver|porter|vehicle$)}")]
+        public ActionResult<AvailabilityResponseDto> Availability(
+        [FromRoute] string type,
+        [FromQuery] DateTimeOffset at,
+        [FromQuery] int durationMin = 120)
+        {
+            return Ok(_svc.GetAvailability(type, at, durationMin));
+        }
     }
 }

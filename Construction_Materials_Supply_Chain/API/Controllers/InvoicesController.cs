@@ -32,6 +32,13 @@ namespace API.Controllers
             return Ok(invoices);
         }
 
+        [HttpGet("export")]
+        public IActionResult GetExportInvoices() => Ok(_invoiceService.GetByType("Export"));
+
+        [HttpGet("import")]
+        public IActionResult GetImportInvoices() => Ok(_invoiceService.GetByType("Import"));
+
+
 
         [HttpPost("from-order")]
         public IActionResult CreateInvoiceFromOrder([FromBody] CreateInvoiceFromOrderDto dto)

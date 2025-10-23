@@ -10,6 +10,8 @@ namespace Application.Interfaces
         List<Invoice> GetAllWithDetails();
         Invoice? RejectInvoice(int id);
         Invoice CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto);
+        List<Invoice> GetByType(string type);
+
 
     }
 }

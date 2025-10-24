@@ -7,11 +7,10 @@ namespace Application.Interfaces
     {
         PersonResponseDto Create(PersonCreateDto dto);
         PersonResponseDto? Get(string type, int id);
-        List<PersonResponseDto> GetAll(string type);
-        List<PersonResponseDto> Search(string type, string? q, bool? active, int? top);
+        List<PersonResponseDto> GetAll(string type, int? partnerId);
+        List<PersonResponseDto> Search(string type, string? q, bool? active, int? top, int? partnerId);
         void Update(string type, int id, PersonUpdateDto dto);
         void Delete(string type, int id);
-
         AvailabilityResponseDto GetAvailability(string type, DateTimeOffset at, int durationMin);
     }
 }

@@ -5,8 +5,8 @@
         public string Type { get; set; } = default!;
         public string FullName { get; set; } = default!;
         public string? Phone { get; set; }
-        public bool Active { get; set; } = true
-;
+        public bool Active { get; set; } = true;
+        public int PartnerId { get; set; }
         public string? Code { get; set; }
         public string? PlateNumber { get; set; }
         public string? VehicleClass { get; set; }
@@ -29,10 +29,12 @@
         public string FullName { get; set; } = default!;
         public string? Phone { get; set; }
         public bool Active { get; set; }
+        public int PartnerId { get; set; }
         public string? Code { get; set; }
         public string? PlateNumber { get; set; }
         public string? VehicleClass { get; set; }
     }
+
     public class AvailabilityItemDto
     {
         public string Type { get; set; } = default!;

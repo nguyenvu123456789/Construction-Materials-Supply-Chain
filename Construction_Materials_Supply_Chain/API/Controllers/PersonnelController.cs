@@ -21,12 +21,12 @@ namespace Api.Controllers
         { var x = _svc.Get(type, id); return x == null ? NotFound() : Ok(x); }
 
         [HttpGet("{type:regex(^driver|porter|vehicle$)}")]
-        public ActionResult<IEnumerable<PersonResponseDto>> GetAll([FromRoute] string type)
-        => Ok(_svc.GetAll(type));
+        public ActionResult<IEnumerable<PersonResponseDto>> GetAll([FromRoute] string type, [FromQuery] int? partnerId)
+        => Ok(_svc.GetAll(type, partnerId));
 
         [HttpGet("{type:regex(^driver|porter|vehicle$)}/search")]
-        public ActionResult<IEnumerable<PersonResponseDto>> Search([FromRoute] string type, [FromQuery] string? q, [FromQuery] bool? active, [FromQuery] int? top)
-        => Ok(_svc.Search(type, q, active, top));
+        public ActionResult<IEnumerable<PersonResponseDto>> Search([FromRoute] string type, [FromQuery] string? q, [FromQuery] bool? active, [FromQuery] int? top, [FromQuery] int? partnerId)
+        => Ok(_svc.Search(type, q, active, top, partnerId));
 
         [HttpPut("{type:regex(^driver|porter|vehicle$)}/{id:int}")]
         public IActionResult Update([FromRoute] string type, int id, [FromBody] PersonUpdateDto dto)
@@ -37,10 +37,7 @@ namespace Api.Controllers
         { _svc.Delete(type, id); return Ok(); }
 
         [HttpGet("availability/{type:regex(^driver|porter|vehicle$)}")]
-        public ActionResult<AvailabilityResponseDto> Availability(
-        [FromRoute] string type,
-        [FromQuery] DateTimeOffset at,
-        [FromQuery] int durationMin = 120)
+        public ActionResult<AvailabilityResponseDto> Availability([FromRoute] string type, [FromQuery] DateTimeOffset at, [FromQuery] int durationMin = 120)
         {
             return Ok(_svc.GetAvailability(type, at, durationMin));
         }

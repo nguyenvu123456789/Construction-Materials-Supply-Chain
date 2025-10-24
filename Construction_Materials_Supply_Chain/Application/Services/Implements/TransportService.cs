@@ -11,13 +11,26 @@ namespace Application.Services.Implements
         private readonly ITransportRepository _transportRepo;
         private readonly IOrderRepository _orderRepo;
         private readonly IShippingLogRepository _logRepo;
+        private readonly IDriverRepository _driverRepo;
+        private readonly IPorterRepository _porterRepo;
+        private readonly IVehicleRepository _vehicleRepo;
         private readonly IMapper _mapper;
 
-        public TransportService(ITransportRepository transportRepo, IOrderRepository orderRepo, IShippingLogRepository logRepo, IMapper mapper)
+        public TransportService(
+            ITransportRepository transportRepo,
+            IOrderRepository orderRepo,
+            IShippingLogRepository logRepo,
+            IDriverRepository driverRepo,
+            IPorterRepository porterRepo,
+            IVehicleRepository vehicleRepo,
+            IMapper mapper)
         {
             _transportRepo = transportRepo;
             _orderRepo = orderRepo;
             _logRepo = logRepo;
+            _driverRepo = driverRepo;
+            _porterRepo = porterRepo;
+            _vehicleRepo = vehicleRepo;
             _mapper = mapper;
         }
 
@@ -68,12 +81,32 @@ namespace Application.Services.Implements
             var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
             var e = t.EndTimePlanned;
 
+            var providerPartnerId = (t as dynamic).ProviderPartnerId;
+
+            if (dto.VehicleId.HasValue)
+            {
+                var v = _vehicleRepo.GetById(dto.VehicleId.Value) ?? throw new InvalidOperationException("Vehicle not found");
+                if (v.PartnerId != providerPartnerId)
+                    throw new InvalidOperationException("Vehicle partner mismatch");
+            }
+            if (dto.DriverId.HasValue)
+            {
+                var d = _driverRepo.GetById(dto.DriverId.Value) ?? throw new InvalidOperationException("Driver not found");
+                if (d.PartnerId != providerPartnerId)
+                    throw new InvalidOperationException("Driver partner mismatch");
+            }
+            if (dto.PorterIds?.Any() == true)
+            {
+                var ps = _porterRepo.GetByIds(dto.PorterIds);
+                var wrong = ps.Where(p => p.PartnerId != providerPartnerId).Select(p => p.PorterId).ToList();
+                if (wrong.Any())
+                    throw new InvalidOperationException($"Porter partner mismatch: {string.Join(",", wrong)}");
+            }
+
             if (dto.VehicleId.HasValue && _transportRepo.VehicleBusy(dto.VehicleId.Value, transportId, s, e))
                 throw new InvalidOperationException("Vehicle is busy in the selected time window");
-
             if (dto.DriverId.HasValue && _transportRepo.DriverBusy(dto.DriverId.Value, transportId, s, e))
                 throw new InvalidOperationException("Driver is busy in the selected time window");
-
             var busy = (dto.PorterIds?.Count > 0)
                 ? _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e)
                 : new List<int>();

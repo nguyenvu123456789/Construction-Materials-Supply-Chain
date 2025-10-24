@@ -21,5 +21,7 @@
 
         public Vehicle? Vehicle { get; set; }
         public Driver? Driver { get; set; }
+        public int ProviderPartnerId { get; set; }
+        public virtual Partner ProviderPartner { get; set; } = null!;
     }
 }

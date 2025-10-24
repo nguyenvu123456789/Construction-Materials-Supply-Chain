@@ -841,6 +841,7 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.Code).HasMaxLength(50).IsRequired();
             e.Property(x => x.PlateNumber).HasMaxLength(50).IsRequired();
             e.Property(x => x.VehicleClass).HasMaxLength(50);
+            e.HasOne(x => x.Partner).WithMany(p => p.Vehicles).HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Driver>(e =>
@@ -849,6 +850,7 @@ public partial class ScmVlxdContext : DbContext
             e.ToTable("Driver");
             e.Property(x => x.FullName).HasMaxLength(100).IsRequired();
             e.Property(x => x.Phone).HasMaxLength(20);
+            e.HasOne(x => x.Partner).WithMany(p => p.Drivers).HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Porter>(e =>
@@ -857,6 +859,7 @@ public partial class ScmVlxdContext : DbContext
             e.ToTable("Porter");
             e.Property(x => x.FullName).HasMaxLength(100).IsRequired();
             e.Property(x => x.Phone).HasMaxLength(20);
+            e.HasOne(x => x.Partner).WithMany(p => p.Porters).HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Transport>(e =>
@@ -879,6 +882,10 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Driver).WithMany()
                 .HasForeignKey(x => x.DriverId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            e.HasOne(x => x.ProviderPartner).WithMany(p => p.TransportsProvided).HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<TransportStop>(e =>

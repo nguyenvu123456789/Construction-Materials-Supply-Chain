@@ -32,7 +32,7 @@ namespace Application.Services.Implements
 
         public OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto)
         {
-            var buyer = _userRepository.GetById(dto.CreatedBy);
+            var buyer = _userRepository.GetByIdWithPartner(dto.CreatedBy);
             if (buyer == null)
                 throw new Exception("Người mua không tồn tại");
 

@@ -1,5 +1,6 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs;
+using Domain.Models;
 
 namespace Application.Interfaces
 {
@@ -13,5 +14,6 @@ namespace Application.Interfaces
         PagedResultDto<UserDto> GetUsersFiltered(UserPagedQueryDto query, List<string>? statuses = null);
         PagedResultDto<UserDto> GetUsersFilteredIncludeDeleted(UserPagedQueryDto query, List<string>? statuses = null);
         void Restore(int id, string status);
+        UserDto? GetByIdWithPartner(int id);
     }
 }

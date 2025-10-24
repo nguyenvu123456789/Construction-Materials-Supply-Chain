@@ -10,6 +10,7 @@
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? AvatarBase64 { get; set; }
+        public int? PartnerId { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
 

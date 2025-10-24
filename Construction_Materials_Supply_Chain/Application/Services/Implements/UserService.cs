@@ -221,4 +221,10 @@ public class UserService : IUserService
             throw new ArgumentException("AvatarBase64 is invalid base64 data.");
         }
     }
+
+    public UserDto? GetByIdWithPartner(int id)
+    {
+        var user = _users.GetByIdWithPartner(id);
+        return user == null ? null : _mapper.Map<UserDto>(user);
+    }
 }

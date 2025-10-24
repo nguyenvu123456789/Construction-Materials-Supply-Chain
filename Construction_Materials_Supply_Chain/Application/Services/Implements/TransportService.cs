@@ -51,16 +51,16 @@ namespace Application.Services.Implements
                 StartTimePlanned = dto.StartTimePlanned,
                 Notes = dto.Notes,
                 Stops = new List<TransportStop>
-        {
-            new TransportStop
-            {
-                Seq = 0,
-                StopType = TransportStopType.Depot,
-                AddressId = dto.DepotId,
-                Status = TransportStopStatus.Planned,
-                ServiceTimeMin = 0
-            }
-        }
+                {
+                    new TransportStop
+                    {
+                        Seq = 0,
+                        StopType = TransportStopType.Depot,
+                        AddressId = dto.DepotId,
+                        Status = TransportStopStatus.Planned,
+                        ServiceTimeMin = 0
+                    }
+                }
             };
 
             _transportRepo.Add(t);

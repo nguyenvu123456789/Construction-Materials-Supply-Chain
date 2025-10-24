@@ -343,7 +343,7 @@ namespace Infrastructure.Persistence
                     new ExportDetail { ExportId = context.Exports.First(e => e.ExportCode == "EXP-PENDING-001").ExportId, MaterialId = glass.MaterialId, MaterialCode = glass.MaterialCode ?? "", MaterialName = glass.MaterialName, Unit = glass.Unit, UnitPrice = 200000, Quantity = 25, LineTotal = 200000 * 25 }
                 );
                 context.SaveChanges();
-                    
+
                 // 12️⃣ Seed MaterialChecks
                 if (!context.MaterialChecks.Any())
                 {
@@ -365,7 +365,7 @@ namespace Infrastructure.Persistence
 
 
 
-               
+
                 var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01")
                     ?? throw new InvalidOperationException("User staff01 not found.");
                 var whHN = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Hà Nội")
@@ -792,6 +792,24 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
+    ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
+            context.SaveChanges();
+
+            var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
+    ?? context.Partners.Add(new Partner
+    {
+        PartnerCode = "TP001",
+        PartnerName = "Transport A",
+        PartnerTypeId = transportType.PartnerTypeId,
+        ContactEmail = "transportA@example.com",
+        ContactPhone = "0900000001",
+        Status = "Active"
+    }).Entity;
+            context.SaveChanges();
+
+            var partnerAId = partnerTransportA.PartnerId;
+
             // ===== Transport seed =====
             if (!context.Addresses.Any(a => a.Name == "Main Depot"))
             {
@@ -801,18 +819,18 @@ namespace Infrastructure.Persistence
                 context.Addresses.AddRange(depot, whA, whB);
                 context.SaveChanges();
 
-                var v1 = new Vehicle { Code = "TRK-01", PlateNumber = "51C-00001", VehicleClass = "Truck", Active = true };
-                var v2 = new Vehicle { Code = "TRK-02", PlateNumber = "51C-00002", VehicleClass = "Truck", Active = true };
+                var v1 = new Vehicle { Code = "TRK-01", PlateNumber = "51C-00001", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
+                var v2 = new Vehicle { Code = "TRK-02", PlateNumber = "51C-00002", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
                 context.Vehicles.AddRange(v1, v2);
                 context.SaveChanges();
 
-                var d1 = new Driver { FullName = "Nguyễn Văn Tài", Phone = "0901111111", Active = true };
-                var d2 = new Driver { FullName = "Trần Văn Lái", Phone = "0902222222", Active = true };
+                var d1 = new Driver { FullName = "Nguyễn Văn Tài", Phone = "0901111111", Active = true, PartnerId = partnerAId };
+                var d2 = new Driver { FullName = "Trần Văn Lái", Phone = "0902222222", Active = true, PartnerId = partnerAId };
                 context.Drivers.AddRange(d1, d2);
                 context.SaveChanges();
 
-                var p1 = new Porter { FullName = "Lê Văn A", Phone = "0903333333", Active = true };
-                var p2 = new Porter { FullName = "Phạm Văn B", Phone = "0904444444", Active = true };
+                var p1 = new Porter { FullName = "Lê Văn A", Phone = "0903333333", Active = true, PartnerId = partnerAId };
+                var p2 = new Porter { FullName = "Phạm Văn B", Phone = "0904444444", Active = true, PartnerId = partnerAId };
                 context.Porters.AddRange(p1, p2);
                 context.SaveChanges();
 
@@ -825,6 +843,7 @@ namespace Infrastructure.Persistence
                     DepotId = depot.AddressId,
                     VehicleId = v1.VehicleId,
                     DriverId = d1.DriverId,
+                    ProviderPartnerId = partnerAId,
                     Status = TransportStatus.Assigned,
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
                     Notes = "Seed trip"

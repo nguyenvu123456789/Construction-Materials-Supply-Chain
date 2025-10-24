@@ -31,6 +31,6 @@
         public List<int> RoleIds { get; set; } = new();
         public string? Status { get; set; }
         public string? AvatarBase64 { get; set; }
-        //public int? PartnerId { get; set; }
+        public int? PartnerId { get; set; }
     }
 }

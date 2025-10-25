@@ -90,24 +90,17 @@ namespace Services.Implementations
             if (order.Status != "Approved")
                 throw new Exception("Order must be approved to create invoice.");
 
-            // Cập nhật UnitPrice từ DTO
-            foreach (var od in order.OrderDetails)
-            {
-                var unitPriceDto = dto.UnitPrices?.FirstOrDefault(u => u.MaterialId == od.MaterialId);
-                if (unitPriceDto != null)
-                {
-                    od.UnitPrice = unitPriceDto.UnitPrice;
-                }
+            var partnerId = order.SupplierId ?? dto.PartnerId;
 
-                if (!od.UnitPrice.HasValue)
-                    throw new Exception($"UnitPrice not provided for MaterialId {od.MaterialId} in order.");
-            }
+            if (partnerId == 0)
+                throw new Exception("PartnerId (supplier) not found for this order.");
 
             var invoice = new Invoice
             {
                 InvoiceCode = $"INV-{_invoices.GetAllWithDetails().Count + 1:D3}",
                 InvoiceType = "Export",
-                PartnerId = order.CreatedBy ?? 0,
+                PartnerId = partnerId,
+
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,
                 DueDate = dto.DueDate,
@@ -115,24 +108,29 @@ namespace Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Thêm chi tiết invoice
-            foreach (var item in order.OrderDetails)
+            foreach (var od in order.OrderDetails)
             {
+                var unitPriceDto = dto.UnitPrices?.FirstOrDefault(u => u.MaterialId == od.MaterialId);
+                if (unitPriceDto != null)
+                    od.UnitPrice = unitPriceDto.UnitPrice;
+
+                if (!od.UnitPrice.HasValue)
+                    throw new Exception($"UnitPrice not provided for MaterialId {od.MaterialId} in order.");
+
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
-                    MaterialId = item.MaterialId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice!.Value,
-                    LineTotal = item.Quantity * item.UnitPrice!.Value
+                    MaterialId = od.MaterialId,
+                    Quantity = od.Quantity,
+                    UnitPrice = od.UnitPrice!.Value,
+                    LineTotal = od.Quantity * od.UnitPrice!.Value
                 });
             }
 
             invoice.TotalAmount = invoice.InvoiceDetails.Sum(d => d.LineTotal ?? 0);
-
             _invoices.Add(invoice);
-
             return invoice;
         }
+
         public List<Invoice> GetByType(string type)
         {
             return _invoices.GetAllWithDetails()

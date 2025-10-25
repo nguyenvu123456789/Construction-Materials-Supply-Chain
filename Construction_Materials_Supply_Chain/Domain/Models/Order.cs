@@ -3,9 +3,7 @@
 public partial class Order
 {
     public int OrderId { get; set; }
-
     public string OrderCode { get; set; } = null!;
-
     public string? CustomerName { get; set; }
     public string? PhoneNumber { get; set; }
     public string? DeliveryAddress { get; set; }

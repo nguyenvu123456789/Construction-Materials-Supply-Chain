@@ -73,5 +73,20 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{invoiceId:int}/partner/{partnerId:int}")]
+        public IActionResult GetInvoiceForPartner(int invoiceId, int partnerId)
+        {
+            var result = _invoiceService.GetInvoiceForPartner(invoiceId, partnerId);
+            return Ok(result);
+        }
+
+        [HttpGet("partner/{partnerId:int}")]
+        public IActionResult GetAllInvoicesForPartner(int partnerId)
+        {
+            var invoices = _invoiceService.GetAllInvoicesForPartner(partnerId);
+            return Ok(invoices);
+        }
+
     }
 }

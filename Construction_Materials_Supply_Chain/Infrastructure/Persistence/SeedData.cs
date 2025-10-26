@@ -41,7 +41,14 @@ namespace Infrastructure.Persistence
                     new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active" },
                     new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active" },
                     new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active" },
-                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" }
+                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" },
+                    new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active" },
+                    new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active" },
+                    new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active" },
+                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active" },
+                    new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active" },
+                    new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active" },
+                    new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active" }
                 );
                 context.SaveChanges();
             }
@@ -64,17 +71,25 @@ namespace Infrastructure.Persistence
             // 4️⃣ Seed Users
             if (!context.Users.Any())
             {
+                // Lấy các Partner tương ứng
+                var adminPartner = context.Partners.First(p => p.PartnerCode == "P008");
+                var managerPartner = context.Partners.First(p => p.PartnerCode == "P009");
+                var staffPartner = context.Partners.First(p => p.PartnerCode == "P010");
+                var accountantPartner = context.Partners.First(p => p.PartnerCode == "P011");
+                var salesPartner = context.Partners.First(p => p.PartnerCode == "P012");
+                var supportPartner = context.Partners.First(p => p.PartnerCode == "P013");
+                var inventoryPartner = context.Partners.First(p => p.PartnerCode == "P014");
                 var customerPartner = context.Partners.First(p => p.PartnerCode == "P005");
                 var collaboratorPartner = context.Partners.First(p => p.PartnerCode == "P007");
 
                 context.Users.AddRange(
-                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "admin123", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "manager123", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "staff123", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "accountant123", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "sales123", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "support123", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "inventory123", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
+                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "admin123", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = adminPartner.PartnerId },
+                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "manager123", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = managerPartner.PartnerId },
+                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "staff123", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = staffPartner.PartnerId },
+                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "accountant123", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = accountantPartner.PartnerId },
+                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "sales123", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = salesPartner.PartnerId },
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "support123", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = supportPartner.PartnerId },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "inventory123", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = inventoryPartner.PartnerId },
                     new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "customer123", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = customerPartner.PartnerId },
                     new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "collaborator123", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = collaboratorPartner.PartnerId }
                 );
@@ -199,13 +214,13 @@ namespace Infrastructure.Persistence
                 var nguyenb = context.Partners.First(p => p.PartnerCode == "P007");
 
                 context.Invoices.AddRange(
-                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Import", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), Status = "Pending", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Import", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-15), Status = "Approved", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Import", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), Status = "Success", CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), Status = "Pending", CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-15), Status = "Approved", CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), Status = "Success", CreatedAt = DateTime.Now },
                     new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-5), Status = "Pending", CreatedAt = DateTime.Now },
                     new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-7), Status = "Approved", CreatedAt = DateTime.Now },
                     new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-3), Status = "Success", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Import", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-2), Status = "Pending", CreatedAt = DateTime.Now }
+                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-2), Status = "Pending", CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
 

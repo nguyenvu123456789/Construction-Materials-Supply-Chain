@@ -197,10 +197,10 @@ namespace Services.Implementations
                 _exportDetails.Add(detail);
             }
 
-            // ✅ Cập nhật trạng thái hóa đơn: APPROVED → Exporting
+            //  Cập nhật trạng thái hóa đơn: APPROVED → Exporting
             if (invoice.Status?.ToUpper() == "PENDING")
             {
-                invoice.Status = "Exporting";
+                invoice.Status = "Success";
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoiceRepository.Update(invoice);
             }
@@ -209,7 +209,7 @@ namespace Services.Implementations
         }
 
 
-        // ✅ Tạo mã phiếu xuất tăng dần
+        //  Tạo mã phiếu xuất tăng dần
         private string GenerateNextExportCode()
         {
             int nextNumber = 1;

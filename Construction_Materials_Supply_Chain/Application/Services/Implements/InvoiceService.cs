@@ -138,6 +138,70 @@ namespace Services.Implementations
                             .ToList();
         }
 
+        public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
+        {
+            // Lấy hóa đơn từ repository (chỉ SELECT, không thay đổi DB)
+            var invoice = _invoices.GetByIdWithDetails(invoiceId);
+            if (invoice == null)
+                throw new Exception("Invoice not found");
+
+            // Xác định loại hiển thị theo partner đang xem
+            string displayType = (invoice.PartnerId == currentPartnerId)
+                ? "Export"   // Bên phát hành (bán hàng)
+                : "Import";  // Bên còn lại (mua hàng)
+
+            // Map sang DTO trả về
+            var dto = new InvoiceDto
+            {
+                InvoiceId = invoice.InvoiceId,
+                InvoiceCode = invoice.InvoiceCode,
+                InvoiceType = displayType,   // hiển thị động
+                PartnerId = invoice.PartnerId,
+                PartnerName = invoice.Partner?.PartnerName ?? "N/A",
+                IssueDate = invoice.IssueDate,
+                DueDate = invoice.DueDate,
+                TotalAmount = invoice.TotalAmount,
+                Status = invoice.Status,
+                CreatedAt = invoice.CreatedAt
+            };
+
+            return dto;
+        }
+        public List<InvoiceDto> GetAllInvoicesForPartner(int partnerId)
+        {
+            var invoices = _invoices.GetAllWithDetails()
+                .Where(i => i.PartnerId == partnerId || i.CreatedByNavigation.PartnerId == partnerId)
+                .ToList();
+
+            var result = new List<InvoiceDto>();
+
+            foreach (var invoice in invoices)
+            {
+                // Đổi chiều hiển thị tùy bên đang xem
+                string displayType;
+                if (invoice.PartnerId == partnerId)
+                    displayType = invoice.InvoiceType == "Export" ? "Import" : invoice.InvoiceType;
+                else
+                    displayType = invoice.InvoiceType == "Import" ? "Export" : invoice.InvoiceType;
+
+                result.Add(new InvoiceDto
+                {
+                    InvoiceId = invoice.InvoiceId,
+                    InvoiceCode = invoice.InvoiceCode,
+                    InvoiceType = displayType,
+                    PartnerId = invoice.PartnerId,
+                    PartnerName = invoice.Partner?.PartnerName ?? "Không xác định",
+                    IssueDate = invoice.IssueDate,
+                    DueDate = invoice.DueDate,
+                    TotalAmount = invoice.TotalAmount,
+                    Status = invoice.Status,
+                    CreatedAt = invoice.CreatedAt
+                });
+            }
+
+            return result;
+        }
+
 
     }
 }

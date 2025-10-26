@@ -29,9 +29,13 @@ namespace Infrastructure.Implementations
 
         public List<Invoice> GetAllWithDetails()
         {
-            return _dbSet.Include(i => i.InvoiceDetails)
-                         .ThenInclude(d => d.Material)
-                         .ToList();
+            return _dbSet
+                .Include(i => i.InvoiceDetails)
+                    .ThenInclude(d => d.Material)
+                .Include(i => i.Partner)                 
+                .Include(i => i.CreatedByNavigation)    
+                .AsNoTracking()                        
+                .ToList();
         }
 
         public List<Invoice> GetAll() => _dbSet.ToList();

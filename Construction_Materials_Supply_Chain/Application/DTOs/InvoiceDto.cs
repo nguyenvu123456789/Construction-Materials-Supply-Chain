@@ -38,4 +38,18 @@
         public int MaterialId { get; set; }
         public decimal UnitPrice { get; set; }
     }
+    public class InvoiceDto
+    {
+        public int InvoiceId { get; set; }
+        public string InvoiceCode { get; set; } = null!;
+        public string InvoiceType { get; set; } = null!;
+        public int PartnerId { get; set; }
+        public string PartnerName { get; set; } = null!;
+        public DateTime IssueDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string? Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
+
 }

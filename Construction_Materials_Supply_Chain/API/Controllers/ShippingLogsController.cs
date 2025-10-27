@@ -18,11 +18,11 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
-        {
-            var logs = _service.GetAll();
-            return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
-        }
+        //[HttpGet]
+        //public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
+        //{
+        //    var logs = _service.GetAll();
+        //    return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
+        //}
     }
 }

@@ -7,7 +7,7 @@ namespace Domain.Interface
     {
         Transport? GetDetail(int transportId);
         List<Transport> Query(DateOnly? date, string? status, int? vehicleId);
-        void Assign(int transportId, int vehicleId, int driverId, List<int> porterIds);
+        void AssignMulti(int transportId, List<TransportAssignment> assigns, List<int> porterIds);
         void AddStops(int transportId, List<TransportStop> stops);
         void AddOrders(int transportId, List<TransportOrder> orders);
         void UpdateStatus(int transportId, TransportStatus status, DateTimeOffset? startActual, DateTimeOffset? endActual);
@@ -21,7 +21,8 @@ namespace Domain.Interface
         bool DriverBusy(int driverId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
         List<int> BusyPorters(List<int> porterIds, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e);
         List<int> GetPorterIds(int transportId);
-
+        List<int> GetVehicleIds(int transportId);
+        List<int> GetDriverIds(int transportId);
         DateTimeOffset? VehicleBusyUntil(int vehicleId, DateTimeOffset s, DateTimeOffset e);
         DateTimeOffset? DriverBusyUntil(int driverId, DateTimeOffset s, DateTimeOffset e);
         DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e);

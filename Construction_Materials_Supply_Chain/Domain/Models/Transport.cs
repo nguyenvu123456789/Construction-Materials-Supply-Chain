@@ -1,27 +1,89 @@
-﻿namespace Domain.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Domain.Models
 {
     public enum TransportStatus { Planned, Assigned, EnRoute, Completed, Cancelled }
+    public enum TransportStopType { Depot, Pickup, Dropoff }
+    public enum TransportStopStatus { Planned, Arrived, Done }
 
-    public class Transport
+    public partial class Transport
     {
         public int TransportId { get; set; }
         public string TransportCode { get; set; } = default!;
+        public TransportStatus Status { get; set; }
         public int DepotId { get; set; }
-        public int? VehicleId { get; set; }
-        public int? DriverId { get; set; }
-        public TransportStatus Status { get; set; } = TransportStatus.Planned;
+        public int ProviderPartnerId { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
         public DateTimeOffset? EndTimePlanned { get; set; }
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
         public string? Notes { get; set; }
-        public ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
-        public ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
-        public ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
 
-        public Vehicle? Vehicle { get; set; }
-        public Driver? Driver { get; set; }
-        public int ProviderPartnerId { get; set; }
-        public virtual Partner ProviderPartner { get; set; } = null!;
+        public virtual Address Depot { get; set; } = default!;
+        public virtual Partner ProviderPartner { get; set; } = default!;
+        public virtual ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
+        public virtual ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
+        public virtual ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
+        public virtual ICollection<TransportAssignment> Assignments { get; set; } = new List<TransportAssignment>();
+    }
+
+    public class TransportAssignment
+    {
+        public int TransportAssignmentId { get; set; }
+        public int TransportId { get; set; }
+        public int VehicleId { get; set; }
+        public int DriverId { get; set; }
+
+        public DateTimeOffset? StartTimePlanned { get; set; }
+        public DateTimeOffset? EndTimePlanned { get; set; }
+        public DateTimeOffset? StartTimeActual { get; set; }
+        public DateTimeOffset? EndTimeActual { get; set; }
+
+         public virtual Transport Transport { get; set; } = default!;
+        public virtual Vehicle Vehicle { get; set; } = default!;
+        public virtual Driver Driver { get; set; } = default!;
+    }
+
+    public partial class TransportPorter
+    {
+        public int TransportId { get; set; }
+        public int PorterId { get; set; }
+        public string? Role { get; set; }
+
+        
+        public virtual Transport Transport { get; set; } = null!;
+        
+        public virtual Porter Porter { get; set; } = null!;
+    }
+
+    public partial class TransportStop
+    {
+        public int TransportStopId { get; set; }
+        public int TransportId { get; set; }
+        public int Seq { get; set; }
+        public TransportStopType StopType { get; set; }
+        public int AddressId { get; set; }
+        public int ServiceTimeMin { get; set; }
+        public TransportStopStatus Status { get; set; }
+        public DateTimeOffset? ETA { get; set; }
+        public DateTimeOffset? ETD { get; set; }
+        public DateTimeOffset? ATA { get; set; }
+        public DateTimeOffset? ATD { get; set; }
+
+        
+        public virtual Transport Transport { get; set; } = null!;
+        
+        public virtual Address Address { get; set; } = null!;
+    }
+
+    public partial class TransportOrder
+    {
+        public int TransportId { get; set; }
+        public int OrderId { get; set; }
+
+        
+        public virtual Transport Transport { get; set; } = null!;
+        
+        public virtual Order Order { get; set; } = null!;
     }
 }

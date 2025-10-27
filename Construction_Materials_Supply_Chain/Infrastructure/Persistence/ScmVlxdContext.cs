@@ -67,6 +67,7 @@ public partial class ScmVlxdContext : DbContext
     public DbSet<TransportStop> TransportStops { get; set; }
     public DbSet<TransportOrder> TransportOrders { get; set; }
     public DbSet<TransportPorter> TransportPorters { get; set; }
+    public DbSet<TransportAssignment> TransportAssignments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -865,27 +866,19 @@ public partial class ScmVlxdContext : DbContext
         modelBuilder.Entity<Transport>(e =>
         {
             e.HasKey(x => x.TransportId);
-            e.ToTable("Transport");
-            e.Property(x => x.TransportCode).HasMaxLength(50).IsRequired();
-            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
-            e.Property(x => x.Notes).HasMaxLength(500);
+            e.HasOne(x => x.Depot).WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.ProviderPartner).WithMany().HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(x => x.Stops).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
+            e.HasMany(x => x.TransportOrders).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
+            e.HasMany(x => x.TransportPorters).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
+            e.HasMany(x => x.Assignments).WithOne(a => a.Transport).HasForeignKey(a => a.TransportId);
+        });
 
-            e.HasOne<Address>().WithMany()
-                .HasForeignKey(x => x.DepotId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FK_Transport_Address_DepotId");
-
-            e.HasOne(x => x.Vehicle).WithMany()
-                .HasForeignKey(x => x.VehicleId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            e.HasOne(x => x.Driver).WithMany()
-                .HasForeignKey(x => x.DriverId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            e.HasOne(x => x.ProviderPartner).WithMany(p => p.TransportsProvided).HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
-            e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<TransportAssignment>(e =>
+        {
+            e.HasKey(x => x.TransportAssignmentId);
+            e.HasOne(x => x.Vehicle).WithMany(v => v.TransportAssignments).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Driver).WithMany(d => d.TransportAssignments).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<TransportStop>(e =>

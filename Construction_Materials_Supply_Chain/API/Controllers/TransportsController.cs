@@ -11,10 +11,12 @@ namespace Api.Controllers
         private readonly ITransportService _service;
         public TransportsController(ITransportService svc) { _service = svc; }
 
+        // Tạo chuyến (tự sinh stop Depot seq=0)
         [HttpPost]
         public ActionResult<TransportResponseDto> Create([FromBody] TransportCreateRequestDto dto)
             => Ok(_service.Create(dto));
 
+        // Lấy chi tiết 1 chuyến (stops, orders, porters, assignments)
         [HttpGet("{id:int}")]
         public ActionResult<TransportResponseDto> Get(int id)
         {
@@ -23,13 +25,16 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<TransportResponseDto>> Query([FromQuery] DateOnly? date, [FromQuery] string? status, [FromQuery] int? vehicleId)
+        public ActionResult<IEnumerable<TransportResponseDto>> Query(
+            [FromQuery] DateOnly? date,
+            [FromQuery] string? status,
+            [FromQuery] int? vehicleId)
             => Ok(_service.Query(date, status, vehicleId));
 
         [HttpPost("{id:int}/assign")]
-        public IActionResult Assign(int id, [FromBody] TransportAssignRequestDto dto)
+        public IActionResult AssignMulti(int id, [FromBody] TransportAssignMultiRequestDto dto)
         {
-            _service.Assign(id, dto);
+            _service.AssignMulti(id, dto);
             return Ok();
         }
 

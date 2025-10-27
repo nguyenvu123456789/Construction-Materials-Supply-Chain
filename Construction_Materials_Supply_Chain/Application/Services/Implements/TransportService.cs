@@ -3,6 +3,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
+using System.Linq;
 
 namespace Application.Services.Implements
 {
@@ -13,8 +14,8 @@ namespace Application.Services.Implements
         private readonly IShippingLogRepository _logRepo;
         private readonly IDriverRepository _driverRepo;
         private readonly IPorterRepository _porterRepo;
-        private readonly IPartnerRepository _partnerRepo;
         private readonly IVehicleRepository _vehicleRepo;
+        private readonly IPartnerRepository _partnerRepo;
         private readonly IMapper _mapper;
 
         public TransportService(
@@ -36,6 +37,30 @@ namespace Application.Services.Implements
             _partnerRepo = partnerRepo;
             _mapper = mapper;
         }
+
+        private static readonly string[] LicenseOrder = new[]
+        {
+            "A1","A","B1","B","C1","C","D1","D2","D","BE","C1E","CE","D1E","D2E","DE"
+        };
+
+        private static int LicenseRank(string? cls)
+        {
+            if (string.IsNullOrWhiteSpace(cls)) return -1;
+            var x = cls.Trim().ToUpperInvariant();
+            for (int i = 0; i < LicenseOrder.Length; i++)
+                if (LicenseOrder[i].Equals(x, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            return -1;
+        }
+
+        private static bool LicenseSatisfies(string? driverClass, string? minRequiredClass)
+        {
+            if (string.IsNullOrWhiteSpace(minRequiredClass)) return true;
+            var d = LicenseRank(driverClass);
+            var r = LicenseRank(minRequiredClass);
+            return d >= 0 && r >= 0 && d >= r;
+        }
+
 
         public TransportResponseDto Create(TransportCreateRequestDto dto)
         {
@@ -82,45 +107,50 @@ namespace Application.Services.Implements
             return list.Select(_mapper.Map<TransportResponseDto>).ToList();
         }
 
-        public void Assign(int transportId, TransportAssignRequestDto dto)
+        public void AssignMulti(int transportId, TransportAssignMultiRequestDto dto)
         {
             var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
-            var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
-            var e = t.EndTimePlanned;
-
             var providerPartnerId = (t as dynamic).ProviderPartnerId;
 
-            if (dto.VehicleId.HasValue)
+            if (dto.Assignments == null || dto.Assignments.Count == 0)
+                throw new InvalidOperationException("Assignments required");
+
+            foreach (var a in dto.Assignments)
             {
-                var v = _vehicleRepo.GetById(dto.VehicleId.Value) ?? throw new InvalidOperationException("Vehicle not found");
-                if (v.PartnerId != providerPartnerId)
-                    throw new InvalidOperationException("Vehicle partner mismatch");
+                var v = _vehicleRepo.GetById(a.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
+                var d = _driverRepo.GetById(a.DriverId) ?? throw new InvalidOperationException("Driver not found");
+
+                if (v.PartnerId != providerPartnerId) throw new InvalidOperationException("Vehicle partner mismatch");
+                if (d.PartnerId != providerPartnerId) throw new InvalidOperationException("Driver partner mismatch");
+
+                if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
+                    throw new InvalidOperationException(
+                        $"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
+
+                var s = a.StartTimePlanned ?? (t.StartTimePlanned ?? DateTimeOffset.UtcNow);
+                var e = a.EndTimePlanned ?? t.EndTimePlanned;
+
+                if (_transportRepo.VehicleBusy(a.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
+                if (_transportRepo.DriverBusy(a.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
             }
-            if (dto.DriverId.HasValue)
-            {
-                var d = _driverRepo.GetById(dto.DriverId.Value) ?? throw new InvalidOperationException("Driver not found");
-                if (d.PartnerId != providerPartnerId)
-                    throw new InvalidOperationException("Driver partner mismatch");
-            }
+
             if (dto.PorterIds?.Any() == true)
             {
-                var ps = _porterRepo.GetByIds(dto.PorterIds);
-                var wrong = ps.Where(p => p.PartnerId != providerPartnerId).Select(p => p.PorterId).ToList();
-                if (wrong.Any())
-                    throw new InvalidOperationException($"Porter partner mismatch: {string.Join(",", wrong)}");
+                var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
+                var e = t.EndTimePlanned;
+                var busy = _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e);
+                if (busy.Any()) throw new InvalidOperationException($"Porters busy: {string.Join(",", busy)}");
             }
 
-            if (dto.VehicleId.HasValue && _transportRepo.VehicleBusy(dto.VehicleId.Value, transportId, s, e))
-                throw new InvalidOperationException("Vehicle is busy in the selected time window");
-            if (dto.DriverId.HasValue && _transportRepo.DriverBusy(dto.DriverId.Value, transportId, s, e))
-                throw new InvalidOperationException("Driver is busy in the selected time window");
-            var busy = (dto.PorterIds?.Count > 0)
-                ? _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e)
-                : new List<int>();
-            if (busy.Any())
-                throw new InvalidOperationException($"Porters busy: {string.Join(",", busy)}");
+            var assigns = dto.Assignments.Select(a => new TransportAssignment
+            {
+                VehicleId = a.VehicleId,
+                DriverId = a.DriverId,
+                StartTimePlanned = a.StartTimePlanned ?? t.StartTimePlanned,
+                EndTimePlanned = a.EndTimePlanned ?? t.EndTimePlanned
+            }).ToList();
 
-            _transportRepo.Assign(transportId, dto.VehicleId ?? 0, dto.DriverId ?? 0, dto.PorterIds ?? new List<int>());
+            _transportRepo.AssignMulti(transportId, assigns, dto.PorterIds ?? new List<int>());
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow });
         }
 
@@ -150,14 +180,22 @@ namespace Application.Services.Implements
 
         public void Start(int transportId, DateTimeOffset at)
         {
-            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
+            var t = _transportRepo.GetDetail(transportId) ?? throw new KeyNotFoundException();
             var s = at;
             var e = t.EndTimePlanned;
 
-            if (t.VehicleId.HasValue && _transportRepo.VehicleBusy(t.VehicleId.Value, transportId, s, e))
-                throw new InvalidOperationException("Vehicle is busy");
-            if (t.DriverId.HasValue && _transportRepo.DriverBusy(t.DriverId.Value, transportId, s, e))
-                throw new InvalidOperationException("Driver is busy");
+            foreach (var a in t.Assignments)
+            {
+                var v = _vehicleRepo.GetById(a.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
+                var d = _driverRepo.GetById(a.DriverId) ?? throw new InvalidOperationException("Driver not found");
+
+                if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
+                    throw new InvalidOperationException(
+                        $"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
+
+                if (_transportRepo.VehicleBusy(a.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
+                if (_transportRepo.DriverBusy(a.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
+            }
 
             var porterIds = _transportRepo.GetPorterIds(transportId);
             if (porterIds.Any() && _transportRepo.BusyPorters(porterIds, transportId, s, e).Any())

@@ -808,19 +808,19 @@ namespace Infrastructure.Persistence
             }
 
             var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
-    ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
-            context.SaveChanges();
+            ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
+                    context.SaveChanges();
 
-            var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
-    ?? context.Partners.Add(new Partner
-    {
-        PartnerCode = "TP001",
-        PartnerName = "Transport A",
-        PartnerTypeId = transportType.PartnerTypeId,
-        ContactEmail = "transportA@example.com",
-        ContactPhone = "0900000001",
-        Status = "Active"
-    }).Entity;
+                    var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
+            ?? context.Partners.Add(new Partner
+            {
+                PartnerCode = "TP001",
+                PartnerName = "Transport A",
+                PartnerTypeId = transportType.PartnerTypeId,
+                ContactEmail = "transportA@example.com",
+                ContactPhone = "0900000001",
+                Status = "Active"
+            }).Entity;
             context.SaveChanges();
 
             var partnerAId = partnerTransportA.PartnerId;
@@ -856,14 +856,30 @@ namespace Infrastructure.Persistence
                 {
                     TransportCode = "T-INIT-001",
                     DepotId = depot.AddressId,
-                    VehicleId = v1.VehicleId,
-                    DriverId = d1.DriverId,
                     ProviderPartnerId = partnerAId,
                     Status = TransportStatus.Assigned,
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
                     Notes = "Seed trip"
                 };
                 context.Transports.Add(t1);
+                context.SaveChanges();
+
+                context.TransportAssignments.AddRange(
+                    new TransportAssignment
+                    {
+                        TransportId = t1.TransportId,
+                        VehicleId = v1.VehicleId,
+                        DriverId = d1.DriverId,
+                        StartTimePlanned = t1.StartTimePlanned
+                    },
+                    new TransportAssignment
+                    {
+                        TransportId = t1.TransportId,
+                        VehicleId = v2.VehicleId,
+                        DriverId = d2.DriverId,
+                        StartTimePlanned = t1.StartTimePlanned
+                    }
+                );
                 context.SaveChanges();
 
                 var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };

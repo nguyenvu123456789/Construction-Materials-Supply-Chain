@@ -53,7 +53,7 @@ namespace Application.MappingProfile
             // ===== WAREHOUSE & TRANSPORT =====
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
-            CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
+            //CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
 
             // ===== IMPORT =====
             CreateMap<Import, ImportResponseDto>()
@@ -182,22 +182,27 @@ namespace Application.MappingProfile
             CreateMap<TransportOrder, TransportOrderDto>()
                 .ForMember(d => d.OrderCode, o => o.MapFrom(s => s.Order.OrderCode))
                 .ForMember(d => d.CustomerName, o => o.MapFrom(s => s.Order.CustomerName));
+
             CreateMap<TransportPorter, TransportPorterDto>()
                 .ForMember(d => d.PorterName, o => o.MapFrom(s => s.Porter.FullName))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Porter.Phone));
 
-            CreateMap<Transport, TransportResponseDto>()
-                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
-                 .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
-                 .ForMember(d => d.VehicleCode, o => o.MapFrom(s => s.Vehicle != null ? s.Vehicle.Code : null))
-                 .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.Vehicle != null ? s.Vehicle.PlateNumber : null))
-                 .ForMember(d => d.DriverName, o => o.MapFrom(s => s.Driver != null ? s.Driver.FullName : null))
-                 .ForMember(d => d.DriverPhone, o => o.MapFrom(s => s.Driver != null ? s.Driver.Phone : null))
-                 .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
-                 .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
-                 .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
+            CreateMap<TransportAssignment, TransportAssignmentDto>()
+                .ForMember(d => d.VehicleCode, o => o.MapFrom(s => s.Vehicle.Code))
+                .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.Vehicle.PlateNumber))
+                .ForMember(d => d.DriverName, o => o.MapFrom(s => s.Driver.FullName))
+                .ForMember(d => d.DriverPhone, o => o.MapFrom(s => s.Driver.Phone));
 
-            CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
+            CreateMap<Transport, TransportResponseDto>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
+                .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
+                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
+                .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
+                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters))
+                .ForMember(d => d.Assignments, o => o.MapFrom(s => s.Assignments));
+
+            //CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }
     }
 }

@@ -40,12 +40,12 @@ namespace Api.Controllers
             return Ok();
         }
 
-        //[HttpPost("{id:int}/orders")]
-        //public IActionResult AddOrders(int id, [FromBody] TransportAddOrdersRequestDto dto)
-        //{
-        //    _service.AddOrders(id, dto);
-        //    return Ok();
-        //}
+        [HttpPost("{id:int}/orders")]
+        public IActionResult AddOrders(int id, [FromBody] TransportAddOrdersRequestDto dto)
+        {
+            _service.AddOrders(id, dto);
+            return Ok();
+        }
 
         [HttpPost("{id:int}/start")]
         public IActionResult Start(int id, [FromQuery] DateTimeOffset? at)

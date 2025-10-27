@@ -131,13 +131,6 @@ namespace Services.Implementations
             return invoice;
         }
 
-        public List<Invoice> GetByType(string type)
-        {
-            return _invoices.GetAllWithDetails()
-                            .Where(i => i.InvoiceType.Equals(type, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-        }
-
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
             // Lấy hóa đơn từ repository (chỉ SELECT, không thay đổi DB)

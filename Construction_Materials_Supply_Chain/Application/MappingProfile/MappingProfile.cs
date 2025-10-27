@@ -1,8 +1,6 @@
 ﻿using Application.DTOs;
 using AutoMapper;
 using Domain.Models;
-using System;
-using System.Linq;
 
 namespace Application.MappingProfile
 {
@@ -92,7 +90,7 @@ namespace Application.MappingProfile
             CreateMap<CreateInvoiceDetailDto, InvoiceDetail>()
                 .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.Quantity * src.UnitPrice));
             // ===== MATERIAL =====
-           
+
 
             // ===== EXPORT =====
             CreateMap<Export, ExportResponseDto>()
@@ -148,7 +146,7 @@ namespace Application.MappingProfile
             CreateMap<Payment, CashbookItemDto>()
                 .ForMember(d => d.Type, o => o.MapFrom(_ => "Payment"))
                 .ForMember(d => d.Date, o => o.MapFrom(s => s.Date))
-                .ForMember(d => d.Amount, o => o.MapFrom(s => -s.Amount)) 
+                .ForMember(d => d.Amount, o => o.MapFrom(s => -s.Amount))
                 .ForMember(d => d.Method, o => o.MapFrom(s => s.Method))
                 .ForMember(d => d.PartnerId, o => o.MapFrom(s => s.PartnerId))
                 .ForMember(d => d.InvoiceId, o => o.MapFrom(s => s.InvoiceId))

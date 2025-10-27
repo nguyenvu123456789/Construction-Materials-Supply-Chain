@@ -25,7 +25,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Services.Implementations;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;              
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +100,9 @@ builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 
 // Audit interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
@@ -190,7 +193,7 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false; 
+        options.RequireHttpsMetadata = false;
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {

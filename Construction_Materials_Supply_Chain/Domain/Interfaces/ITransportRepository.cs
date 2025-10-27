@@ -6,7 +6,7 @@ namespace Domain.Interface
     public interface ITransportRepository : IGenericRepository<Transport>
     {
         Transport? GetDetail(int transportId);
-        List<Transport> Query(DateOnly? date, string? status, int? vehicleId);
+        List<Transport> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void AssignMulti(int transportId, List<TransportAssignment> assigns, List<int> porterIds);
         void AddStops(int transportId, List<TransportStop> stops);
         void AddOrders(int transportId, List<TransportOrder> orders);

@@ -6,7 +6,7 @@ namespace Application.Interfaces
     {
         TransportResponseDto Create(TransportCreateRequestDto dto);
         TransportResponseDto? Get(int transportId);
-        List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId);
+        List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void AssignMulti(int transportId, TransportAssignMultiRequestDto dto);
         void AddStops(int transportId, TransportAddStopsRequestDto dto);
         void AddOrders(int transportId, TransportAddOrdersRequestDto dto);

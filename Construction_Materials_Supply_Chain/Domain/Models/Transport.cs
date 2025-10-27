@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Domain.Models
+﻿namespace Domain.Models
 {
     public enum TransportStatus { Planned, Assigned, EnRoute, Completed, Cancelled }
     public enum TransportStopType { Depot, Pickup, Dropoff }
@@ -39,7 +37,7 @@ namespace Domain.Models
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
 
-         public virtual Transport Transport { get; set; } = default!;
+        public virtual Transport Transport { get; set; } = default!;
         public virtual Vehicle Vehicle { get; set; } = default!;
         public virtual Driver Driver { get; set; } = default!;
     }
@@ -50,9 +48,7 @@ namespace Domain.Models
         public int PorterId { get; set; }
         public string? Role { get; set; }
 
-        
         public virtual Transport Transport { get; set; } = null!;
-        
         public virtual Porter Porter { get; set; } = null!;
     }
 
@@ -70,9 +66,7 @@ namespace Domain.Models
         public DateTimeOffset? ATA { get; set; }
         public DateTimeOffset? ATD { get; set; }
 
-        
         public virtual Transport Transport { get; set; } = null!;
-        
         public virtual Address Address { get; set; } = null!;
     }
 
@@ -81,9 +75,7 @@ namespace Domain.Models
         public int TransportId { get; set; }
         public int OrderId { get; set; }
 
-        
         public virtual Transport Transport { get; set; } = null!;
-        
         public virtual Order Order { get; set; } = null!;
     }
 }

@@ -809,18 +809,18 @@ namespace Infrastructure.Persistence
 
             var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
             ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
-                    context.SaveChanges();
+            context.SaveChanges();
 
-                    var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
-            ?? context.Partners.Add(new Partner
-            {
-                PartnerCode = "TP001",
-                PartnerName = "Transport A",
-                PartnerTypeId = transportType.PartnerTypeId,
-                ContactEmail = "transportA@example.com",
-                ContactPhone = "0900000001",
-                Status = "Active"
-            }).Entity;
+            var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
+    ?? context.Partners.Add(new Partner
+    {
+        PartnerCode = "TP001",
+        PartnerName = "Transport A",
+        PartnerTypeId = transportType.PartnerTypeId,
+        ContactEmail = "transportA@example.com",
+        ContactPhone = "0900000001",
+        Status = "Active"
+    }).Entity;
             context.SaveChanges();
 
             var partnerAId = partnerTransportA.PartnerId;
@@ -834,19 +834,100 @@ namespace Infrastructure.Persistence
                 context.Addresses.AddRange(depot, whA, whB);
                 context.SaveChanges();
 
-                var v1 = new Vehicle { Code = "TRK-01", PlateNumber = "51C-00001", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
-                var v2 = new Vehicle { Code = "TRK-02", PlateNumber = "51C-00002", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
-                context.Vehicles.AddRange(v1, v2);
+                var v1 = new Vehicle
+                {
+                    Code = "TRK-01",
+                    PlateNumber = "51C-00001",
+                    VehicleClass = "Truck 5T",
+                    MinLicenseClass = "C1",
+                    PayloadTons = 5.0m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var v2 = new Vehicle
+                {
+                    Code = "TRK-02",
+                    PlateNumber = "51C-00002",
+                    VehicleClass = "Truck 8T",
+                    MinLicenseClass = "C",
+                    PayloadTons = 8.0m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var v3 = new Vehicle
+                {
+                    Code = "VAN-01",
+                    PlateNumber = "51D-12345",
+                    VehicleClass = "Van 1.5T",
+                    MinLicenseClass = "B",
+                    PayloadTons = 1.5m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Vehicles.AddRange(v1, v2, v3);
                 context.SaveChanges();
 
-                var d1 = new Driver { FullName = "Nguyễn Văn Tài", Phone = "0901111111", Active = true, PartnerId = partnerAId };
-                var d2 = new Driver { FullName = "Trần Văn Lái", Phone = "0902222222", Active = true, PartnerId = partnerAId };
-                context.Drivers.AddRange(d1, d2);
+                var d1 = new Driver
+                {
+                    FullName = "Nguyễn Văn Tài",
+                    Phone = "0901111111",
+                    BirthDate = new DateOnly(1990, 5, 12),
+                    Hometown = "Long An",
+                    LicenseClass = "C1",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var d2 = new Driver
+                {
+                    FullName = "Trần Văn Lái",
+                    Phone = "0902222222",
+                    BirthDate = new DateOnly(1987, 11, 3),
+                    Hometown = "Tiền Giang",
+                    LicenseClass = "C",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var d3 = new Driver
+                {
+                    FullName = "Phạm Quốc Đạt",
+                    Phone = "0905555555",
+                    BirthDate = new DateOnly(1996, 2, 20),
+                    Hometown = "Đồng Nai",
+                    LicenseClass = "B",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Drivers.AddRange(d1, d2, d3);
                 context.SaveChanges();
 
-                var p1 = new Porter { FullName = "Lê Văn A", Phone = "0903333333", Active = true, PartnerId = partnerAId };
-                var p2 = new Porter { FullName = "Phạm Văn B", Phone = "0904444444", Active = true, PartnerId = partnerAId };
-                context.Porters.AddRange(p1, p2);
+                var p1 = new Porter
+                {
+                    FullName = "Lê Văn A",
+                    Phone = "0903333333",
+                    BirthYear = 1995,
+                    Hometown = "Bình Dương",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var p2 = new Porter
+                {
+                    FullName = "Phạm Văn B",
+                    Phone = "0904444444",
+                    BirthYear = 1992,
+                    Hometown = "Vĩnh Long",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var p3 = new Porter
+                {
+                    FullName = "Ngô Văn C",
+                    Phone = "0906666666",
+                    BirthYear = 1998,
+                    Hometown = "Hậu Giang",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
 
                 var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001") ?? context.Orders.OrderBy(o => o.OrderId).First();

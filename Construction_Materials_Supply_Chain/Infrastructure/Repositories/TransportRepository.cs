@@ -3,7 +3,6 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Infrastructure.Implementations
 {
@@ -24,7 +23,7 @@ namespace Infrastructure.Implementations
                 .Include(t => t.Assignments).ThenInclude(a => a.Driver)
                 .FirstOrDefault(t => t.TransportId == transportId);
 
-        public List<Transport> Query(DateOnly? date, string? status, int? vehicleId)
+        public List<Transport> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null)
         {
             var q = _context.Transports
                 .Include(t => t.ProviderPartner)
@@ -40,12 +39,18 @@ namespace Infrastructure.Implementations
             {
                 var d0 = date.Value.ToDateTime(TimeOnly.MinValue);
                 var d1 = date.Value.ToDateTime(TimeOnly.MaxValue);
-                q = q.Where(t => (t.StartTimePlanned ?? DateTimeOffset.MinValue) >= d0 && (t.StartTimePlanned ?? DateTimeOffset.MinValue) <= d1);
+                q = q.Where(t => (t.StartTimePlanned ?? DateTimeOffset.MinValue) >= d0
+                              && (t.StartTimePlanned ?? DateTimeOffset.MinValue) <= d1);
             }
+
             if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TransportStatus>(status, true, out var st))
                 q = q.Where(t => t.Status == st);
+
             if (vehicleId is not null)
                 q = q.Where(t => t.Assignments.Any(a => a.VehicleId == vehicleId));
+
+            if (providerPartnerId is not null)
+                q = q.Where(t => t.ProviderPartnerId == providerPartnerId);
 
             return q.OrderByDescending(t => t.StartTimePlanned ?? DateTimeOffset.MinValue).ToList();
         }

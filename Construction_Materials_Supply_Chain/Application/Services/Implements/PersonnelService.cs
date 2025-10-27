@@ -2,9 +2,6 @@
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Application.Services.Implements
 {
@@ -28,21 +25,66 @@ namespace Application.Services.Implements
             var type = dto.Type?.Trim().ToLowerInvariant();
             if (type == "driver")
             {
-                var d = new Driver { FullName = dto.FullName, Phone = dto.Phone, Active = dto.Active, PartnerId = dto.PartnerId };
+                var d = new Driver
+                {
+                    FullName = dto.FullName,
+                    Phone = dto.Phone,
+                    Active = dto.Active,
+                    PartnerId = dto.PartnerId
+                };
                 _drivers.Add(d);
-                return new PersonResponseDto { Type = "driver", Id = d.DriverId, FullName = d.FullName, Phone = d.Phone, Active = d.Active, PartnerId = d.PartnerId };
+                return new PersonResponseDto
+                {
+                    Type = "driver",
+                    Id = d.DriverId,
+                    FullName = d.FullName,
+                    Phone = d.Phone,
+                    Active = d.Active,
+                    PartnerId = d.PartnerId
+                };
             }
             if (type == "porter")
             {
-                var p = new Porter { FullName = dto.FullName, Phone = dto.Phone, Active = dto.Active, PartnerId = dto.PartnerId };
+                var p = new Porter
+                {
+                    FullName = dto.FullName,
+                    Phone = dto.Phone,
+                    Active = dto.Active,
+                    PartnerId = dto.PartnerId
+                };
                 _porters.Add(p);
-                return new PersonResponseDto { Type = "porter", Id = p.PorterId, FullName = p.FullName, Phone = p.Phone, Active = p.Active, PartnerId = p.PartnerId };
+                return new PersonResponseDto
+                {
+                    Type = "porter",
+                    Id = p.PorterId,
+                    FullName = p.FullName,
+                    Phone = p.Phone,
+                    Active = p.Active,
+                    PartnerId = p.PartnerId
+                };
             }
             if (type == "vehicle")
             {
-                var v = new Vehicle { Code = dto.Code!, PlateNumber = dto.PlateNumber!, VehicleClass = dto.VehicleClass, Active = dto.Active, PartnerId = dto.PartnerId };
+                var v = new Vehicle
+                {
+                    Code = dto.Code!,
+                    PlateNumber = dto.PlateNumber!,
+                    VehicleClass = dto.VehicleClass,
+                    Active = dto.Active,
+                    PartnerId = dto.PartnerId
+                };
                 _vehicles.Add(v);
-                return new PersonResponseDto { Type = "vehicle", Id = v.VehicleId, FullName = v.Code, Active = v.Active, Code = v.Code, PlateNumber = v.PlateNumber, VehicleClass = v.VehicleClass, PartnerId = v.PartnerId };
+                return new PersonResponseDto
+                {
+                    Type = "vehicle",
+                    Id = v.VehicleId,
+                    FullName = v.Code,
+                    Active = v.Active,
+                    Code = v.Code,
+                    PlateNumber = v.PlateNumber,
+                    VehicleClass = v.VehicleClass,
+                    PartnerId = v.PartnerId
+                };
             }
             throw new InvalidOperationException("type");
         }
@@ -50,98 +92,227 @@ namespace Application.Services.Implements
         public PersonResponseDto? Get(string type, int id)
         {
             type = type.Trim().ToLowerInvariant();
+
             if (type == "driver")
             {
                 var d = _drivers.GetById(id);
-                return d == null ? null : new PersonResponseDto { Type = "driver", Id = d.DriverId, FullName = d.FullName, Phone = d.Phone, Active = d.Active, PartnerId = d.PartnerId };
+                return d == null ? null : new PersonResponseDto
+                {
+                    Type = "driver",
+                    Id = d.DriverId,
+                    PartnerId = d.PartnerId,
+                    FullName = d.FullName,
+                    Phone = d.Phone,
+                    Active = d.Active,
+                    Hometown = d.Hometown,
+                    LicenseClass = d.LicenseClass,
+                    BirthYear = d.BirthDate.HasValue ? d.BirthDate.Value.Year : (int?)null
+                };
             }
+
             if (type == "porter")
             {
                 var p = _porters.GetById(id);
-                return p == null ? null : new PersonResponseDto { Type = "porter", Id = p.PorterId, FullName = p.FullName, Phone = p.Phone, Active = p.Active, PartnerId = p.PartnerId };
+                return p == null ? null : new PersonResponseDto
+                {
+                    Type = "porter",
+                    Id = p.PorterId,
+                    PartnerId = p.PartnerId,
+                    FullName = p.FullName,
+                    Phone = p.Phone,
+                    Active = p.Active,
+                    BirthYear = p.BirthYear,
+                    Hometown = p.Hometown
+                };
             }
+
             if (type == "vehicle")
             {
                 var v = _vehicles.GetById(id);
-                return v == null ? null : new PersonResponseDto { Type = "vehicle", Id = v.VehicleId, FullName = v.Code, Active = v.Active, Code = v.Code, PlateNumber = v.PlateNumber, VehicleClass = v.VehicleClass, PartnerId = v.PartnerId };
+                return v == null ? null : new PersonResponseDto
+                {
+                    Type = "vehicle",
+                    Id = v.VehicleId,
+                    PartnerId = v.PartnerId,
+                    FullName = v.Code,
+                    Active = v.Active,
+                    Code = v.Code,
+                    PlateNumber = v.PlateNumber,
+                    VehicleClass = v.VehicleClass,
+                    MinLicenseClass = v.MinLicenseClass,
+                    CapacityTon = v.PayloadTons
+                };
             }
+
             return null;
         }
 
         public List<PersonResponseDto> GetAll(string type, int? partnerId)
         {
             type = type.Trim().ToLowerInvariant();
+
             if (type == "driver")
             {
                 var q = _drivers.GetAll().AsQueryable();
                 if (partnerId.HasValue) q = q.Where(x => x.PartnerId == partnerId.Value);
-                return q.Select(d => new PersonResponseDto { Type = "driver", Id = d.DriverId, FullName = d.FullName, Phone = d.Phone, Active = d.Active, PartnerId = d.PartnerId }).ToList();
+                return q
+                    .Select(d => new PersonResponseDto
+                    {
+                        Type = "driver",
+                        Id = d.DriverId,
+                        PartnerId = d.PartnerId,
+                        FullName = d.FullName,
+                        Phone = d.Phone,
+                        Active = d.Active,
+                        Hometown = d.Hometown,
+                        LicenseClass = d.LicenseClass,
+                        BirthYear = d.BirthDate.HasValue ? d.BirthDate.Value.Year : (int?)null
+                    })
+                    .ToList();
             }
+
             if (type == "porter")
             {
                 var q = _porters.GetAll().AsQueryable();
                 if (partnerId.HasValue) q = q.Where(x => x.PartnerId == partnerId.Value);
-                return q.Select(p => new PersonResponseDto { Type = "porter", Id = p.PorterId, FullName = p.FullName, Phone = p.Phone, Active = p.Active, PartnerId = p.PartnerId }).ToList();
+                return q
+                    .Select(p => new PersonResponseDto
+                    {
+                        Type = "porter",
+                        Id = p.PorterId,
+                        PartnerId = p.PartnerId,
+                        FullName = p.FullName,
+                        Phone = p.Phone,
+                        Active = p.Active,
+                        BirthYear = p.BirthYear,
+                        Hometown = p.Hometown
+                    })
+                    .ToList();
             }
+
             if (type == "vehicle")
             {
                 var q = _vehicles.GetAll().AsQueryable();
                 if (partnerId.HasValue) q = q.Where(x => x.PartnerId == partnerId.Value);
-                return q.Select(v => new PersonResponseDto { Type = "vehicle", Id = v.VehicleId, FullName = v.Code, Active = v.Active, Code = v.Code, PlateNumber = v.PlateNumber, VehicleClass = v.VehicleClass, PartnerId = v.PartnerId }).ToList();
+                return q
+                    .Select(v => new PersonResponseDto
+                    {
+                        Type = "vehicle",
+                        Id = v.VehicleId,
+                        PartnerId = v.PartnerId,
+                        FullName = v.Code,
+                        Active = v.Active,
+                        Code = v.Code,
+                        PlateNumber = v.PlateNumber,
+                        VehicleClass = v.VehicleClass,
+                        MinLicenseClass = v.MinLicenseClass,
+                        CapacityTon = v.PayloadTons
+                    })
+                    .ToList();
             }
+
             return new List<PersonResponseDto>();
         }
 
         public List<PersonResponseDto> Search(string type, string? q, bool? active, int? top, int? partnerId)
         {
             type = type.Trim().ToLowerInvariant();
+
             if (type == "driver")
             {
-                var list = _drivers.GetAll().AsQueryable();
-                if (!string.IsNullOrWhiteSpace(q)) list = list.Where(x => x.FullName.Contains(q) || (x.Phone ?? "").Contains(q));
-                if (active.HasValue) list = list.Where(x => x.Active == active.Value);
-                if (partnerId.HasValue) list = list.Where(x => x.PartnerId == partnerId.Value);
-                if (top.HasValue && top.Value > 0) list = list.Take(top.Value);
-                return list.OrderBy(x => x.FullName).Select(d => new PersonResponseDto { Type = "driver", Id = d.DriverId, FullName = d.FullName, Phone = d.Phone, Active = d.Active, PartnerId = d.PartnerId }).ToList();
+                var list = _drivers.Search(q, active, top, partnerId);
+                return list
+                    .Select(d => new PersonResponseDto
+                    {
+                        Type = "driver",
+                        Id = d.DriverId,
+                        PartnerId = d.PartnerId,
+                        FullName = d.FullName,
+                        Phone = d.Phone,
+                        Active = d.Active,
+                        Hometown = d.Hometown,
+                        LicenseClass = d.LicenseClass,
+                        BirthYear = d.BirthDate.HasValue ? d.BirthDate.Value.Year : (int?)null
+                    })
+                    .ToList();
             }
+
             if (type == "porter")
             {
-                var list = _porters.GetAll().AsQueryable();
-                if (!string.IsNullOrWhiteSpace(q)) list = list.Where(x => x.FullName.Contains(q) || (x.Phone ?? "").Contains(q));
-                if (active.HasValue) list = list.Where(x => x.Active == active.Value);
-                if (partnerId.HasValue) list = list.Where(x => x.PartnerId == partnerId.Value);
-                if (top.HasValue && top.Value > 0) list = list.Take(top.Value);
-                return list.OrderBy(x => x.FullName).Select(p => new PersonResponseDto { Type = "porter", Id = p.PorterId, FullName = p.FullName, Phone = p.Phone, Active = p.Active, PartnerId = p.PartnerId }).ToList();
+                var list = _porters.Search(q, active, top, partnerId);
+                return list
+                    .Select(p => new PersonResponseDto
+                    {
+                        Type = "porter",
+                        Id = p.PorterId,
+                        PartnerId = p.PartnerId,
+                        FullName = p.FullName,
+                        Phone = p.Phone,
+                        Active = p.Active,
+                        BirthYear = p.BirthYear,
+                        Hometown = p.Hometown
+                    })
+                    .ToList();
             }
+
             if (type == "vehicle")
             {
-                var list = _vehicles.GetAll().AsQueryable();
-                if (!string.IsNullOrWhiteSpace(q)) list = list.Where(x => x.Code.Contains(q) || x.PlateNumber.Contains(q) || (x.VehicleClass ?? "").Contains(q));
-                if (active.HasValue) list = list.Where(x => x.Active == active.Value);
-                if (partnerId.HasValue) list = list.Where(x => x.PartnerId == partnerId.Value);
-                if (top.HasValue && top.Value > 0) list = list.Take(top.Value);
-                return list.OrderBy(x => x.Code).Select(v => new PersonResponseDto { Type = "vehicle", Id = v.VehicleId, FullName = v.Code, Active = v.Active, Code = v.Code, PlateNumber = v.PlateNumber, VehicleClass = v.VehicleClass, PartnerId = v.PartnerId }).ToList();
+                var list = _vehicles.Search(q, active, top, partnerId);
+                return list
+                    .OrderBy(x => x.Code)
+                    .Select(v => new PersonResponseDto
+                    {
+                        Type = "vehicle",
+                        Id = v.VehicleId,
+                        PartnerId = v.PartnerId,
+                        FullName = v.Code,
+                        Active = v.Active,
+                        Code = v.Code,
+                        PlateNumber = v.PlateNumber,
+                        VehicleClass = v.VehicleClass,
+                        MinLicenseClass = v.MinLicenseClass,
+                        CapacityTon = v.PayloadTons
+                    })
+                    .ToList();
             }
+
             return new List<PersonResponseDto>();
         }
 
         public void Update(string type, int id, PersonUpdateDto dto)
         {
             type = type.Trim().ToLowerInvariant();
+
             if (type == "driver")
             {
                 var d = _drivers.GetById(id) ?? throw new KeyNotFoundException();
-                d.FullName = dto.FullName; d.Phone = dto.Phone; d.Active = dto.Active;
+                d.FullName = dto.FullName;
+                d.Phone = dto.Phone;
+                d.Active = dto.Active;
+                d.Hometown = dto.Hometown ?? d.Hometown;
+                d.LicenseClass = dto.LicenseClass ?? d.LicenseClass;
+                if (dto.BirthYear.HasValue)
+                {
+                    var month = d.BirthDate.HasValue ? d.BirthDate.Value.Month : 1;
+                    var day = d.BirthDate.HasValue ? d.BirthDate.Value.Day : 1;
+                    d.BirthDate = new DateOnly(dto.BirthYear.Value, month, day);
+                }
                 _drivers.Update(d);
                 return;
             }
+
             if (type == "porter")
             {
                 var p = _porters.GetById(id) ?? throw new KeyNotFoundException();
-                p.FullName = dto.FullName; p.Phone = dto.Phone; p.Active = dto.Active;
+                p.FullName = dto.FullName;
+                p.Phone = dto.Phone;
+                p.Active = dto.Active;
+                p.BirthYear = dto.BirthYear;
+                p.Hometown = dto.Hometown ?? p.Hometown;
                 _porters.Update(p);
                 return;
             }
+
             if (type == "vehicle")
             {
                 var v = _vehicles.GetById(id) ?? throw new KeyNotFoundException();
@@ -149,18 +320,40 @@ namespace Application.Services.Implements
                 v.PlateNumber = dto.PlateNumber ?? v.PlateNumber;
                 v.VehicleClass = dto.VehicleClass ?? v.VehicleClass;
                 v.Active = dto.Active;
+                v.MinLicenseClass = dto.MinLicenseClass ?? v.MinLicenseClass;
+                v.PayloadTons = dto.CapacityTon.Value;
                 _vehicles.Update(v);
                 return;
             }
+
             throw new InvalidOperationException("type");
         }
 
         public void Delete(string type, int id)
         {
             type = type.Trim().ToLowerInvariant();
-            if (type == "driver") { var d = _drivers.GetById(id) ?? throw new KeyNotFoundException(); _drivers.Delete(d); return; }
-            if (type == "porter") { var p = _porters.GetById(id) ?? throw new KeyNotFoundException(); _porters.Delete(p); return; }
-            if (type == "vehicle") { var v = _vehicles.GetById(id) ?? throw new KeyNotFoundException(); _vehicles.Delete(v); return; }
+
+            if (type == "driver")
+            {
+                var d = _drivers.GetById(id) ?? throw new KeyNotFoundException();
+                _drivers.Delete(d);
+                return;
+            }
+
+            if (type == "porter")
+            {
+                var p = _porters.GetById(id) ?? throw new KeyNotFoundException();
+                _porters.Delete(p);
+                return;
+            }
+
+            if (type == "vehicle")
+            {
+                var v = _vehicles.GetById(id) ?? throw new KeyNotFoundException();
+                _vehicles.Delete(v);
+                return;
+            }
+
             throw new InvalidOperationException("type");
         }
 
@@ -218,6 +411,7 @@ namespace Application.Services.Implements
                     (busyUntil == null ? res.Free : res.Busy).Add(item);
                 }
             }
+
             res.Free = res.Free.OrderBy(x => x.NameOrCode).ToList();
             res.Busy = res.Busy.OrderBy(x => x.AvailableAt).ThenBy(x => x.NameOrCode).ToList();
             return res;

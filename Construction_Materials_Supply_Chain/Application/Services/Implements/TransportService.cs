@@ -3,7 +3,6 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
-using System.Linq;
 
 namespace Application.Services.Implements
 {
@@ -61,7 +60,6 @@ namespace Application.Services.Implements
             return d >= 0 && r >= 0 && d >= r;
         }
 
-
         public TransportResponseDto Create(TransportCreateRequestDto dto)
         {
             var partner = _partnerRepo.GetById(dto.ProviderPartnerId);
@@ -102,15 +100,21 @@ namespace Application.Services.Implements
         }
 
         public List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId)
+            => Query(date, status, vehicleId, null);
+
+        public List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId)
         {
             var list = _transportRepo.Query(date, status, vehicleId);
+            if (providerPartnerId is not null)
+                list = list.Where(t => t.ProviderPartnerId == providerPartnerId.Value).ToList();
+
             return list.Select(_mapper.Map<TransportResponseDto>).ToList();
         }
 
         public void AssignMulti(int transportId, TransportAssignMultiRequestDto dto)
         {
             var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
-            var providerPartnerId = (t as dynamic).ProviderPartnerId;
+            var providerPartnerId = t.ProviderPartnerId;
 
             if (dto.Assignments == null || dto.Assignments.Count == 0)
                 throw new InvalidOperationException("Assignments required");

@@ -12,7 +12,7 @@ namespace Application.Services.Implements
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly ITransportRepository _transportRepository;
         private readonly IShippingLogRepository _shippingLogRepository;
-        private readonly IPartnerRepository _partnerRepository; 
+        private readonly IPartnerRepository _partnerRepository;
 
         public OrderService(
             IOrderRepository orderRepository,
@@ -20,7 +20,7 @@ namespace Application.Services.Implements
             IHandleRequestRepository handleRequestRepository,
             ITransportRepository transportRepository,
             IShippingLogRepository shippingLogRepository,
-            IPartnerRepository partnerRepository) 
+            IPartnerRepository partnerRepository)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
@@ -151,7 +151,7 @@ namespace Application.Services.Implements
             {
                 OrderCode = order.OrderCode,
                 PartnerId = order.CreatedBy ?? 0,
-                SupplierName = supplierName, 
+                SupplierName = supplierName,
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,

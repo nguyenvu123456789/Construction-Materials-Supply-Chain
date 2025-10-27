@@ -3,7 +3,7 @@
     public class CreateOrderDto
     {
         public int CreatedBy { get; set; }
-        public string? DeliveryAddress { get; set; } 
+        public string? DeliveryAddress { get; set; }
         public string? Note { get; set; }
         public string? PhoneNumber { get; set; }
         public int SupplierId { get; set; }

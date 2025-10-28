@@ -7,6 +7,8 @@ namespace Application.Interfaces
     {
         List<Material> GetAll();
         MaterialDetailResponse? GetById(int id);
+        MaterialDetailResponse? GetById(int id, int? buyerPartnerId);
+
         void Create(Material material);
         void Update(Material material);
         void Delete(int id);

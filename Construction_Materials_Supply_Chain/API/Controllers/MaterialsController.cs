@@ -93,15 +93,29 @@ namespace API.Controllers
         }
 
         // GET: api/materials/{id}
-        [HttpGet("{id:int}")]
-        public IActionResult GetMaterialDetail(int id)
+        [HttpGet("buyer/{id:int}")]
+        public IActionResult GetByIdForBuyer(int id, [FromQuery] int? buyerPartnerId)
         {
-            var detail = _materialService.GetById(id);
-            if (detail == null)
-                return NotFound(ApiResponse<string>.ErrorResponse("Material not found."));
+            var partnerIdClaim = User.FindFirst("PartnerId")?.Value;
 
-            return Ok(ApiResponse<MaterialDetailResponse>.SuccessResponse(detail));
+            int? finalBuyerId = null;
+
+            if (partnerIdClaim != null)
+                finalBuyerId = int.Parse(partnerIdClaim);
+            else if (buyerPartnerId.HasValue)
+                finalBuyerId = buyerPartnerId;
+            else
+                return BadRequest("Missing PartnerId (token or query).");
+
+            var result = _materialService.GetById(id, finalBuyerId);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
         }
+
+
 
         // GET: api/materials
         [HttpGet]

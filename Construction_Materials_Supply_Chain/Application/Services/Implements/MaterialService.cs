@@ -26,6 +26,11 @@ namespace Application.Services.Implements
 
         public MaterialDetailResponse? GetById(int id)
         {
+            return GetById(id, null);
+        }
+
+        public MaterialDetailResponse? GetById(int id, int? buyerPartnerId)
+        {
             var material = _materials.GetDetailById(id);
             if (material == null)
                 return null;
@@ -41,7 +46,16 @@ namespace Application.Services.Implements
                 CreatedAt = material.CreatedAt
             };
 
-            var partners = material.MaterialPartners
+            // Lọc danh sách partner theo buyer nếu có
+            var materialPartners = material.MaterialPartners.AsQueryable();
+            if (buyerPartnerId.HasValue)
+            {
+                materialPartners = materialPartners
+                    .Where(mp => mp.BuyerId == buyerPartnerId.Value)
+                    .AsQueryable();
+            }
+
+            var partners = materialPartners
                 .Select(mp => new PartnerDto
                 {
                     PartnerId = mp.Partner.PartnerId,
@@ -61,7 +75,6 @@ namespace Application.Services.Implements
                 Partners = partners
             };
         }
-
 
         public void Create(Material material)
         {
@@ -83,7 +96,7 @@ namespace Application.Services.Implements
             existing.MaterialCode = material.MaterialCode;
             existing.Unit = material.Unit;
             existing.CategoryId = material.CategoryId;
-            existing.Status = material.Status; 
+            existing.Status = material.Status;
 
             _materials.Update(existing);
         }

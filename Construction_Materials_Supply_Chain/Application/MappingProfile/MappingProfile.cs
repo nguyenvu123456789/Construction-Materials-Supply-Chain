@@ -200,7 +200,7 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters))
                 .ForMember(d => d.Assignments, o => o.MapFrom(s => s.Assignments));
 
-            CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
+            //CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }
     }
 }

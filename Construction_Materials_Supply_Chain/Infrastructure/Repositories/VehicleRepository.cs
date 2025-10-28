@@ -3,8 +3,6 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Infrastructure.Implementations
 {
@@ -16,17 +14,24 @@ namespace Infrastructure.Implementations
         {
             var s = _context.Vehicles.AsNoTracking().AsQueryable();
             if (!string.IsNullOrWhiteSpace(q))
-                s = s.Where(x => x.Code.Contains(q) || x.PlateNumber.Contains(q) || (x.VehicleClass ?? "").Contains(q));
-            if (active.HasValue)
-                s = s.Where(x => x.Active == active.Value);
-            if (partnerId.HasValue)
-                s = s.Where(x => x.PartnerId == partnerId.Value);
-            if (top.HasValue && top.Value > 0)
-                s = s.Take(top.Value);
+            {
+                var pat = $"%{q}%";
+                s = s.Where(x =>
+                    EF.Functions.Like(x.Code, pat) ||
+                    EF.Functions.Like(x.PlateNumber, pat) ||
+                    EF.Functions.Like(x.VehicleClass ?? string.Empty, pat));
+            }
+            if (active.HasValue) s = s.Where(x => x.Active == active.Value);
+            if (partnerId.HasValue) s = s.Where(x => x.PartnerId == partnerId.Value);
+            if (top.HasValue && top.Value > 0) s = s.Take(top.Value);
             return s.OrderBy(x => x.Code).ToList();
         }
 
         public List<Vehicle> GetByIds(IEnumerable<int> ids)
-            => _context.Vehicles.Where(v => ids.Contains(v.VehicleId)).ToList();
+        {
+            var set = ids?.Distinct().ToList();
+            if (set == null || set.Count == 0) return new List<Vehicle>();
+            return _context.Vehicles.Where(v => set.Contains(v.VehicleId)).ToList();
+        }
     }
 }

@@ -23,13 +23,22 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<TransportResponseDto>> Query([FromQuery] DateOnly? date, [FromQuery] string? status, [FromQuery] int? vehicleId)
-            => Ok(_service.Query(date, status, vehicleId));
+        public ActionResult<List<TransportResponseDto>> List(
+            [FromQuery] DateOnly? date,
+            [FromQuery] string? status,
+            [FromQuery] int? vehicleId,
+            [FromQuery(Name = "partnerId")] int? providerPartnerId
+        )
+        {
+            var data = _service.Query(date, status, vehicleId, providerPartnerId);
+            return Ok(data);
+        }
+
 
         [HttpPost("{id:int}/assign")]
-        public IActionResult Assign(int id, [FromBody] TransportAssignRequestDto dto)
+        public IActionResult AssignMulti(int id, [FromBody] TransportAssignMultiRequestDto dto)
         {
-            _service.Assign(id, dto);
+            _service.AssignMulti(id, dto);
             return Ok();
         }
 

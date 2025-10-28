@@ -12,8 +12,8 @@ public partial class Order
     public int? CreatedBy { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    public int? SupplierId { get; set; } 
-    public virtual Partner? Supplier { get; set; } 
+    public int? SupplierId { get; set; }
+    public virtual Partner? Supplier { get; set; }
     public virtual User? CreatedByNavigation { get; set; }
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

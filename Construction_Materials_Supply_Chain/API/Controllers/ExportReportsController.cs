@@ -1,6 +1,5 @@
 ﻿using Application.DTOs;
 using AutoMapper;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -64,7 +63,7 @@ namespace API.Controllers
         public IActionResult GetAllReports()
         {
             var reports = _reportService.GetAll();
-            var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports); 
+            var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports);
             return Ok(reportDtos);
         }
 

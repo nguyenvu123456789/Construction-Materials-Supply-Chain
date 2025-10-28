@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,11 +17,11 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
-        {
-            var logs = _service.GetAll();
-            return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
-        }
+        //[HttpGet]
+        //public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
+        //{
+        //    var logs = _service.GetAll();
+        //    return Ok(_mapper.Map<IEnumerable<ShippingLogDto>>(logs));
+        //}
     }
 }

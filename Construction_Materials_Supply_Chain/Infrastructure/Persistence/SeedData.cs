@@ -83,15 +83,15 @@ namespace Infrastructure.Persistence
                 var collaboratorPartner = context.Partners.First(p => p.PartnerCode == "P007");
 
                 context.Users.AddRange(
-                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "admin123", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = adminPartner.PartnerId },
-                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "manager123", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = managerPartner.PartnerId },
-                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "staff123", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = staffPartner.PartnerId },
-                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "accountant123", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = accountantPartner.PartnerId },
-                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "sales123", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = salesPartner.PartnerId },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "support123", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = supportPartner.PartnerId },
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "inventory123", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = inventoryPartner.PartnerId },
-                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "customer123", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = customerPartner.PartnerId },
-                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "collaborator123", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = collaboratorPartner.PartnerId }
+                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = adminPartner.PartnerId },
+                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = managerPartner.PartnerId },
+                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = staffPartner.PartnerId },
+                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = accountantPartner.PartnerId },
+                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = salesPartner.PartnerId },
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = supportPartner.PartnerId },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = inventoryPartner.PartnerId },
+                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = customerPartner.PartnerId },
+                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = collaboratorPartner.PartnerId }
                 );
                 context.SaveChanges();
 
@@ -152,6 +152,8 @@ namespace Infrastructure.Persistence
             if (!context.Materials.Any())
             {
                 var now = DateTime.Now;
+
+                // Lấy sẵn các Category
                 var woodCat = context.Categories.First(c => c.CategoryName == "Gỗ");
                 var metalCat = context.Categories.First(c => c.CategoryName == "Kim loại");
                 var plasticCat = context.Categories.First(c => c.CategoryName == "Nhựa");
@@ -159,21 +161,42 @@ namespace Infrastructure.Persistence
                 var brickCat = context.Categories.First(c => c.CategoryName == "Gạch");
                 var paintCat = context.Categories.First(c => c.CategoryName == "Sơn");
                 var glassCat = context.Categories.First(c => c.CategoryName == "Kính");
+
+                // Tạo danh sách vật tư
+                var materials = new List<Material>
+    {
+        new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
+        new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now }
+    };
+
+                context.Materials.AddRange(materials);
+                context.SaveChanges();
+
+                // Sau khi đã có MaterialId, mới seed bảng trung gian
                 var goviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var hoaphat = context.Partners.First(p => p.PartnerCode == "P002");
                 var duytan = context.Partners.First(p => p.PartnerCode == "P003");
 
-                context.Materials.AddRange(
-                    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", PartnerId = goviet.PartnerId, CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", PartnerId = hoaphat.PartnerId, CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", PartnerId = duytan.PartnerId, CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", PartnerId = hoaphat.PartnerId, CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", PartnerId = goviet.PartnerId, CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", PartnerId = duytan.PartnerId, CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
-                    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", PartnerId = goviet.PartnerId, CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now }
-                );
+                var materialPartners = new List<MaterialPartner>
+    {
+        new MaterialPartner { MaterialId = materials[0].MaterialId, PartnerId = goviet.PartnerId },
+        new MaterialPartner { MaterialId = materials[1].MaterialId, PartnerId = hoaphat.PartnerId },
+        new MaterialPartner { MaterialId = materials[2].MaterialId, PartnerId = duytan.PartnerId },
+        new MaterialPartner { MaterialId = materials[3].MaterialId, PartnerId = hoaphat.PartnerId },
+        new MaterialPartner { MaterialId = materials[4].MaterialId, PartnerId = goviet.PartnerId },
+        new MaterialPartner { MaterialId = materials[5].MaterialId, PartnerId = duytan.PartnerId },
+        new MaterialPartner { MaterialId = materials[6].MaterialId, PartnerId = goviet.PartnerId }
+    };
+
+                context.MaterialPartners.AddRange(materialPartners);
                 context.SaveChanges();
             }
+
 
             // 8️⃣ Seed Inventories
             if (!context.Inventories.Any())
@@ -808,7 +831,7 @@ namespace Infrastructure.Persistence
             }
 
             var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
-    ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
+            ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
             context.SaveChanges();
 
             var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
@@ -834,19 +857,100 @@ namespace Infrastructure.Persistence
                 context.Addresses.AddRange(depot, whA, whB);
                 context.SaveChanges();
 
-                var v1 = new Vehicle { Code = "TRK-01", PlateNumber = "51C-00001", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
-                var v2 = new Vehicle { Code = "TRK-02", PlateNumber = "51C-00002", VehicleClass = "Truck", Active = true, PartnerId = partnerAId };
-                context.Vehicles.AddRange(v1, v2);
+                var v1 = new Vehicle
+                {
+                    Code = "TRK-01",
+                    PlateNumber = "51C-00001",
+                    VehicleClass = "Truck 5T",
+                    MinLicenseClass = "C1",
+                    PayloadTons = 5.0m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var v2 = new Vehicle
+                {
+                    Code = "TRK-02",
+                    PlateNumber = "51C-00002",
+                    VehicleClass = "Truck 8T",
+                    MinLicenseClass = "C",
+                    PayloadTons = 8.0m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var v3 = new Vehicle
+                {
+                    Code = "VAN-01",
+                    PlateNumber = "51D-12345",
+                    VehicleClass = "Van 1.5T",
+                    MinLicenseClass = "B",
+                    PayloadTons = 1.5m,
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Vehicles.AddRange(v1, v2, v3);
                 context.SaveChanges();
 
-                var d1 = new Driver { FullName = "Nguyễn Văn Tài", Phone = "0901111111", Active = true, PartnerId = partnerAId };
-                var d2 = new Driver { FullName = "Trần Văn Lái", Phone = "0902222222", Active = true, PartnerId = partnerAId };
-                context.Drivers.AddRange(d1, d2);
+                var d1 = new Driver
+                {
+                    FullName = "Nguyễn Văn Tài",
+                    Phone = "0901111111",
+                    BirthDate = new DateOnly(1990, 5, 12),
+                    Hometown = "Long An",
+                    LicenseClass = "C1",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var d2 = new Driver
+                {
+                    FullName = "Trần Văn Lái",
+                    Phone = "0902222222",
+                    BirthDate = new DateOnly(1987, 11, 3),
+                    Hometown = "Tiền Giang",
+                    LicenseClass = "C",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var d3 = new Driver
+                {
+                    FullName = "Phạm Quốc Đạt",
+                    Phone = "0905555555",
+                    BirthDate = new DateOnly(1996, 2, 20),
+                    Hometown = "Đồng Nai",
+                    LicenseClass = "B",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Drivers.AddRange(d1, d2, d3);
                 context.SaveChanges();
 
-                var p1 = new Porter { FullName = "Lê Văn A", Phone = "0903333333", Active = true, PartnerId = partnerAId };
-                var p2 = new Porter { FullName = "Phạm Văn B", Phone = "0904444444", Active = true, PartnerId = partnerAId };
-                context.Porters.AddRange(p1, p2);
+                var p1 = new Porter
+                {
+                    FullName = "Lê Văn A",
+                    Phone = "0903333333",
+                    BirthYear = 1995,
+                    Hometown = "Bình Dương",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var p2 = new Porter
+                {
+                    FullName = "Phạm Văn B",
+                    Phone = "0904444444",
+                    BirthYear = 1992,
+                    Hometown = "Vĩnh Long",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                var p3 = new Porter
+                {
+                    FullName = "Ngô Văn C",
+                    Phone = "0906666666",
+                    BirthYear = 1998,
+                    Hometown = "Hậu Giang",
+                    Active = true,
+                    PartnerId = partnerAId
+                };
+                context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
 
                 var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001") ?? context.Orders.OrderBy(o => o.OrderId).First();
@@ -856,14 +960,30 @@ namespace Infrastructure.Persistence
                 {
                     TransportCode = "T-INIT-001",
                     DepotId = depot.AddressId,
-                    VehicleId = v1.VehicleId,
-                    DriverId = d1.DriverId,
                     ProviderPartnerId = partnerAId,
                     Status = TransportStatus.Assigned,
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
                     Notes = "Seed trip"
                 };
                 context.Transports.Add(t1);
+                context.SaveChanges();
+
+                context.TransportAssignments.AddRange(
+                    new TransportAssignment
+                    {
+                        TransportId = t1.TransportId,
+                        VehicleId = v1.VehicleId,
+                        DriverId = d1.DriverId,
+                        StartTimePlanned = t1.StartTimePlanned
+                    },
+                    new TransportAssignment
+                    {
+                        TransportId = t1.TransportId,
+                        VehicleId = v2.VehicleId,
+                        DriverId = d2.DriverId,
+                        StartTimePlanned = t1.StartTimePlanned
+                    }
+                );
                 context.SaveChanges();
 
                 var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };

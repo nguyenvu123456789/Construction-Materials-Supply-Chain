@@ -13,7 +13,7 @@ namespace Infrastructure.Implementations
         public Invoice? GetByCode(string invoiceCode)
         {
             return _dbSet
-                .AsNoTracking() 
+                .AsNoTracking()
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
@@ -32,9 +32,9 @@ namespace Infrastructure.Implementations
             return _dbSet
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
-                .Include(i => i.Partner)                 
-                .Include(i => i.CreatedByNavigation)    
-                .AsNoTracking()                        
+                .Include(i => i.Partner)
+                .Include(i => i.CreatedByNavigation)
+                .AsNoTracking()
                 .ToList();
         }
 

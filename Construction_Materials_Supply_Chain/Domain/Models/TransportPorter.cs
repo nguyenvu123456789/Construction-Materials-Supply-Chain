@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models
 {
-    public class TransportPorter
+    public class TransportPorter1
     {
         public int TransportId { get; set; }
         public int PorterId { get; set; }

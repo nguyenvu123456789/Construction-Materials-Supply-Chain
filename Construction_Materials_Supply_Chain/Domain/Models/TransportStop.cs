@@ -1,9 +1,9 @@
 ﻿namespace Domain.Models
 {
-    public enum TransportStopType { Depot, Pickup, Dropoff }
-    public enum TransportStopStatus { Planned, Arrived, Servicing, Done }
+    //public enum TransportStopType { Depot, Pickup, Dropoff }
+    //public enum TransportStopStatus { Planned, Arrived, Servicing, Done }
 
-    public class TransportStop
+    public class TransportStop1
     {
         public int TransportStopId { get; set; }
         public int TransportId { get; set; }

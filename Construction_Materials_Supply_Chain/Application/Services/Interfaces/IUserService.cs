@@ -1,6 +1,5 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs;
-using Domain.Models;
 
 namespace Application.Interfaces
 {

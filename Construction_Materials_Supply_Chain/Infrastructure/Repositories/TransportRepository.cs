@@ -8,46 +8,73 @@ namespace Infrastructure.Implementations
 {
     public class TransportRepository : GenericRepository<Transport>, ITransportRepository
     {
+        private static readonly string[] ActiveStatuses = new[] { "Planned", "Assigned", "EnRoute" };
+
         public TransportRepository(ScmVlxdContext context) : base(context) { }
 
         public Transport? GetDetail(int transportId) =>
             _context.Transports
+                .Include(t => t.ProviderPartner)
+                .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
                 .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
-                .Include(t => t.Vehicle)
-                .Include(t => t.Driver)
+                .Include(t => t.Assignments).ThenInclude(a => a.Vehicle)
+                .Include(t => t.Assignments).ThenInclude(a => a.Driver)
                 .FirstOrDefault(t => t.TransportId == transportId);
 
-        public List<Transport> Query(DateOnly? date, string? status, int? vehicleId)
+        public List<Transport> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null)
         {
             var q = _context.Transports
+                .Include(t => t.ProviderPartner)
+                .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
                 .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
-                .Include(t => t.Vehicle)
-                .Include(t => t.Driver)
+                .Include(t => t.Assignments).ThenInclude(a => a.Vehicle)
+                .Include(t => t.Assignments).ThenInclude(a => a.Driver)
                 .AsQueryable();
+
             if (date is not null)
             {
                 var d0 = date.Value.ToDateTime(TimeOnly.MinValue);
                 var d1 = date.Value.ToDateTime(TimeOnly.MaxValue);
-                q = q.Where(t => t.StartTimePlanned >= d0 && t.StartTimePlanned <= d1);
+                q = q.Where(t => (t.StartTimePlanned ?? DateTimeOffset.MinValue) >= d0
+                              && (t.StartTimePlanned ?? DateTimeOffset.MinValue) <= d1);
             }
+
             if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TransportStatus>(status, true, out var st))
                 q = q.Where(t => t.Status == st);
+
             if (vehicleId is not null)
-                q = q.Where(t => t.VehicleId == vehicleId);
+                q = q.Where(t => t.Assignments.Any(a => a.VehicleId == vehicleId));
+
+            if (providerPartnerId is not null)
+                q = q.Where(t => t.ProviderPartnerId == providerPartnerId);
+
             return q.OrderByDescending(t => t.StartTimePlanned ?? DateTimeOffset.MinValue).ToList();
         }
 
-        public void Assign(int transportId, int vehicleId, int driverId, List<int> porterIds)
+        public void AssignMulti(int transportId, List<TransportAssignment> assigns, List<int> porterIds)
         {
-            var t = _context.Transports.Include(x => x.TransportPorters).First(x => x.TransportId == transportId);
-            t.VehicleId = vehicleId;
-            t.DriverId = driverId;
+            var t = _context.Transports
+                .Include(x => x.Assignments)
+                .Include(x => x.TransportPorters)
+                .First(x => x.TransportId == transportId);
+
+            _context.RemoveRange(t.Assignments);
+            t.Assignments.Clear();
+            foreach (var a in assigns)
+            {
+                a.TransportId = transportId;
+                _context.Set<TransportAssignment>().Add(a);
+            }
+
+            _context.RemoveRange(t.TransportPorters);
             t.TransportPorters.Clear();
-            foreach (var p in porterIds) t.TransportPorters.Add(new TransportPorter { TransportId = transportId, PorterId = p, Role = "Member" });
+            foreach (var p in porterIds)
+                _context.Set<TransportPorter>().Add(new TransportPorter { TransportId = transportId, PorterId = p, Role = "Member" });
+
             t.Status = TransportStatus.Assigned;
             _context.SaveChanges();
         }
@@ -106,11 +133,7 @@ namespace Infrastructure.Implementations
 
         private void ResequenceStops(int transportId)
         {
-            var stops = _context.TransportStops
-                .Where(x => x.TransportId == transportId)
-                .OrderBy(x => x.Seq)
-                .ToList();
-
+            var stops = _context.TransportStops.Where(x => x.TransportId == transportId).OrderBy(x => x.Seq).ToList();
             var i = 0;
             foreach (var s in stops) s.Seq = i++;
             _context.SaveChanges();
@@ -134,41 +157,45 @@ namespace Infrastructure.Implementations
             ResequenceStops(transportId);
         }
 
-        private static readonly string[] ActiveStatuses = new[] { "Planned", "Assigned", "EnRoute" };
-
         public bool VehicleBusy(int vehicleId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
         {
             var e1 = e ?? DateTimeOffset.MaxValue;
-            return _context.Transports.Any(x =>
-                x.TransportId != excludeTransportId &&
-                x.VehicleId == vehicleId &&
-                ActiveStatuses.Contains(x.Status.ToString()) &&
-                (x.StartTimeActual ?? x.StartTimePlanned) < e1 &&
-                (x.EndTimeActual ?? x.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
-            );
+            return _context.Set<TransportAssignment>()
+                .Include(a => a.Transport)
+                .Any(a =>
+                    a.TransportId != excludeTransportId &&
+                    a.VehicleId == vehicleId &&
+                    ActiveStatuses.Contains(a.Transport.Status.ToString()) &&
+                    (a.Transport.StartTimeActual ?? a.Transport.StartTimePlanned) < e1 &&
+                    (a.Transport.EndTimeActual ?? a.Transport.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
+                );
         }
 
         public bool DriverBusy(int driverId, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
         {
             var e1 = e ?? DateTimeOffset.MaxValue;
-            return _context.Transports.Any(x =>
-                x.TransportId != excludeTransportId &&
-                x.DriverId == driverId &&
-                ActiveStatuses.Contains(x.Status.ToString()) &&
-                (x.StartTimeActual ?? x.StartTimePlanned) < e1 &&
-                (x.EndTimeActual ?? x.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
-            );
+            return _context.Set<TransportAssignment>()
+                .Include(a => a.Transport)
+                .Any(a =>
+                    a.TransportId != excludeTransportId &&
+                    a.DriverId == driverId &&
+                    ActiveStatuses.Contains(a.Transport.Status.ToString()) &&
+                    (a.Transport.StartTimeActual ?? a.Transport.StartTimePlanned) < e1 &&
+                    (a.Transport.EndTimeActual ?? a.Transport.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
+                );
         }
 
         public List<int> BusyPorters(List<int> porterIds, int excludeTransportId, DateTimeOffset s, DateTimeOffset? e)
         {
             var e1 = e ?? DateTimeOffset.MaxValue;
             return _context.TransportPorters
-                .Where(tp => porterIds.Contains(tp.PorterId) &&
-                             tp.TransportId != excludeTransportId &&
-                             ActiveStatuses.Contains(tp.Transport.Status.ToString()) &&
-                             (tp.Transport.StartTimeActual ?? tp.Transport.StartTimePlanned) < e1 &&
-                             (tp.Transport.EndTimeActual ?? tp.Transport.EndTimePlanned ?? DateTimeOffset.MaxValue) > s)
+                .Where(tp =>
+                    porterIds.Contains(tp.PorterId) &&
+                    tp.TransportId != excludeTransportId &&
+                    ActiveStatuses.Contains(tp.Transport.Status.ToString()) &&
+                    (tp.Transport.StartTimeActual ?? tp.Transport.StartTimePlanned) < e1 &&
+                    (tp.Transport.EndTimeActual ?? tp.Transport.EndTimePlanned ?? DateTimeOffset.MaxValue) > s
+                )
                 .Select(tp => tp.PorterId)
                 .Distinct()
                 .ToList();
@@ -176,6 +203,12 @@ namespace Infrastructure.Implementations
 
         public List<int> GetPorterIds(int transportId) =>
             _context.TransportPorters.Where(tp => tp.TransportId == transportId).Select(tp => tp.PorterId).ToList();
+
+        public List<int> GetVehicleIds(int transportId) =>
+            _context.Set<TransportAssignment>().Where(a => a.TransportId == transportId).Select(a => a.VehicleId).Distinct().ToList();
+
+        public List<int> GetDriverIds(int transportId) =>
+            _context.Set<TransportAssignment>().Where(a => a.TransportId == transportId).Select(a => a.DriverId).Distinct().ToList();
 
         private static (DateTimeOffset start, DateTimeOffset end) WindowOf(Transport t)
         {
@@ -186,18 +219,24 @@ namespace Infrastructure.Implementations
 
         public DateTimeOffset? VehicleBusyUntil(int vehicleId, DateTimeOffset s, DateTimeOffset e)
         {
-            var q = _context.Transports
-                .Where(x => x.VehicleId == vehicleId && ActiveStatuses.Contains(x.Status.ToString()));
+            var q = _context.Set<TransportAssignment>()
+                .Include(a => a.Transport)
+                .Where(a => a.VehicleId == vehicleId && ActiveStatuses.Contains(a.Transport.Status.ToString()))
+                .Select(a => a.Transport);
             var hit = q.AsEnumerable().Select(WindowOf).FirstOrDefault(w => w.start < e && w.end > s);
             return hit == default ? null : hit.end;
         }
+
         public DateTimeOffset? DriverBusyUntil(int driverId, DateTimeOffset s, DateTimeOffset e)
         {
-            var q = _context.Transports
-                .Where(x => x.DriverId == driverId && ActiveStatuses.Contains(x.Status.ToString()));
+            var q = _context.Set<TransportAssignment>()
+                .Include(a => a.Transport)
+                .Where(a => a.DriverId == driverId && ActiveStatuses.Contains(a.Transport.Status.ToString()))
+                .Select(a => a.Transport);
             var hit = q.AsEnumerable().Select(WindowOf).FirstOrDefault(w => w.start < e && w.end > s);
             return hit == default ? null : hit.end;
         }
+
         public DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e)
         {
             var q = _context.TransportPorters

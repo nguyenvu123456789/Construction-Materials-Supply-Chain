@@ -49,6 +49,7 @@ namespace Application.Services.Implements
                     MaterialName = i.Material.MaterialName,
                     CategoryName = i.Material.Category?.CategoryName ?? "N/A",
                     Unit = i.Material.Unit,
+                    WarehouseId = i.WarehouseId,
                     WarehouseName = i.Warehouse.WarehouseName,
                     Quantity = i.Quantity ?? 0,
                     BatchNumber = i.BatchNumber,

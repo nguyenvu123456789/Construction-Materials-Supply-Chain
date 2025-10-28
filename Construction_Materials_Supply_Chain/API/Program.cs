@@ -71,6 +71,7 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 
 
 
@@ -101,6 +102,8 @@ builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository>();
+builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+
 
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();

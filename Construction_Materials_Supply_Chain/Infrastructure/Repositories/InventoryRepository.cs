@@ -1,6 +1,7 @@
 ﻿using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations
 {
@@ -24,8 +25,23 @@ namespace Infrastructure.Implementations
         public List<Inventory> GetAllByMaterialId(int materialId)
         {
             return _context.Inventories
+                           .Include(i => i.Material)
+                           .Include(i => i.Warehouse)
                            .Where(i => i.MaterialId == materialId)
                            .ToList();
         }
+        public List<Inventory> GetAllByPartnerId(int partnerId)
+        {
+            return _context.Inventories
+                .Include(i => i.Material)
+                    .ThenInclude(m => m.Category)
+                .Include(i => i.Warehouse)
+                    .ThenInclude(w => w.Manager)
+                .Where(i => i.Warehouse.Manager != null && i.Warehouse.Manager.PartnerId == partnerId)
+                .ToList();
+        }
+
+
+
     }
 }

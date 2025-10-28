@@ -32,7 +32,6 @@ namespace API.Controllers
                     MaterialCode = request.MaterialCode,
                     MaterialName = request.MaterialName,
                     CategoryId = request.CategoryId,
-                    PartnerId = request.PartnerId,
                     Unit = request.Unit
                 };
 
@@ -61,7 +60,6 @@ namespace API.Controllers
                     MaterialCode = request.MaterialCode,
                     MaterialName = request.MaterialName,
                     CategoryId = request.CategoryId,
-                    PartnerId = request.PartnerId,
                     Unit = request.Unit,
                     Status = request.Status
                 };

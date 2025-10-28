@@ -47,8 +47,7 @@
                 existing.MaterialCode = material.MaterialCode;
                 existing.Unit = material.Unit;
                 existing.CategoryId = material.CategoryId;
-                existing.PartnerId = material.PartnerId;
-                existing.Status = material.Status; // có thể chuyển Active <-> Inactive
+                existing.Status = material.Status; 
 
                 _materials.Update(existing);
             }

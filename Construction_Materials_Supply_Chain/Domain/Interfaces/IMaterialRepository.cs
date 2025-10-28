@@ -12,5 +12,7 @@ namespace Domain.Interface
         List<Material> GetByCategory(int categoryId);
         List<Material> GetByWarehouse(int warehouseId);
         List<Material> GetAllWithInventory();
+        Material? GetDetailById(int id);
+
     }
 }

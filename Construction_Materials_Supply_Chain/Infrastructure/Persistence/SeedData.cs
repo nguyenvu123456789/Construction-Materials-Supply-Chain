@@ -185,15 +185,17 @@ namespace Infrastructure.Persistence
                 var duytan = context.Partners.First(p => p.PartnerCode == "P003");
 
                 var materialPartners = new List<MaterialPartner>
-    {
-        new MaterialPartner { MaterialId = materials[0].MaterialId, PartnerId = goviet.PartnerId },
-        new MaterialPartner { MaterialId = materials[1].MaterialId, PartnerId = hoaphat.PartnerId },
-        new MaterialPartner { MaterialId = materials[2].MaterialId, PartnerId = duytan.PartnerId },
-        new MaterialPartner { MaterialId = materials[3].MaterialId, PartnerId = hoaphat.PartnerId },
-        new MaterialPartner { MaterialId = materials[4].MaterialId, PartnerId = goviet.PartnerId },
-        new MaterialPartner { MaterialId = materials[5].MaterialId, PartnerId = duytan.PartnerId },
-        new MaterialPartner { MaterialId = materials[6].MaterialId, PartnerId = goviet.PartnerId }
-    };
+{
+    new MaterialPartner { Id = 1, MaterialId = 1, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
+    new MaterialPartner { Id = 2, MaterialId = 2, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId },
+    new MaterialPartner { Id = 3, MaterialId = 3, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
+    new MaterialPartner { Id = 4, MaterialId = 4, PartnerId = duytan.PartnerId, BuyerId = hoaphat.PartnerId },
+    new MaterialPartner { Id = 5, MaterialId = 5, PartnerId = goviet.PartnerId, BuyerId = hoaphat.PartnerId },
+    new MaterialPartner { Id = 6, MaterialId = 6, PartnerId = hoaphat.PartnerId, BuyerId = duytan.PartnerId },
+    new MaterialPartner { Id = 7, MaterialId = 7, PartnerId = goviet.PartnerId, BuyerId = duytan.PartnerId },
+    new MaterialPartner { Id = 8, MaterialId = 1, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId }
+};
+
 
                 context.MaterialPartners.AddRange(materialPartners);
                 context.SaveChanges();

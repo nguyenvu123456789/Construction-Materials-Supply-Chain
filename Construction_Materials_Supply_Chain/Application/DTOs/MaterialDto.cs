@@ -32,4 +32,9 @@ namespace Application.DTOs.Material
         public string Unit { get; set; } = null!;
         public string Status { get; set; } = "Active";
     }
+    public class MaterialDetailResponse
+    {
+        public MaterialDto Material { get; set; } = null!;
+        public List<PartnerDto> Partners { get; set; } = new();
+    }
 }

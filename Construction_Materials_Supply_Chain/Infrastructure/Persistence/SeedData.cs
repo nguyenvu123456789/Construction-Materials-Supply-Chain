@@ -164,20 +164,22 @@ namespace Infrastructure.Persistence
 
                 // Tạo danh sách vật tư
                 var materials = new List<Material>
-    {
-        new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
-        new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now }
-    };
+{
+    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "T001", MaterialName = "Tôn lạnh 1ly", Unit = "tấm", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "A001", MaterialName = "Ống nhựa PVC D60", Unit = "ống", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+    new Material { MaterialCode = "F001", MaterialName = "Cát xây dựng hạt vừa", Unit = "m3", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now }
+};
 
                 context.Materials.AddRange(materials);
                 context.SaveChanges();
 
-                // Sau khi đã có MaterialId, mới seed bảng trung gian
                 var goviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var hoaphat = context.Partners.First(p => p.PartnerCode == "P002");
                 var duytan = context.Partners.First(p => p.PartnerCode == "P003");

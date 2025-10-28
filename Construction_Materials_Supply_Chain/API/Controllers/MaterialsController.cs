@@ -94,13 +94,13 @@ namespace API.Controllers
 
         // GET: api/materials/{id}
         [HttpGet("{id:int}")]
-        public IActionResult GetMaterial(int id)
+        public IActionResult GetMaterialDetail(int id)
         {
-            var material = _materialService.GetById(id);
-            if (material == null)
+            var detail = _materialService.GetById(id);
+            if (detail == null)
                 return NotFound(ApiResponse<string>.ErrorResponse("Material not found."));
 
-            return Ok(ApiResponse<Material>.SuccessResponse(material));
+            return Ok(ApiResponse<MaterialDetailResponse>.SuccessResponse(detail));
         }
 
         // GET: api/materials

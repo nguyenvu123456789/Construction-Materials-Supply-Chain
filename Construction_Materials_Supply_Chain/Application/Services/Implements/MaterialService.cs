@@ -1,6 +1,9 @@
-﻿using Application.Interfaces;
+﻿using Application.DTOs;
+using Application.DTOs.Material;
+using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Implements
 {
@@ -21,11 +24,44 @@ namespace Application.Services.Implements
                 .ToList();
         }
 
-        public Material? GetById(int id)
+        public MaterialDetailResponse? GetById(int id)
         {
-            var material = _materials.GetByIdWithInclude(id);
-            return material != null && material.Status != "Deleted" ? material : null;
+            var material = _materials.GetDetailById(id);
+            if (material == null)
+                return null;
+
+            var materialDto = new MaterialDto
+            {
+                MaterialId = material.MaterialId,
+                MaterialCode = material.MaterialCode,
+                MaterialName = material.MaterialName,
+                CategoryId = material.CategoryId,
+                CategoryName = material.Category?.CategoryName,
+                Unit = material.Unit,
+                CreatedAt = material.CreatedAt
+            };
+
+            var partners = material.MaterialPartners
+                .Select(mp => new PartnerDto
+                {
+                    PartnerId = mp.Partner.PartnerId,
+                    PartnerCode = mp.Partner.PartnerCode,
+                    PartnerName = mp.Partner.PartnerName,
+                    ContactEmail = mp.Partner.ContactEmail,
+                    ContactPhone = mp.Partner.ContactPhone,
+                    PartnerTypeId = mp.Partner.PartnerTypeId,
+                    PartnerTypeName = mp.Partner.PartnerType.TypeName,
+                    Status = mp.Partner.Status ?? "Active"
+                })
+                .ToList();
+
+            return new MaterialDetailResponse
+            {
+                Material = materialDto,
+                Partners = partners
+            };
         }
+
 
         public void Create(Material material)
         {
@@ -47,7 +83,7 @@ namespace Application.Services.Implements
             existing.MaterialCode = material.MaterialCode;
             existing.Unit = material.Unit;
             existing.CategoryId = material.CategoryId;
-            existing.Status = material.Status; // có thể chuyển Active <-> Inactive
+            existing.Status = material.Status; 
 
             _materials.Update(existing);
         }

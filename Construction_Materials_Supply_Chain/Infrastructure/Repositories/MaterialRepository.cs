@@ -57,7 +57,14 @@ namespace Infrastructure.Implementations
                 .Where(m => m.Inventories.Any(i => i.WarehouseId == warehouseId))
                 .ToList();
         }
-
-
+        public Material? GetDetailById(int id)
+        {
+            return _context.Materials
+                .Include(m => m.Category)
+                .Include(m => m.MaterialPartners)
+                    .ThenInclude(mp => mp.Partner)
+                    .ThenInclude(p => p.PartnerType)
+                .FirstOrDefault(m => m.MaterialId == id && m.Status != "Deleted");
+        }
     }
 }

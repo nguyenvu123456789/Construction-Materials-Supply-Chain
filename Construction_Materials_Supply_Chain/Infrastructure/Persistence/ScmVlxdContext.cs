@@ -46,7 +46,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ExportReport> ExportReports { get; set; }
     public virtual DbSet<ExportReportDetail> ExportReportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
-
+    public virtual DbSet<MaterialPartner> MaterialPartners { get; set; } = null!;
     public virtual DbSet<Account> Accounts { get; set; }
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
     public virtual DbSet<JournalLine> JournalLines { get; set; }
@@ -498,20 +498,31 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CategoryId)
                 .HasColumnName("CategoryID");
 
-            entity.Property(e => e.PartnerId)
-                .HasColumnName("PartnerID");
-
             entity.HasOne(d => d.Category)
                 .WithMany(p => p.Materials)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Material__CategoryID__5BE2A6F2");
+            
+        });
 
-            entity.HasOne(d => d.Partner)
-                .WithMany(p => p.Materials)
-                .HasForeignKey(d => d.PartnerId)
+        modelBuilder.Entity<MaterialPartner>(entity =>
+        {
+            entity.ToTable("MaterialPartner");
+
+            entity.HasKey(e => new { e.MaterialId, e.PartnerId });
+
+            entity.HasOne(e => e.Material)
+                .WithMany(m => m.MaterialPartners)
+                .HasForeignKey(e => e.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Material__PartnerID__5CE5B6AF");
+                .HasConstraintName("FK_MaterialPartner_Material");
+
+            entity.HasOne(e => e.Partner)
+                .WithMany(p => p.MaterialPartners)
+                .HasForeignKey(e => e.PartnerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MaterialPartner_Partner");
         });
 
         modelBuilder.Entity<MaterialCheck>(entity =>

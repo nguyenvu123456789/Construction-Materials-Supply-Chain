@@ -12,7 +12,6 @@ namespace Domain.Models
         public string MaterialCode { get; set; } = null!;
         public string MaterialName { get; set; } = null!;
         public int CategoryId { get; set; }
-        public int PartnerId { get; set; }
         public string Unit { get; set; } = null!;
         public string Status { get; set; } = "Active";
         public DateTime CreatedAt { get; set; }
@@ -21,7 +20,7 @@ namespace Domain.Models
         public virtual Category? Category { get; set; }
 
         [JsonIgnore]
-        public virtual Partner? Partner { get; set; }
+        public virtual ICollection<MaterialPartner> MaterialPartners { get; set; } = new List<MaterialPartner>();
 
         [JsonIgnore]
         public virtual ICollection<ImportDetail> ImportDetails { get; set; } = new List<ImportDetail>();

@@ -47,7 +47,6 @@ namespace Application.Services.Implements
             existing.MaterialCode = material.MaterialCode;
             existing.Unit = material.Unit;
             existing.CategoryId = material.CategoryId;
-            existing.PartnerId = material.PartnerId;
             existing.Status = material.Status; // có thể chuyển Active <-> Inactive
 
             _materials.Update(existing);

@@ -24,7 +24,6 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(m => m.Category)
-                .Include(m => m.Partner)
                 .FirstOrDefault(m => m.MaterialId == id);
         }
 
@@ -32,14 +31,12 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(m => m.Category)
-                .Include(m => m.Partner)
                 .ToList();
         }
         public List<Material> GetByCategory(int categoryId)
         {
             return _dbSet
                 .Include(m => m.Category)
-                .Include(m => m.Partner)
                 .Where(m => m.CategoryId == categoryId)
                 .ToList();
         }
@@ -47,7 +44,6 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(m => m.Category)
-                .Include(m => m.Partner)
                 .Include(m => m.Inventories)
                     .ThenInclude(i => i.Warehouse)
                 .ToList();
@@ -56,7 +52,6 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(m => m.Category)
-                .Include(m => m.Partner)
                 .Include(m => m.Inventories)
                     .ThenInclude(i => i.Warehouse)
                 .Where(m => m.Inventories.Any(i => i.WarehouseId == warehouseId))

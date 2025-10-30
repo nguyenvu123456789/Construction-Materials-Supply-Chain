@@ -52,5 +52,10 @@ namespace Application.Services.Implements
             _warehouses.Delete(warehouse);
             return true;
         }
+        public List<Warehouse> GetByPartnerId(int partnerId)
+        {
+            return _warehouses.GetByPartnerId(partnerId);
+        }
+
     }
 }

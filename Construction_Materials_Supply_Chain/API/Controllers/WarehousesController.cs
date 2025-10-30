@@ -9,6 +9,7 @@ namespace API.Controllers
     [ApiController]
     public class WarehousesController : ControllerBase
     {
+        private readonly IUserService _userService;
         private readonly IWarehouseService _service;
         private readonly IMapper _mapper;
 
@@ -18,7 +19,6 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        // ➕ Tạo mới kho
         [HttpPost]
         public IActionResult Create([FromBody] WarehouseCreateDto dto)
         {
@@ -34,7 +34,6 @@ namespace API.Controllers
             }
         }
 
-        // ✏️ Cập nhật kho
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] WarehouseUpdateDto dto)
         {
@@ -50,7 +49,6 @@ namespace API.Controllers
             }
         }
 
-        // ❌ Xóa kho
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -68,16 +66,6 @@ namespace API.Controllers
             }
         }
 
-        // 📋 Lấy tất cả kho
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var warehouses = _service.GetAll();
-            var result = _mapper.Map<IEnumerable<WarehouseDto>>(warehouses);
-            return Ok(result);
-        }
-
-        // 🔍 Lấy kho theo ID
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -88,5 +76,29 @@ namespace API.Controllers
             var result = _mapper.Map<WarehouseDto>(warehouse);
             return Ok(result);
         }
+
+        [HttpGet]
+        public IActionResult GetAll([FromQuery] int? partnerId)
+        {
+            try
+            {
+                if (partnerId != null)
+                {
+                    var warehouses = _service.GetByPartnerId(partnerId.Value);
+                    var result = _mapper.Map<IEnumerable<WarehouseDto>>(warehouses);
+                    return Ok(result);
+                }
+
+                var allWarehouses = _service.GetAll();
+                var allResult = _mapper.Map<IEnumerable<WarehouseDto>>(allWarehouses);
+                return Ok(allResult);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
     }
 }

@@ -81,7 +81,6 @@ namespace Services.Implementations
             return export;
         }
 
-        // ✅ Xác nhận xuất kho
         public Export ConfirmExport(string exportCode, string? notes)
         {
             var export = _exports.GetAll()
@@ -231,5 +230,26 @@ namespace Services.Implementations
 
             return $"EXP-{nextNumber:000}";
         }
+
+        public List<Export> GetByPartnerId(int partnerId)
+        {
+            // Lấy toàn bộ export kèm warehouse và manager
+            var exports = _exports.GetAllWithWarehouse();
+
+            var filtered = exports
+                .Where(e => e.Warehouse != null
+                         && e.Warehouse.Manager != null
+                         && e.Warehouse.Manager.PartnerId == partnerId)
+                .ToList();
+
+            // Lấy chi tiết export
+            foreach (var export in filtered)
+            {
+                export.ExportDetails = _exportDetails.GetByExportId(export.ExportId);
+            }
+
+            return filtered;
+        }
+
     }
 }

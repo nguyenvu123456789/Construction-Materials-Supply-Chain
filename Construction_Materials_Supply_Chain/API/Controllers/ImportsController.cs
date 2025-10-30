@@ -30,7 +30,6 @@ namespace API.Controllers
             {
                 Import import;
 
-                // ✅ 1️⃣ Trường hợp nhập theo hóa đơn (InvoiceCode)
                 if (!string.IsNullOrEmpty(dto.InvoiceCode))
                 {
                     if (dto.WarehouseId <= 0)
@@ -44,7 +43,6 @@ namespace API.Controllers
                         notes: dto.Notes
                     );
                 }
-                // ✅ 2️⃣ Trường hợp nhập từ phiếu Pending (ImportCode)
                 else if (!string.IsNullOrEmpty(dto.ImportCode))
                 {
                     import = _importService.ConfirmPendingImport(
@@ -76,13 +74,6 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var imports = _importService.GetAll();
-            var result = _mapper.Map<IEnumerable<ImportResponseDto>>(imports);
-            return Ok(result);
-        }
 
         [HttpPost("request")]
         public IActionResult CreatePendingImport([FromBody] CreatePendingImportDto dto)
@@ -119,6 +110,20 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("partner/{partnerId:int}")]
+        public IActionResult GetImportsByPartner(int partnerId)
+        {
+            try
+            {
+                var imports = _importService.GetByPartnerId(partnerId);
+                var result = _mapper.Map<IEnumerable<ImportResponseDto>>(imports);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
     }
 }

@@ -9,5 +9,7 @@ namespace Domain.Interface
         void Add(Warehouse warehouse);
         void Update(Warehouse warehouse);
         void Delete(Warehouse warehouse);
+        List<Warehouse> GetByPartnerId(int partnerId);
+
     }
 }

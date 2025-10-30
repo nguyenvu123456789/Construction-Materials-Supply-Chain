@@ -19,7 +19,6 @@ namespace API.Controllers
         }
 
 
-        // Lấy export theo ID
         [HttpGet("{id}")]
         public IActionResult GetExport(int id)
         {
@@ -29,14 +28,24 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        // Lấy danh sách tất cả export
         [HttpGet]
-        public IActionResult GetAllExports()
+        public IActionResult GetAllExports([FromQuery] int? partnerId = null)
         {
-            var exports = _exportService.GetAll();
-            var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);
-            return Ok(result);
+            try
+            {
+                var exports = partnerId.HasValue
+                    ? _exportService.GetByPartnerId(partnerId.Value)
+                    : _exportService.GetAll();
+
+                var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
         // 🔹 Tạo Pending Export
         [HttpPost("request")]
@@ -95,6 +104,7 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [HttpPost("from-invoice")]
         public IActionResult CreateExportFromInvoice([FromBody] ExportFromInvoiceDto dto)
         {

@@ -275,5 +275,25 @@ namespace Services.Implementations
 
             return import;
         }
+        public List<Import> GetByPartnerId(int partnerId)
+        {
+            // Lấy tất cả import, join warehouse → manager → partner
+            var imports = _imports.GetAllWithWarehouse();
+
+            var filtered = imports
+                .Where(i => i.Warehouse != null
+                         && i.Warehouse.Manager != null
+                         && i.Warehouse.Manager.PartnerId == partnerId)
+                .ToList();
+
+            // Nạp thêm chi tiết để mapper có thể dùng
+            foreach (var import in filtered)
+            {
+                import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
+            }
+
+            return filtered;
+        }
+
     }
 }

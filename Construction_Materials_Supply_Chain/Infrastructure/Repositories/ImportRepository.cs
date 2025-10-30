@@ -25,5 +25,14 @@ namespace Infrastructure.Implementations
             return _dbSet.Include(i => i.ImportDetails)
                          .FirstOrDefault(i => i.ImportId == id);
         }
+        public List<Import> GetAllWithWarehouse()
+        {
+            return _context.Imports
+                .Include(i => i.Warehouse)
+                    .ThenInclude(w => w.Manager)
+                .Include(i => i.ImportDetails)
+                .ToList();
+        }
+
     }
 }

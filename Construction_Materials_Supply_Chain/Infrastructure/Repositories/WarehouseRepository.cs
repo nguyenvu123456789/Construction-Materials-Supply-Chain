@@ -1,6 +1,7 @@
 ﻿using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -33,6 +34,13 @@ namespace Infrastructure.Repositories
         {
             _context.Warehouses.Remove(warehouse);
             _context.SaveChanges();
+        }
+        public List<Warehouse> GetByPartnerId(int partnerId)
+        {
+            return _context.Warehouses
+                .Include(w => w.Manager) 
+                .Where(w => w.Manager != null && w.Manager.PartnerId == partnerId)
+                .ToList();
         }
     }
 }

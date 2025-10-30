@@ -8,5 +8,7 @@ namespace Domain.Interface
         Import? GetById(int id);
         List<Import> GetAll();
         Import? GetByIdWithDetails(int id);
+        List<Import> GetAllWithWarehouse();
+
     }
 }

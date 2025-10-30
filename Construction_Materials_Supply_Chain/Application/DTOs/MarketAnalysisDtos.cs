@@ -1,12 +1,17 @@
 ﻿namespace Application.DTOs
 {
-    public class MonthlyRevenueDto
+    namespace Application.DTOs
     {
-        public int Year { get; set; }
-        public int Month { get; set; }
-        public decimal TotalRevenue { get; set; }
+        public class WeeklyRevenueDto
+        {
+            public int PartnerId { get; set; }
+            public string PartnerName { get; set; } = string.Empty;
+            public DateTime WeekStart { get; set; }
+            public DateTime WeekEnd { get; set; }
+            public decimal TotalRevenue { get; set; }
+        }
     }
-
+    
     public class TopMaterialDto
     {
         public int MaterialId { get; set; }
@@ -19,19 +24,6 @@
     {
         public int SupplierId { get; set; }
         public string SupplierName { get; set; } = null!;
-        public decimal TotalRevenue { get; set; }
-    }
-
-    public class StaffPerformanceDto
-    {
-        public int UserId { get; set; }
-        public string Fullname { get; set; } = null!;
-        public decimal TotalRevenue { get; set; }
-    }
-
-    public class RegionRevenueDto
-    {
-        public string Region { get; set; } = null!;
         public decimal TotalRevenue { get; set; }
     }
 }

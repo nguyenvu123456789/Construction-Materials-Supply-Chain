@@ -14,12 +14,6 @@ namespace API.Controllers
             _service = service;
         }
 
-        [HttpGet("revenue/monthly")]
-        public IActionResult GetMonthlyRevenue()
-        {
-            return Ok(_service.GetMonthlyRevenue());
-        }
-
         [HttpGet("top-materials")]
         public IActionResult GetTopMaterials([FromQuery] int top = 5)
         {
@@ -32,16 +26,10 @@ namespace API.Controllers
             return Ok(_service.GetRevenueBySupplier());
         }
 
-        [HttpGet("revenue/staff")]
-        public IActionResult GetRevenueByStaff()
+        [HttpGet("revenue/weekly/{userId:int}")]
+        public IActionResult GetWeeklyRevenueByPartner(int userId)
         {
-            return Ok(_service.GetRevenueByStaff());
-        }
-
-        [HttpGet("revenue/region")]
-        public IActionResult GetRevenueByRegion()
-        {
-            return Ok(_service.GetRevenueByRegion());
+            return Ok(_service.GetWeeklyRevenueByPartner(userId));
         }
     }
 }

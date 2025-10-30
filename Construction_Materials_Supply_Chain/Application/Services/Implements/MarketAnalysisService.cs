@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Application.DTOs;
 using Application.Interfaces;
 using Domain.Interface;
 using System.Globalization;
@@ -12,47 +13,25 @@ namespace Application.Services.Implements
         private readonly IPartnerRepository _partners;
         private readonly IUserRepository _users;
         private readonly IMaterialRepository _materials;
+        private readonly IInvoiceRepository _invoices;
 
         public MarketAnalysisService(
             IOrderRepository orders,
             IOrderDetailRepository orderDetails,
             IPartnerRepository partners,
             IUserRepository users,
-            IMaterialRepository materials)
+            IMaterialRepository materials,
+            IInvoiceRepository invoices)
         {
             _orders = orders;
             _orderDetails = orderDetails;
             _partners = partners;
             _users = users;
             _materials = materials;
+            _invoices = invoices;
         }
 
-        public List<MonthlyRevenueDto> GetMonthlyRevenue()
-        {
-            var orders = _orders.GetAll()
-                .Where(o => o.Status == "Success" && o.CreatedAt != null)
-                .ToList();
-
-            var data = orders
-                .SelectMany(o => o.OrderDetails, (o, d) => new
-                {
-                    Year = o.CreatedAt!.Value.Year,
-                    Month = o.CreatedAt!.Value.Month,
-                    Revenue = (d.UnitPrice ?? 0) * d.Quantity
-                })
-                .GroupBy(x => new { x.Year, x.Month })
-                .Select(g => new MonthlyRevenueDto
-                {
-                    Year = g.Key.Year,
-                    Month = g.Key.Month,
-                    TotalRevenue = g.Sum(x => x.Revenue)
-                })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month)
-                .ToList();
-
-            return data;
-        }
-
+        // 🔹 1. Top vật tư bán chạy
         public List<TopMaterialDto> GetTopMaterials(int top = 5)
         {
             var details = _orderDetails.GetAll()
@@ -72,6 +51,7 @@ namespace Application.Services.Implements
             return details;
         }
 
+        // 🔹 2. Doanh thu theo nhà cung cấp
         public List<SupplierRevenueDto> GetRevenueBySupplier()
         {
             var orders = _orders.GetAll()
@@ -98,54 +78,64 @@ namespace Application.Services.Implements
             return data;
         }
 
-        public List<StaffPerformanceDto> GetRevenueByStaff()
+        public List<WeeklyRevenueDto> GetWeeklyRevenueByPartner(int userId)
         {
-            var orders = _orders.GetAll()
-                .Where(o => o.Status == "Success" && o.CreatedBy != null)
+            var invoices = _invoices.GetAll()
+                .Where(i => i.Status == "Success" && i.CreatedBy == userId)
                 .ToList();
 
-            var data = orders
-                .SelectMany(o => o.OrderDetails, (o, d) => new
+            if (!invoices.Any())
+                return new List<WeeklyRevenueDto>();
+
+            var culture = CultureInfo.CurrentCulture;
+            var calendar = culture.Calendar;
+
+            var grouped = invoices
+                .GroupBy(i =>
                 {
-                    UserId = o.CreatedBy!.Value,
-                    Fullname = o.CreatedByNavigation!.FullName,
-                    Revenue = (d.UnitPrice ?? 0) * d.Quantity
+                    int weekNum = calendar.GetWeekOfYear(i.IssueDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+                    int year = i.IssueDate.Year;
+
+                    DateTime weekStart = FirstDateOfWeek(year, weekNum);
+                    DateTime weekEnd = weekStart.AddDays(6);
+
+                    return new
+                    {
+                        i.PartnerId,
+                        PartnerName = i.Partner?.PartnerName ?? "Không xác định",
+                        WeekStart = weekStart,
+                        WeekEnd = weekEnd
+                    };
                 })
-                .GroupBy(x => new { x.UserId, x.Fullname })
-                .Select(g => new StaffPerformanceDto
+                .Select(g => new WeeklyRevenueDto
                 {
-                    UserId = g.Key.UserId,
-                    Fullname = g.Key.Fullname,
-                    TotalRevenue = g.Sum(x => x.Revenue)
+                    PartnerId = g.Key.PartnerId,
+                    PartnerName = g.Key.PartnerName,
+                    WeekStart = g.Key.WeekStart,
+                    WeekEnd = g.Key.WeekEnd,
+                    TotalRevenue = g.Sum(x => x.TotalAmount)
                 })
-                .OrderByDescending(x => x.TotalRevenue)
+                .OrderBy(x => x.WeekStart)
                 .ToList();
 
-            return data;
+            return grouped;
+        }
+        private DateTime FirstDateOfWeek(int year, int weekOfYear)
+        {
+            var jan1 = new DateTime(year, 1, 1);
+            int daysOffset = DayOfWeek.Monday - jan1.DayOfWeek;
+
+            var firstMonday = jan1.AddDays(daysOffset);
+            var firstWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
+                jan1, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+
+            if (firstWeek <= 1)
+            {
+                weekOfYear -= 1;
+            }
+
+            return firstMonday.AddDays(weekOfYear * 7);
         }
 
-        public List<RegionRevenueDto> GetRevenueByRegion()
-        {
-            var orders = _orders.GetAll()
-                .Where(o => o.Status == "Success" && o.DeliveryAddress != null)
-                .ToList();
-
-            var data = orders
-                .SelectMany(o => o.OrderDetails, (o, d) => new
-                {
-                    Region = o.DeliveryAddress!,
-                    Revenue = (d.UnitPrice ?? 0) * d.Quantity
-                })
-                .GroupBy(x => x.Region)
-                .Select(g => new RegionRevenueDto
-                {
-                    Region = g.Key,
-                    TotalRevenue = g.Sum(x => x.Revenue)
-                })
-                .OrderByDescending(x => x.TotalRevenue)
-                .ToList();
-
-            return data;
-        }
     }
 }

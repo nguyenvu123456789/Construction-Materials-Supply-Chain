@@ -15,6 +15,7 @@
         public string ImportCode { get; set; } = null!;
         public string? InvoiceCode { get; set; }
         public int WarehouseId { get; set; }
+        public string? WarehouseName { get; set; }
         public int CreatedBy { get; set; }
         public string? Status { get; set; }
         public string? Notes { get; set; }

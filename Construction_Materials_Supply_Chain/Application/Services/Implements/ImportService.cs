@@ -277,7 +277,6 @@ namespace Services.Implementations
         }
         public List<Import> GetByPartnerId(int partnerId)
         {
-            // Lấy tất cả import, join warehouse → manager → partner
             var imports = _imports.GetAllWithWarehouse();
 
             var filtered = imports
@@ -286,7 +285,6 @@ namespace Services.Implementations
                          && i.Warehouse.Manager.PartnerId == partnerId)
                 .ToList();
 
-            // Nạp thêm chi tiết để mapper có thể dùng
             foreach (var import in filtered)
             {
                 import.ImportDetails = _importDetails.GetByImportId(import.ImportId);

@@ -25,7 +25,6 @@ namespace Application.Services.Implements
         {
             var inventories = _inventoryRepository.GetAllByPartnerId(partnerId).AsQueryable();
 
-            // Lọc theo từ khóa
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 inventories = inventories.Where(i =>

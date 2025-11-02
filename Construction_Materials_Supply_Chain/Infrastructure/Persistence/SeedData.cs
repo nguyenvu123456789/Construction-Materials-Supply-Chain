@@ -71,27 +71,16 @@ namespace Infrastructure.Persistence
             // 4️⃣ Seed Users
             if (!context.Users.Any())
             {
-                // Lấy các Partner tương ứng
-                var adminPartner = context.Partners.First(p => p.PartnerCode == "P008");
-                var managerPartner = context.Partners.First(p => p.PartnerCode == "P009");
-                var staffPartner = context.Partners.First(p => p.PartnerCode == "P010");
-                var accountantPartner = context.Partners.First(p => p.PartnerCode == "P011");
-                var salesPartner = context.Partners.First(p => p.PartnerCode == "P012");
-                var supportPartner = context.Partners.First(p => p.PartnerCode == "P013");
-                var inventoryPartner = context.Partners.First(p => p.PartnerCode == "P014");
-                var customerPartner = context.Partners.First(p => p.PartnerCode == "P005");
-                var collaboratorPartner = context.Partners.First(p => p.PartnerCode == "P007");
-
                 context.Users.AddRange(
-                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = adminPartner.PartnerId },
-                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = managerPartner.PartnerId },
-                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = staffPartner.PartnerId },
-                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = accountantPartner.PartnerId },
-                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = salesPartner.PartnerId },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = supportPartner.PartnerId },
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = inventoryPartner.PartnerId },
-                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = customerPartner.PartnerId },
-                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = collaboratorPartner.PartnerId }
+                    new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 2 },
+                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
+                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
+                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 },
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 6 },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 7 },
+                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 8 },
+                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 9 }
                 );
                 context.SaveChanges();
 
@@ -116,6 +105,7 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
+
             // 5️⃣ Seed Categories
             if (!context.Categories.Any())
             {

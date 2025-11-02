@@ -90,7 +90,7 @@ namespace Services.Implementations
             if (order.Status != "Approved")
                 throw new Exception("Order must be approved to create invoice.");
 
-            var partnerId = order.SupplierId ?? dto.PartnerId;
+            var partnerId = order.CreatedByNavigation?.PartnerId;
 
             if (partnerId == 0)
                 throw new Exception("PartnerId (supplier) not found for this order.");
@@ -99,8 +99,7 @@ namespace Services.Implementations
             {
                 InvoiceCode = $"INV-{_invoices.GetAllWithDetails().Count + 1:D3}",
                 InvoiceType = "Export",
-                PartnerId = partnerId,
-
+                PartnerId = partnerId ?? 0,
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,
                 DueDate = dto.DueDate,
@@ -133,7 +132,6 @@ namespace Services.Implementations
 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
-            // Lấy hóa đơn từ repository (chỉ SELECT, không thay đổi DB)
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
             if (invoice == null)
                 throw new Exception("Invoice not found");

@@ -16,10 +16,10 @@ namespace Infrastructure.Repositories
         {
             return _context.Orders
                 .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Material)
+                .Include(o => o.CreatedByNavigation)
+                    .ThenInclude(u => u.Partner)
                 .FirstOrDefault(o => o.OrderCode == orderCode);
         }
-
 
         public Order? GetByCodeWithDetails(string orderCode)
         {

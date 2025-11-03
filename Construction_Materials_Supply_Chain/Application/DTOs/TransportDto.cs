@@ -18,14 +18,6 @@
         public string? Notes { get; set; }
     }
 
-    public class TransportAssignItemDto
-    {
-        public int VehicleId { get; set; }
-        public int DriverId { get; set; }
-        public DateTimeOffset? StartTimePlanned { get; set; }
-        public DateTimeOffset? EndTimePlanned { get; set; }
-    }
-
     public class TransportAssignRequestDto
     {
         public int VehicleId { get; set; }
@@ -46,9 +38,9 @@
         public List<AddStopItemDto> Stops { get; set; } = new();
     }
 
-    public class TransportAddOrdersRequestDto
+    public class TransportAddInvoicesRequestDto
     {
-        public List<int> OrderIds { get; set; } = new();
+        public List<int> InvoiceIds { get; set; } = new();
     }
 
     public class TransportStopArriveRequestDto
@@ -61,21 +53,6 @@
     {
         public int TransportStopId { get; set; }
         public DateTimeOffset At { get; set; }
-    }
-
-    public class TransportAssignmentDto
-    {
-        public int TransportAssignmentId { get; set; }
-        public int VehicleId { get; set; }
-        public string VehicleCode { get; set; } = default!;
-        public string VehiclePlate { get; set; } = default!;
-        public int DriverId { get; set; }
-        public string DriverName { get; set; } = default!;
-        public string? DriverPhone { get; set; }
-        public DateTimeOffset? StartTimePlanned { get; set; }
-        public DateTimeOffset? EndTimePlanned { get; set; }
-        public DateTimeOffset? StartTimeActual { get; set; }
-        public DateTimeOffset? EndTimeActual { get; set; }
     }
 
     public class TransportStopDto
@@ -95,14 +72,6 @@
         public DateTimeOffset? ETD { get; set; }
         public DateTimeOffset? ATA { get; set; }
         public DateTimeOffset? ATD { get; set; }
-    }
-
-    public class TransportOrderDto
-    {
-        public int TransportId { get; set; }
-        public int OrderId { get; set; }
-        public string OrderCode { get; set; } = default!;
-        public string? CustomerName { get; set; }
     }
 
     public class TransportPorterDto
@@ -127,14 +96,9 @@
         public DateTimeOffset? EndTimePlanned { get; set; }
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
-        public List<TransportAssignmentDto> Assignments { get; set; } = new();
         public List<TransportStopDto> Stops { get; set; } = new();
-        public List<TransportOrderDto> Orders { get; set; } = new();
+        public List<SimpleInvoiceDto> Invoices { get; set; } = new();
         public List<TransportPorterDto> Porters { get; set; } = new();
         public string? Notes { get; set; }
     }
 }
-
-
-
-

@@ -9,7 +9,7 @@ namespace Application.Interfaces
         List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void Assign(int transportId, TransportAssignRequestDto dto);
         void AddStops(int transportId, TransportAddStopsRequestDto dto);
-        void AddOrders(int transportId, TransportAddOrdersRequestDto dto);
+        void AddInvoices(int transportId, TransportAddInvoicesRequestDto dto);
         void Start(int transportId, DateTimeOffset at);
         void ArriveStop(int transportId, TransportStopArriveRequestDto dto);
         void CompleteStop(int transportId, TransportStopDoneRequestDto dto);

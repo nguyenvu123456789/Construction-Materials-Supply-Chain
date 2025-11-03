@@ -951,24 +951,17 @@ namespace Infrastructure.Persistence
                 context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
 
-                // ===== Orders (lấy 2 đơn bất kỳ nếu không có ORD-001/ORD-002) =====
-                var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001")
-                           ?? context.Orders.OrderBy(o => o.OrderId).First();
-                var ord2 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-002")
-                           ?? context.Orders.OrderBy(o => o.OrderId).Skip(1).FirstOrDefault()
-                           ?? ord1;
-
                 // ===== Transport (GIỜ GÁN TRỰC TIẾP Vehicle/Driver) =====
                 var t1 = new Transport
                 {
                     TransportCode = "T-INIT-001",
                     DepotId = depot.AddressId,
                     ProviderPartnerId = partnerAId,
-                    Status = TransportStatus.Assigned,       
+                    Status = TransportStatus.Assigned,
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
                     Notes = "Seed trip",
-                    VehicleId = v1.VehicleId,              
-                    DriverId = d1.DriverId    
+                    VehicleId = v1.VehicleId,
+                    DriverId = d1.DriverId
                 };
                 context.Transports.Add(t1);
                 context.SaveChanges();
@@ -980,12 +973,16 @@ namespace Infrastructure.Persistence
                 context.TransportStops.AddRange(stop0, stop1, stop2);
                 context.SaveChanges();
 
-                // ===== TransportOrders =====
-                context.TransportOrders.AddRange(
-                    new TransportOrder { TransportId = t1.TransportId, OrderId = ord1.OrderId },
-                    new TransportOrder { TransportId = t1.TransportId, OrderId = ord2.OrderId }
+                // ===== TransportInvoices =====
+                var inv1 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-001") ?? context.Invoices.OrderBy(i => i.InvoiceId).First();
+                var inv2 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-002") ?? context.Invoices.OrderBy(i => i.InvoiceId).Skip(1).FirstOrDefault() ?? inv1;
+
+                context.TransportInvoices.AddRange(
+                    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv1.InvoiceId },
+                    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv2.InvoiceId }
                 );
                 context.SaveChanges();
+
 
                 // ===== Porters của chuyến =====
                 context.TransportPorters.AddRange(
@@ -996,8 +993,8 @@ namespace Infrastructure.Persistence
 
                 // ===== Logs =====
                 context.ShippingLogs.AddRange(
-                    new ShippingLog { OrderId = ord1.OrderId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
-                    new ShippingLog { OrderId = ord2.OrderId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
+                    new ShippingLog { InvoiceId = inv1.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
+                    new ShippingLog { InvoiceId = inv2.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
                 );
                 context.SaveChanges();
             }

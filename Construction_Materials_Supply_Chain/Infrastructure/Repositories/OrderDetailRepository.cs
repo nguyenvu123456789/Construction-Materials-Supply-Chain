@@ -1,6 +1,6 @@
 ﻿using Domain.Interface;
 using Domain.Models;
-using Infrastructure.Persistence; 
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories

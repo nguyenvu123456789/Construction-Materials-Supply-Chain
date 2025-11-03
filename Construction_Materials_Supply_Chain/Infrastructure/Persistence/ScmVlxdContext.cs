@@ -65,8 +65,10 @@ public partial class ScmVlxdContext : DbContext
 
     public DbSet<Transport> Transports { get; set; }
     public DbSet<TransportStop> TransportStops { get; set; }
-    public DbSet<TransportOrder> TransportOrders { get; set; }
+    public DbSet<TransportInvoice> TransportInvoices { get; set; }
     public DbSet<TransportPorter> TransportPorters { get; set; }
+
+    public DbSet<PriceMaterialPartner> PriceMaterialPartners { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -502,7 +504,7 @@ public partial class ScmVlxdContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Material__CategoryID__5BE2A6F2");
-            
+
         });
 
         modelBuilder.Entity<MaterialPartner>(entity =>
@@ -878,11 +880,10 @@ public partial class ScmVlxdContext : DbContext
             e.HasKey(x => x.TransportId);
             e.HasOne(x => x.Depot).WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.ProviderPartner).WithMany().HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
-            e.HasMany(x => x.Stops).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
-            e.HasMany(x => x.TransportOrders).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
-            e.HasMany(x => x.TransportPorters).WithOne(s => s.Transport).HasForeignKey(s => s.TransportId);
             e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(x => x.TransportPorters).WithOne(tp => tp.Transport).HasForeignKey(tp => tp.TransportId);
+            e.HasMany(x => x.TransportInvoices).WithOne(ti => ti.Transport).HasForeignKey(ti => ti.TransportId);
         });
 
         modelBuilder.Entity<TransportStop>(e =>
@@ -895,12 +896,11 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Address).WithMany().HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<TransportOrder>(e =>
+        modelBuilder.Entity<TransportInvoice>(e =>
         {
-            e.HasKey(x => new { x.TransportId, x.OrderId });
-            e.ToTable("TransportOrder");
-            e.HasOne(x => x.Transport).WithMany(t => t.TransportOrders).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Order).WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+            e.HasKey(x => new { x.TransportId, x.InvoiceId });
+            e.ToTable("TransportInvoice");
+            e.HasOne(x => x.Invoice).WithMany().HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<TransportPorter>(e =>
@@ -916,30 +916,35 @@ public partial class ScmVlxdContext : DbContext
             e.HasKey(x => x.ShippingLogId);
             e.ToTable("ShippingLog");
 
-            e.Property(x => x.ShippingLogId).HasColumnName("ShippingLogID");
-            e.Property(x => x.OrderId).HasColumnName("OrderID");
-            e.Property(x => x.TransportId).HasColumnName("TransportID");
-            e.Property(x => x.TransportStopId);
-            e.Property(x => x.Status).HasMaxLength(50);
+            e.Property(x => x.Status).HasMaxLength(100).IsRequired();
             e.Property(x => x.CreatedAt)
-                .HasColumnType("datetime")
-                .HasDefaultValueSql("(getdate())");
-
-            e.HasOne(x => x.Order)
-                .WithMany(o => o.ShippingLogs)
-                .HasForeignKey(x => x.OrderId);
+                .HasColumnType("datetimeoffset")
+                .HasDefaultValueSql("SYSUTCDATETIME()");
 
             e.HasOne(x => x.Transport)
                 .WithMany()
                 .HasForeignKey(x => x.TransportId)
-                .HasConstraintName("FK_ShippingLog_Transport");
+                .OnDelete(DeleteBehavior.NoAction);
 
             e.HasOne(x => x.TransportStop)
                 .WithMany()
                 .HasForeignKey(x => x.TransportStopId)
-                .HasConstraintName("FK_ShippingLog_TransportStop");
+                .OnDelete(DeleteBehavior.SetNull);
+
+            e.HasOne(x => x.Invoice)
+                .WithMany()
+                .HasForeignKey(x => x.InvoiceId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
+        modelBuilder.Entity<PriceMaterialPartner>(e =>
+        {
+            e.HasKey(x => x.PriceMaterialPartnerId);
+            e.Property(x => x.BuyPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            e.Property(x => x.SellPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
+            e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -11,7 +11,7 @@
             public decimal TotalRevenue { get; set; }
         }
     }
-    
+
     public class TopMaterialDto
     {
         public int MaterialId { get; set; }

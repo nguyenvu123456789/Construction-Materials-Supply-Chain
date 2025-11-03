@@ -117,7 +117,7 @@ namespace Application.Services.Implements
 
                 var shippingLog = new ShippingLog
                 {
-                    OrderId = order.OrderId,
+                    //OrderId = order.OrderId,
                     TransportId = transport.TransportId,
                     Status = "Assigned",
                     CreatedAt = DateTime.Now

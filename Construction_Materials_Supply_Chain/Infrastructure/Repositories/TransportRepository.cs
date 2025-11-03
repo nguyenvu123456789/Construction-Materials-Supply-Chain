@@ -22,7 +22,7 @@ namespace Infrastructure.Implementations
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
-                .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
+                .Include(t => t.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .Include(t => t.Vehicle)
                 .Include(t => t.Driver)
@@ -34,7 +34,7 @@ namespace Infrastructure.Implementations
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
-                .Include(t => t.TransportOrders).ThenInclude(to => to.Order)
+                .Include(t => t.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .AsQueryable();
 
@@ -69,16 +69,16 @@ namespace Infrastructure.Implementations
             _context.SaveChanges();
         }
 
-        public void AddOrders(int transportId, List<TransportOrder> orders)
+        public void AddInvoices(int transportId, List<int> invoiceIds)
         {
-            foreach (var o in orders)
+            var exists = _context.Set<TransportInvoice>()
+                                 .Where(x => x.TransportId == transportId)
+                                 .Select(x => x.InvoiceId)
+                                 .ToHashSet();
+            foreach (var id in invoiceIds.Distinct())
             {
-                var exists = _context.TransportOrders.Any(x => x.TransportId == transportId && x.OrderId == o.OrderId);
-                if (!exists)
-                {
-                    o.TransportId = transportId;
-                    _context.TransportOrders.Add(o);
-                }
+                if (!exists.Contains(id))
+                    _context.Set<TransportInvoice>().Add(new TransportInvoice { TransportId = transportId, InvoiceId = id });
             }
             _context.SaveChanges();
         }

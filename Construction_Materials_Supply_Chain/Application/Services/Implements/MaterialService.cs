@@ -3,7 +3,6 @@ using Application.DTOs.Material;
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Implements
 {

@@ -4,6 +4,7 @@ using Application.MappingProfile;
 using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Implements;
+using Application.Services.Interfaces;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Partners;
@@ -71,12 +72,12 @@ builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
-
+builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartnerRepository>();
 
 
 // Services
 builder.Services.AddScoped<IInventoryService, InventoryService>();
- builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -102,8 +103,7 @@ builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository>();
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
-
-
+builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

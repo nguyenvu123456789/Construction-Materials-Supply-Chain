@@ -49,10 +49,10 @@ namespace Api.Controllers
             return Ok();
         }
 
-        [HttpPost("{id:int}/orders")]
-        public IActionResult AddOrders(int id, [FromBody] TransportAddOrdersRequestDto dto)
+        [HttpPost("{id:int}/invoices")]
+        public IActionResult AddInvoices(int id, [FromBody] TransportAddInvoicesRequestDto dto)
         {
-            _service.AddOrders(id, dto);
+            _service.AddInvoices(id, dto);
             return Ok();
         }
 

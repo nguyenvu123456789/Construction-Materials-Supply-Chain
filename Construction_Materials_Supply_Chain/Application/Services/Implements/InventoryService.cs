@@ -1,7 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
-using Domain.Interface;
 
 namespace Application.Services.Implements
 {

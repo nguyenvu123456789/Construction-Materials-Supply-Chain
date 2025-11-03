@@ -12,6 +12,6 @@
         public bool Active { get; set; } = true;
 
         public virtual Partner Partner { get; set; } = default!;
-        public virtual ICollection<Transport> Transports { get; set; } = new List<Transport>(); 
+        public virtual ICollection<Transport> Transports { get; set; } = new List<Transport>();
     }
 }

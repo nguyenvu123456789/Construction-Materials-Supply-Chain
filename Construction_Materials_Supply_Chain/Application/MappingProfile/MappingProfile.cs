@@ -8,7 +8,6 @@ namespace Application.MappingProfile
     {
         public MappingProfile()
         {
-            // ===== USER =====
             CreateMap<User, UserDto>()
                 .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles != null
                     ? s.UserRoles.Select(ur => ur.Role.RoleName).ToList()
@@ -30,14 +29,12 @@ namespace Application.MappingProfile
                 .ForMember(d => d.UserRoles, o => o.Ignore())
                 .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
 
-            // ===== ROLE =====
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<RoleCreateDto, Role>()
                 .ForMember(d => d.RoleId, o => o.Ignore());
             CreateMap<RoleUpdateDto, Role>()
                 .ForMember(d => d.RoleId, o => o.Ignore());
 
-            // ===== AUDIT & ACTIVITY LOG =====
             CreateMap<AuditLog, AuditLogDto>()
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.User != null ? s.User.UserName : null));
 
@@ -48,22 +45,19 @@ namespace Application.MappingProfile
             CreateMap<ActivityLogDto, ActivityLog>()
                 .ForMember(d => d.User, o => o.Ignore());
 
-            // ===== WAREHOUSE & TRANSPORT =====
             CreateMap<Warehouse, WarehouseDto>().ReverseMap();
             CreateMap<Transport, TransportDto>().ReverseMap();
 
-            // ===== IMPORT =====
             CreateMap<Import, ImportResponseDto>()
                 .ForMember(d => d.InvoiceCode, o => o.Ignore())
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.UtcNow))
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
             CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<ImportReport, ImportReportResponseDto>()
-            .ForMember(dest => dest.Invoice, opt => opt.MapFrom(src => src.Invoice))
-            .ForMember(dest => dest.Import, opt => opt.MapFrom(src => src.Import))
-            .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails));
+                .ForMember(dest => dest.Invoice, opt => opt.MapFrom(src => src.Invoice))
+                .ForMember(dest => dest.Import, opt => opt.MapFrom(src => src.Import))
+                .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails));
 
-            // Các map phụ
             CreateMap<Invoice, SimpleInvoiceDto>();
             CreateMap<Import, SimpleImportDto>();
             CreateMap<ImportReportDetail, ImportReportDetailDto>();
@@ -79,8 +73,6 @@ namespace Application.MappingProfile
                 .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.Material.MaterialCode))
                 .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName));
 
-            CreateMap<Import, SimpleImportDto>();
-            // ===== Invoice
             CreateMap<CreateInvoiceDto, Invoice>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Pending"))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
@@ -88,10 +80,7 @@ namespace Application.MappingProfile
 
             CreateMap<CreateInvoiceDetailDto, InvoiceDetail>()
                 .ForMember(dest => dest.LineTotal, opt => opt.MapFrom(src => src.Quantity * src.UnitPrice));
-            // ===== MATERIAL =====
 
-
-            // ===== EXPORT =====
             CreateMap<Export, ExportResponseDto>()
                 .ForMember(d => d.Details, o => o.MapFrom(s => s.ExportDetails));
             CreateMap<ExportDetail, ExportDetailResponseDto>();
@@ -101,10 +90,8 @@ namespace Application.MappingProfile
             CreateMap<ExportReportDetail, ExportReportDetailResponseDto>()
                 .ForMember(dest => dest.MaterialName, opt => opt.MapFrom(src => src.Material.MaterialName));
 
-            // ===== CATEGORY =====
             CreateMap<Category, CategoryDto>().ReverseMap();
 
-            // ===== PARTNER =====
             CreateMap<Partner, PartnerDto>()
                 .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : null))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
@@ -118,10 +105,8 @@ namespace Application.MappingProfile
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
 
-            // ===== MATERIAL CHECK =====
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
 
-            // ===== ACCOUNTING: JOURNAL, RECEIPT, PAYMENT =====
             CreateMap<JournalLine, LedgerLineDto>()
                 .ForMember(d => d.PostingDate, o => o.MapFrom(s => s.JournalEntry.PostingDate))
                 .ForMember(d => d.SourceType, o => o.MapFrom(s => s.JournalEntry.SourceType))
@@ -152,7 +137,6 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Reference, o => o.MapFrom(s => s.Reference))
                 .ForMember(d => d.Id, o => o.MapFrom(s => s.PaymentId));
 
-            // ===== BANK RECON =====
             CreateMap<BankStatementLine, BankReconLineDto>()
                 .ForMember(d => d.BankStatementLineId, o => o.MapFrom(s => s.BankStatementLineId))
                 .ForMember(d => d.Date, o => o.MapFrom(s => s.Date))
@@ -176,10 +160,6 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Lat, o => o.MapFrom(s => s.Address.Lat))
                 .ForMember(d => d.Lng, o => o.MapFrom(s => s.Address.Lng));
 
-            CreateMap<TransportOrder, TransportOrderDto>()
-                .ForMember(d => d.OrderCode, o => o.MapFrom(s => s.Order.OrderCode))
-                .ForMember(d => d.CustomerName, o => o.MapFrom(s => s.Order.CustomerName));
-
             CreateMap<TransportPorter, TransportPorterDto>()
                 .ForMember(d => d.PorterName, o => o.MapFrom(s => s.Porter.FullName))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Porter.Phone));
@@ -189,7 +169,7 @@ namespace Application.MappingProfile
                 .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
                 .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
                 .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
-                .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
+                .ForMember(d => d.Invoices, o => o.MapFrom(s => s.TransportInvoices.Select(ti => ti.Invoice)))
                 .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();

@@ -38,7 +38,7 @@ namespace Infrastructure.Repositories
         public List<Warehouse> GetByPartnerId(int partnerId)
         {
             return _context.Warehouses
-                .Include(w => w.Manager) 
+                .Include(w => w.Manager)
                 .Where(w => w.Manager != null && w.Manager.PartnerId == partnerId)
                 .ToList();
         }

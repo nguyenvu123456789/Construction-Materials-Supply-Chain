@@ -9,7 +9,7 @@ namespace Application.Services.Implements
     public class TransportService : ITransportService
     {
         private readonly ITransportRepository _transportRepo;
-        private readonly IOrderRepository _orderRepo;
+        private readonly IInvoiceRepository _invoiceRepo;
         private readonly IShippingLogRepository _logRepo;
         private readonly IDriverRepository _driverRepo;
         private readonly IPorterRepository _porterRepo;
@@ -19,7 +19,7 @@ namespace Application.Services.Implements
 
         public TransportService(
             ITransportRepository transportRepo,
-            IOrderRepository orderRepo,
+            IInvoiceRepository invoiceRepo,
             IShippingLogRepository logRepo,
             IDriverRepository driverRepo,
             IPorterRepository porterRepo,
@@ -28,7 +28,7 @@ namespace Application.Services.Implements
             IMapper mapper)
         {
             _transportRepo = transportRepo;
-            _orderRepo = orderRepo;
+            _invoiceRepo = invoiceRepo;
             _logRepo = logRepo;
             _driverRepo = driverRepo;
             _porterRepo = porterRepo;
@@ -157,13 +157,12 @@ namespace Application.Services.Implements
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.StopsUpdated", CreatedAt = DateTime.UtcNow });
         }
 
-        public void AddOrders(int transportId, TransportAddOrdersRequestDto dto)
+        public void AddInvoices(int transportId, TransportAddInvoicesRequestDto dto)
         {
-            foreach (var id in dto.OrderIds)
-                if (_orderRepo.GetById(id) == null) throw new InvalidOperationException($"Order {id} not found");
-            var items = dto.OrderIds.Select(id => new TransportOrder { TransportId = transportId, OrderId = id }).ToList();
-            _transportRepo.AddOrders(transportId, items);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.OrdersUpdated", CreatedAt = DateTime.UtcNow });
+            foreach (var id in dto.InvoiceIds)
+                if (_invoiceRepo.GetById(id) == null) throw new InvalidOperationException($"Invoice {id} not found");
+            _transportRepo.AddInvoices(transportId, dto.InvoiceIds);
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.InvoicesUpdated", CreatedAt = DateTime.UtcNow });
         }
 
         public void Start(int transportId, DateTimeOffset at)

@@ -15,7 +15,7 @@ namespace Domain.Models
         public int PartnerId { get; set; }
 
         [ForeignKey("Buyer")]
-        public int BuyerId { get; set; } 
+        public int BuyerId { get; set; }
         public virtual Material Material { get; set; } = null!;
         public virtual Partner Partner { get; set; } = null!;
         public virtual Partner Buyer { get; set; } = null!;

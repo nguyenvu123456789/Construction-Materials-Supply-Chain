@@ -16,17 +16,14 @@
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
         public string? Notes { get; set; }
-
         public int VehicleId { get; set; }
         public int DriverId { get; set; }
-
         public virtual Address Depot { get; set; } = default!;
         public virtual Partner ProviderPartner { get; set; } = default!;
         public virtual Vehicle Vehicle { get; set; } = default!;
         public virtual Driver Driver { get; set; } = default!;
-
         public virtual ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
-        public virtual ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
+        public virtual ICollection<TransportInvoice> TransportInvoices { get; set; } = new List<TransportInvoice>();
         public virtual ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
     }
 
@@ -58,12 +55,11 @@
         public virtual Address Address { get; set; } = null!;
     }
 
-    public partial class TransportOrder
+    public class TransportInvoice
     {
         public int TransportId { get; set; }
-        public int OrderId { get; set; }
-
-        public virtual Transport Transport { get; set; } = null!;
-        public virtual Order Order { get; set; } = null!;
+        public int InvoiceId { get; set; }
+        public Transport Transport { get; set; } = default!;
+        public Invoice Invoice { get; set; } = default!;
     }
 }

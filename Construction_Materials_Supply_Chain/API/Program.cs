@@ -66,7 +66,6 @@ builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
 builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
-builder.Services.AddScoped<ITransportRepository, TransportRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();

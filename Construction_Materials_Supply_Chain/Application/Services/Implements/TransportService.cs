@@ -111,50 +111,34 @@ namespace Application.Services.Implements
             return list.Select(_mapper.Map<TransportResponseDto>).ToList();
         }
 
-        public void AssignMulti(int transportId, TransportAssignMultiRequestDto dto)
+        public void Assign(int transportId, TransportAssignRequestDto dto)
         {
-            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException();
-            var providerPartnerId = t.ProviderPartnerId;
+            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException("Transport not found");
+            var v = _vehicleRepo.GetById(dto.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
+            var dr = _driverRepo.GetById(dto.DriverId) ?? throw new InvalidOperationException("Driver not found");
 
-            if (dto.Assignments == null || dto.Assignments.Count == 0)
-                throw new InvalidOperationException("Assignments required");
+            if (v.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Vehicle partner mismatch");
+            if (dr.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Driver partner mismatch");
 
-            foreach (var a in dto.Assignments)
-            {
-                var v = _vehicleRepo.GetById(a.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
-                var d = _driverRepo.GetById(a.DriverId) ?? throw new InvalidOperationException("Driver not found");
+            var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
+            var e = t.EndTimePlanned;
 
-                if (v.PartnerId != providerPartnerId) throw new InvalidOperationException("Vehicle partner mismatch");
-                if (d.PartnerId != providerPartnerId) throw new InvalidOperationException("Driver partner mismatch");
-
-                if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
-                    throw new InvalidOperationException(
-                        $"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
-
-                var s = a.StartTimePlanned ?? (t.StartTimePlanned ?? DateTimeOffset.UtcNow);
-                var e = a.EndTimePlanned ?? t.EndTimePlanned;
-
-                if (_transportRepo.VehicleBusy(a.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
-                if (_transportRepo.DriverBusy(a.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
-            }
+            if (_transportRepo.VehicleBusy(dto.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
+            if (_transportRepo.DriverBusy(dto.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
 
             if (dto.PorterIds?.Any() == true)
             {
-                var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
-                var e = t.EndTimePlanned;
                 var busy = _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e);
                 if (busy.Any()) throw new InvalidOperationException($"Porters busy: {string.Join(",", busy)}");
             }
 
-            var assigns = dto.Assignments.Select(a => new TransportAssignment
-            {
-                VehicleId = a.VehicleId,
-                DriverId = a.DriverId,
-                StartTimePlanned = a.StartTimePlanned ?? t.StartTimePlanned,
-                EndTimePlanned = a.EndTimePlanned ?? t.EndTimePlanned
-            }).ToList();
+            t.VehicleId = dto.VehicleId;
+            t.DriverId = dto.DriverId;
+            _transportRepo.Update(t);
 
-            _transportRepo.AssignMulti(transportId, assigns, dto.PorterIds ?? new List<int>());
+            _transportRepo.ReplacePorters(transportId, dto.PorterIds ?? new());
+
+            _transportRepo.UpdateStatus(transportId, TransportStatus.Assigned, null, null);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow });
         }
 
@@ -188,18 +172,17 @@ namespace Application.Services.Implements
             var s = at;
             var e = t.EndTimePlanned;
 
-            foreach (var a in t.Assignments)
-            {
-                var v = _vehicleRepo.GetById(a.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
-                var d = _driverRepo.GetById(a.DriverId) ?? throw new InvalidOperationException("Driver not found");
+            var v = _vehicleRepo.GetById(t.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
+            var d = _driverRepo.GetById(t.DriverId) ?? throw new InvalidOperationException("Driver not found");
 
-                if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
-                    throw new InvalidOperationException(
-                        $"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
+            if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
+                throw new InvalidOperationException($"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
 
-                if (_transportRepo.VehicleBusy(a.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
-                if (_transportRepo.DriverBusy(a.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
-            }
+            if (_transportRepo.VehicleBusy(t.VehicleId, transportId, s, e))
+                throw new InvalidOperationException("Vehicle busy");
+
+            if (_transportRepo.DriverBusy(t.DriverId, transportId, s, e))
+                throw new InvalidOperationException("Driver busy");
 
             var porterIds = _transportRepo.GetPorterIds(transportId);
             if (porterIds.Any() && _transportRepo.BusyPorters(porterIds, transportId, s, e).Any())

@@ -184,20 +184,13 @@ namespace Application.MappingProfile
                 .ForMember(d => d.PorterName, o => o.MapFrom(s => s.Porter.FullName))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Porter.Phone));
 
-            CreateMap<TransportAssignment, TransportAssignmentDto>()
-                .ForMember(d => d.VehicleCode, o => o.MapFrom(s => s.Vehicle.Code))
-                .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.Vehicle.PlateNumber))
-                .ForMember(d => d.DriverName, o => o.MapFrom(s => s.Driver.FullName))
-                .ForMember(d => d.DriverPhone, o => o.MapFrom(s => s.Driver.Phone));
-
             CreateMap<Transport, TransportResponseDto>()
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
                 .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
                 .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
                 .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
                 .ForMember(d => d.Orders, o => o.MapFrom(s => s.TransportOrders))
-                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters))
-                .ForMember(d => d.Assignments, o => o.MapFrom(s => s.Assignments));
+                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
         }

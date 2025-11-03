@@ -829,15 +829,15 @@ namespace Infrastructure.Persistence
             context.SaveChanges();
 
             var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
-    ?? context.Partners.Add(new Partner
-    {
-        PartnerCode = "TP001",
-        PartnerName = "Transport A",
-        PartnerTypeId = transportType.PartnerTypeId,
-        ContactEmail = "transportA@example.com",
-        ContactPhone = "0900000001",
-        Status = "Active"
-    }).Entity;
+                ?? context.Partners.Add(new Partner
+                {
+                    PartnerCode = "TP001",
+                    PartnerName = "Transport A",
+                    PartnerTypeId = transportType.PartnerTypeId,
+                    ContactEmail = "transportA@example.com",
+                    ContactPhone = "0900000001",
+                    Status = "Active"
+                }).Entity;
             context.SaveChanges();
 
             var partnerAId = partnerTransportA.PartnerId;
@@ -845,12 +845,14 @@ namespace Infrastructure.Persistence
             // ===== Transport seed =====
             if (!context.Addresses.Any(a => a.Name == "Main Depot"))
             {
+                // ===== Address =====
                 var depot = new Address { Name = "Main Depot", Line1 = "KCN A", City = "HCM", Lat = 10.8, Lng = 106.7 };
                 var whA = new Address { Name = "Kho Partner A", Line1 = "Quận 1", City = "HCM", Lat = 10.78, Lng = 106.70 };
                 var whB = new Address { Name = "Kho Partner B", Line1 = "Quận 7", City = "HCM", Lat = 10.73, Lng = 106.72 };
                 context.Addresses.AddRange(depot, whA, whB);
                 context.SaveChanges();
 
+                // ===== Vehicle =====
                 var v1 = new Vehicle
                 {
                     Code = "TRK-01",
@@ -884,6 +886,7 @@ namespace Infrastructure.Persistence
                 context.Vehicles.AddRange(v1, v2, v3);
                 context.SaveChanges();
 
+                // ===== Driver =====
                 var d1 = new Driver
                 {
                     FullName = "Nguyễn Văn Tài",
@@ -917,6 +920,7 @@ namespace Infrastructure.Persistence
                 context.Drivers.AddRange(d1, d2, d3);
                 context.SaveChanges();
 
+                // ===== Porter =====
                 var p1 = new Porter
                 {
                     FullName = "Lê Văn A",
@@ -947,57 +951,50 @@ namespace Infrastructure.Persistence
                 context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
 
-                var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001") ?? context.Orders.OrderBy(o => o.OrderId).First();
-                var ord2 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-002") ?? context.Orders.OrderBy(o => o.OrderId).Skip(1).FirstOrDefault() ?? ord1;
+                // ===== Orders (lấy 2 đơn bất kỳ nếu không có ORD-001/ORD-002) =====
+                var ord1 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-001")
+                           ?? context.Orders.OrderBy(o => o.OrderId).First();
+                var ord2 = context.Orders.FirstOrDefault(o => o.OrderCode == "ORD-002")
+                           ?? context.Orders.OrderBy(o => o.OrderId).Skip(1).FirstOrDefault()
+                           ?? ord1;
 
+                // ===== Transport (GIỜ GÁN TRỰC TIẾP Vehicle/Driver) =====
                 var t1 = new Transport
                 {
                     TransportCode = "T-INIT-001",
                     DepotId = depot.AddressId,
                     ProviderPartnerId = partnerAId,
-                    Status = TransportStatus.Assigned,
+                    Status = TransportStatus.Assigned,       
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
-                    Notes = "Seed trip"
+                    Notes = "Seed trip",
+                    VehicleId = v1.VehicleId,              
+                    DriverId = d1.DriverId    
                 };
                 context.Transports.Add(t1);
                 context.SaveChanges();
 
-                context.TransportAssignments.AddRange(
-                    new TransportAssignment
-                    {
-                        TransportId = t1.TransportId,
-                        VehicleId = v1.VehicleId,
-                        DriverId = d1.DriverId,
-                        StartTimePlanned = t1.StartTimePlanned
-                    },
-                    new TransportAssignment
-                    {
-                        TransportId = t1.TransportId,
-                        VehicleId = v2.VehicleId,
-                        DriverId = d2.DriverId,
-                        StartTimePlanned = t1.StartTimePlanned
-                    }
-                );
-                context.SaveChanges();
-
+                // ===== Stops =====
                 var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };
                 var stop1 = new TransportStop { TransportId = t1.TransportId, Seq = 1, StopType = TransportStopType.Dropoff, AddressId = whA.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
                 var stop2 = new TransportStop { TransportId = t1.TransportId, Seq = 2, StopType = TransportStopType.Dropoff, AddressId = whB.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
                 context.TransportStops.AddRange(stop0, stop1, stop2);
                 context.SaveChanges();
 
+                // ===== TransportOrders =====
                 context.TransportOrders.AddRange(
                     new TransportOrder { TransportId = t1.TransportId, OrderId = ord1.OrderId },
                     new TransportOrder { TransportId = t1.TransportId, OrderId = ord2.OrderId }
                 );
                 context.SaveChanges();
 
+                // ===== Porters của chuyến =====
                 context.TransportPorters.AddRange(
                     new TransportPorter { TransportId = t1.TransportId, PorterId = p1.PorterId, Role = "Member" },
                     new TransportPorter { TransportId = t1.TransportId, PorterId = p2.PorterId, Role = "Member" }
                 );
                 context.SaveChanges();
 
+                // ===== Logs =====
                 context.ShippingLogs.AddRange(
                     new ShippingLog { OrderId = ord1.OrderId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
                     new ShippingLog { OrderId = ord2.OrderId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }

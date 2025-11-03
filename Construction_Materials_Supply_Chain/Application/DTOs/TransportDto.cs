@@ -26,9 +26,10 @@
         public DateTimeOffset? EndTimePlanned { get; set; }
     }
 
-    public class TransportAssignMultiRequestDto
+    public class TransportAssignRequestDto
     {
-        public List<TransportAssignItemDto> Assignments { get; set; } = new();
+        public int VehicleId { get; set; }
+        public int DriverId { get; set; }
         public List<int> PorterIds { get; set; } = new();
     }
 

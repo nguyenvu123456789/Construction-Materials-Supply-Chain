@@ -36,9 +36,9 @@ namespace Api.Controllers
 
 
         [HttpPost("{id:int}/assign")]
-        public IActionResult AssignMulti(int id, [FromBody] TransportAssignMultiRequestDto dto)
+        public IActionResult Assign(int id, [FromBody] TransportAssignRequestDto dto)
         {
-            _service.AssignMulti(id, dto);
+            _service.Assign(id, dto);
             return Ok();
         }
 

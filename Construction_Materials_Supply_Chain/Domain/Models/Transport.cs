@@ -17,29 +17,17 @@
         public DateTimeOffset? EndTimeActual { get; set; }
         public string? Notes { get; set; }
 
-        public virtual Address Depot { get; set; } = default!;
-        public virtual Partner ProviderPartner { get; set; } = default!;
-        public virtual ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
-        public virtual ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
-        public virtual ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
-        public virtual ICollection<TransportAssignment> Assignments { get; set; } = new List<TransportAssignment>();
-    }
-
-    public class TransportAssignment
-    {
-        public int TransportAssignmentId { get; set; }
-        public int TransportId { get; set; }
         public int VehicleId { get; set; }
         public int DriverId { get; set; }
 
-        public DateTimeOffset? StartTimePlanned { get; set; }
-        public DateTimeOffset? EndTimePlanned { get; set; }
-        public DateTimeOffset? StartTimeActual { get; set; }
-        public DateTimeOffset? EndTimeActual { get; set; }
-
-        public virtual Transport Transport { get; set; } = default!;
+        public virtual Address Depot { get; set; } = default!;
+        public virtual Partner ProviderPartner { get; set; } = default!;
         public virtual Vehicle Vehicle { get; set; } = default!;
         public virtual Driver Driver { get; set; } = default!;
+
+        public virtual ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
+        public virtual ICollection<TransportOrder> TransportOrders { get; set; } = new List<TransportOrder>();
+        public virtual ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
     }
 
     public partial class TransportPorter

@@ -59,13 +59,22 @@ namespace API.Controllers
             return Ok(_mapper.Map<ExportReportResponseDto>(report));
         }
 
-        [HttpGet]
-        public IActionResult GetAllReports()
+        // 🔹 GET: /api/ExportReports/partner/{partnerId}
+        [HttpGet("partner/{partnerId:int}")]
+        public IActionResult GetReportsByPartner(int partnerId)
         {
-            var reports = _reportService.GetAll();
-            var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports);
-            return Ok(reportDtos);
+            try
+            {
+                var reports = _reportService.GetAllByPartner(partnerId);
+                var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports);
+                return Ok(reportDtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
 
     }

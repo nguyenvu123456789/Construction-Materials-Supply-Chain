@@ -97,10 +97,8 @@ namespace Services.Implementations
             if (dto.UnitPrices == null || !dto.UnitPrices.Any())
                 throw new Exception("At least one material must be provided for invoicing.");
 
-            // ✅ Lấy danh sách vật tư được chọn từ DTO
             var selectedMaterialIds = dto.UnitPrices.Select(u => u.MaterialId).ToList();
 
-            // ✅ Lọc những vật tư trong order có mặt trong danh sách được chọn
             var selectedDetails = order.OrderDetails
                 .Where(od => selectedMaterialIds.Contains(od.MaterialId))
                 .ToList();
@@ -110,19 +108,38 @@ namespace Services.Implementations
 
             var createdInvoices = new List<Invoice>();
 
+            // 🔹 Lấy hóa đơn cuối cùng để sinh mã mới
+            var lastInvoice = _invoices.GetAllWithDetails()
+                .OrderByDescending(i => i.InvoiceId)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+            if (lastInvoice != null && !string.IsNullOrEmpty(lastInvoice.InvoiceCode))
+            {
+                var parts = lastInvoice.InvoiceCode.Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[1], out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            // 🔹 Tạo hóa đơn cho từng vật tư trong order
             foreach (var od in selectedDetails)
             {
-                // Lấy giá theo MaterialId
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
                 if (unitPriceDto == null)
-                    continue; // bỏ qua nếu không có giá
+                    continue;
 
                 var unitPrice = unitPriceDto.UnitPrice;
                 var lineTotal = od.Quantity * unitPrice;
 
+                // ✅ Sinh mã hóa đơn mới tự tăng
+                var newCode = $"INV-{nextNumber:D3}";
+                nextNumber++; // tăng cho lần kế tiếp
+
                 var invoice = new Invoice
                 {
-                    InvoiceCode = $"INV-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                    InvoiceCode = newCode,
                     InvoiceType = "Export",
                     PartnerId = partnerId.Value,
                     CreatedBy = dto.CreatedBy,

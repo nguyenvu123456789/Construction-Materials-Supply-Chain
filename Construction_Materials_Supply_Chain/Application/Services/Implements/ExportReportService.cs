@@ -165,6 +165,7 @@ namespace Application.Services.Implements
                 ExportReportId = report.ExportReportId,
                 ExportId = report.ExportId,
                 Status = report.Status,
+                ReportedBy = report.ReportedBy,
                 ReportDate = report.ReportDate,
                 Notes = report.Notes,
                 Details = details,
@@ -172,15 +173,24 @@ namespace Application.Services.Implements
             };
         }
 
-        // 🔹 Lấy tất cả báo cáo (mới nhất cho mỗi ExportId)
-        public List<ExportReportResponseDto> GetAll()
+        // 🔹 Lấy tất cả báo cáo theo PartnerId
+        public List<ExportReportResponseDto> GetAllByPartner(int partnerId)
         {
             var reports = _reportRepo.GetAllWithDetails()
                 .OrderByDescending(r => r.ReportDate)
                 .ToList();
 
+            // Lọc theo partnerId của người tạo báo cáo
+            var filteredReports = reports
+                .Where(r =>
+                {
+                    var reporter = _userRepo.GetById(r.ReportedBy);
+                    return reporter != null && reporter.PartnerId == partnerId;
+                })
+                .ToList();
+
             // Lấy bản ghi mới nhất cho mỗi ExportId
-            var latestReports = reports
+            var latestReports = filteredReports
                 .GroupBy(r => r.ExportId)
                 .Select(g => g.First())
                 .ToList();
@@ -198,7 +208,7 @@ namespace Application.Services.Implements
                     Keep = d.Keep ?? false
                 }).ToList();
 
-                // Chỉ lấy bản ghi handle cuối cùng
+                // Lấy bản ghi xử lý cuối cùng
                 var lastHandle = _handleRequests.GetByRequest("ExportReport", report.ExportReportId)
                     .OrderByDescending(h => h.HandledAt)
                     .FirstOrDefault();
@@ -206,14 +216,14 @@ namespace Application.Services.Implements
                 var handleHistory = lastHandle != null
                     ? new List<HandleRequestDto>
                     {
-                        new HandleRequestDto
-                        {
-                            HandledBy = lastHandle.HandledBy,
-                            HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
-                            ActionType = lastHandle.ActionType,
-                            Note = lastHandle.Note,
-                            HandledAt = lastHandle.HandledAt
-                        }
+                new HandleRequestDto
+                {
+                    HandledBy = lastHandle.HandledBy,
+                    HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
+                    ActionType = lastHandle.ActionType,
+                    Note = lastHandle.Note,
+                    HandledAt = lastHandle.HandledAt
+                }
                     }
                     : new List<HandleRequestDto>();
 
@@ -222,6 +232,7 @@ namespace Application.Services.Implements
                     ExportReportId = report.ExportReportId,
                     ExportId = report.ExportId,
                     Status = report.Status,
+                    ReportedBy = report.ReportedBy,
                     ReportDate = report.ReportDate,
                     Notes = report.Notes,
                     Details = details,
@@ -231,5 +242,6 @@ namespace Application.Services.Implements
 
             return result;
         }
+
     }
 }

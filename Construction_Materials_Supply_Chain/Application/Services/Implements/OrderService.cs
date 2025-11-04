@@ -10,28 +10,26 @@ namespace Application.Services.Implements
         private readonly IOrderRepository _orderRepository;
         private readonly IUserRepository _userRepository;
         private readonly IHandleRequestRepository _handleRequestRepository;
-        private readonly ITransportRepository _transportRepository;
-        private readonly IShippingLogRepository _shippingLogRepository;
         private readonly IPartnerRepository _partnerRepository;
 
         public OrderService(
             IOrderRepository orderRepository,
             IUserRepository userRepository,
             IHandleRequestRepository handleRequestRepository,
-            ITransportRepository transportRepository,
-            IShippingLogRepository shippingLogRepository,
             IPartnerRepository partnerRepository)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
             _handleRequestRepository = handleRequestRepository;
-            _transportRepository = transportRepository;
-            _shippingLogRepository = shippingLogRepository;
             _partnerRepository = partnerRepository;
         }
 
+        // ✅ Tạo đơn mua hàng
         public OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto)
         {
+            if (dto == null)
+                throw new Exception("Dữ liệu đơn hàng không hợp lệ");
+
             var buyer = _userRepository.GetByIdWithPartner(dto.CreatedBy);
             if (buyer == null)
                 throw new Exception("Người mua không tồn tại");
@@ -47,10 +45,11 @@ namespace Application.Services.Implements
             if (buyerPartner.PartnerTypeId <= supplier.PartnerTypeId)
                 throw new Exception("Không thể mua từ đối tác có cùng hoặc cấp cao hơn");
 
-            // Sinh mã đơn hàng
+            // Sinh mã đơn hàng (PO-001, PO-002, ...)
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";
 
+            // ✅ Tạo đơn hàng
             var order = new Order
             {
                 OrderCode = orderCode,
@@ -64,13 +63,16 @@ namespace Application.Services.Implements
                 Note = dto.Note
             };
 
+            // ✅ Gắn vật tư vào đơn hàng + trạng thái vật tư mặc định
             order.OrderDetails = dto.Materials.Select(m => new OrderDetail
             {
                 MaterialId = m.MaterialId,
-                Quantity = m.Quantity
+                Quantity = m.Quantity,
+                Status = "Pending"
             }).ToList();
 
             _orderRepository.Add(order);
+
 
             return new OrderResponseDto
             {
@@ -82,50 +84,33 @@ namespace Application.Services.Implements
                 PhoneNumber = order.PhoneNumber,
                 DeliveryAddress = order.DeliveryAddress,
                 Note = order.Note,
-                Materials = order.OrderDetails.Select(d => new OrderMaterialDto
+                Materials = order.OrderDetails.Select(d => new OrderMaterialResponseDto
                 {
                     MaterialId = d.MaterialId,
-                    Quantity = d.Quantity
+                    Quantity = d.Quantity,
+                    Status = d.Status
                 }).ToList()
+
             };
         }
 
+        // ✅ Xử lý đơn hàng (Approve / Reject)
         public Order HandleOrder(HandleOrderRequestDto dto)
         {
             var order = _orderRepository.GetById(dto.OrderId);
             if (order == null)
-                throw new Exception("Order not found");
+                throw new Exception("Không tìm thấy đơn hàng");
 
             var user = _userRepository.GetById(dto.HandledBy);
             if (user == null)
                 throw new Exception("Người xử lý không tồn tại");
 
-            // Cập nhật trạng thái Order
+            // Cập nhật trạng thái đơn hàng
             order.Status = dto.ActionType;
             order.UpdatedAt = DateTime.Now;
             _orderRepository.Update(order);
 
-            // Nếu approve thì gán transport
-            if (dto.ActionType == "Approved")
-            {
-                if (dto.TransportId == null)
-                    throw new Exception("Phải chọn đơn vị vận chuyển khi approve");
-
-                var transport = _transportRepository.GetById(dto.TransportId.Value);
-                if (transport == null)
-                    throw new Exception("Transport không tồn tại");
-
-                var shippingLog = new ShippingLog
-                {
-                    //OrderId = order.OrderId,
-                    TransportId = transport.TransportId,
-                    Status = "Assigned",
-                    CreatedAt = DateTime.Now
-                };
-                _shippingLogRepository.Add(shippingLog);
-            }
-
-            // Ghi log xử lý
+            // Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
                 RequestType = "Order",
@@ -135,7 +120,10 @@ namespace Application.Services.Implements
                 Note = dto.Note,
                 HandledAt = DateTime.Now
             };
+
             _handleRequestRepository.Add(handle);
+
+            // _unitOfWork.Commit();
 
             return order;
         }
@@ -147,7 +135,7 @@ namespace Application.Services.Implements
 
             var supplierName = order.Supplier?.PartnerName ?? "Không xác định";
 
-            var dto = new OrderWithDetailsDto
+            return new OrderWithDetailsDto
             {
                 OrderCode = order.OrderCode,
                 PartnerId = order.CreatedBy ?? 0,
@@ -158,13 +146,12 @@ namespace Application.Services.Implements
                 OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {
                     MaterialId = od.MaterialId,
-                    MaterialName = od.Material.MaterialName,
+                    MaterialName = od.Material?.MaterialName ?? "",
                     Quantity = od.Quantity,
-                    UnitPrice = od.UnitPrice
+                    UnitPrice = od.UnitPrice,
+                    Status = od.Status
                 }).ToList()
             };
-
-            return dto;
         }
 
         public List<Order> GetAllWithDetails()

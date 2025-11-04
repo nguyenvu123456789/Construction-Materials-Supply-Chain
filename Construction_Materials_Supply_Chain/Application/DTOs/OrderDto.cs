@@ -1,5 +1,6 @@
 ﻿namespace Application.DTOs
 {
+    // ✅ Dùng cho request tạo đơn hàng
     public class CreateOrderDto
     {
         public int CreatedBy { get; set; }
@@ -7,10 +8,17 @@
         public string? Note { get; set; }
         public string? PhoneNumber { get; set; }
         public int SupplierId { get; set; }
-        public List<OrderMaterialDto> Materials { get; set; } = new();
+        public List<CreateOrderMaterialDto> Materials { get; set; } = new();
     }
 
+    public class CreateOrderMaterialDto
+    {
+        public int MaterialId { get; set; }
+        public int Quantity { get; set; }
+        // ❌ Không có Status ở đây
+    }
 
+    // ✅ Dùng cho response trả về
     public class OrderResponseDto
     {
         public int OrderId { get; set; }
@@ -22,20 +30,23 @@
         public string? DeliveryAddress { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Note { get; set; }
-        public List<OrderMaterialDto> Materials { get; set; } = new();
+        public List<OrderMaterialResponseDto> Materials { get; set; } = new();
     }
 
-    public class OrderMaterialDto
+    public class OrderMaterialResponseDto
     {
         public int MaterialId { get; set; }
         public int Quantity { get; set; }
+        public string Status { get; set; } = null!;
     }
+
     public class OrderDetailDto
     {
         public int MaterialId { get; set; }
         public string MaterialName { get; set; } = null!;
         public int Quantity { get; set; }
         public decimal? UnitPrice { get; set; }
+        public string Status { get; set; } = null!;
     }
 
     public class OrderWithDetailsDto
@@ -46,7 +57,7 @@
         public string? SupplierName { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Note { get; set; }
-        public List<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();
+        public List<OrderDetailDto> OrderDetails { get; set; } = new();
     }
 
     public class HandleOrderRequestDto
@@ -55,7 +66,6 @@
         public int HandledBy { get; set; }
         public string ActionType { get; set; } = null!; // "Approved" hoặc "Rejected"
         public string? Note { get; set; }
-
-        public int? TransportId { get; set; } // Chỉ dùng khi Approve
+        public int? TransportId { get; set; }
     }
 }

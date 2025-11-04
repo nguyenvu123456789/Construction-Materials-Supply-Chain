@@ -9,7 +9,7 @@ namespace Application.Interfaces
         Invoice? GetByIdWithDetails(int id);
         List<Invoice> GetAllWithDetails();
         Invoice? RejectInvoice(int id);
-        Invoice CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto);
+        List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto);
         InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId);
         List<InvoiceDto> GetAllInvoicesForPartner(int currentPartnerId);
 

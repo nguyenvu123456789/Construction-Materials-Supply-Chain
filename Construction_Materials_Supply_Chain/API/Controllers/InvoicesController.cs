@@ -40,14 +40,19 @@ namespace API.Controllers
 
             try
             {
-                var invoice = _invoiceService.CreateInvoiceFromOrder(dto);
-                return CreatedAtAction(nameof(GetInvoice), new { id = invoice.InvoiceId }, invoice);
+                var invoices = _invoiceService.CreateInvoiceFromOrder(dto);
+                return Ok(new
+                {
+                    message = $"{invoices.Count} invoice(s) created successfully",
+                    invoices
+                });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
         [HttpPut("reject/{id}")]

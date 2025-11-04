@@ -81,54 +81,81 @@ namespace Services.Implementations
             return invoice;
         }
 
-        public Invoice CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
+        public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
             if (order == null)
                 throw new Exception("Order not found.");
 
             if (order.Status != "Approved")
-                throw new Exception("Order must be approved to create invoice.");
+                throw new Exception("Order must be approved to create invoices.");
 
             var partnerId = order.CreatedByNavigation?.PartnerId;
-
-            if (partnerId == 0)
+            if (partnerId == null || partnerId == 0)
                 throw new Exception("PartnerId (supplier) not found for this order.");
 
-            var invoice = new Invoice
-            {
-                InvoiceCode = $"INV-{_invoices.GetAllWithDetails().Count + 1:D3}",
-                InvoiceType = "Export",
-                PartnerId = partnerId ?? 0,
-                CreatedBy = dto.CreatedBy,
-                IssueDate = dto.IssueDate,
-                DueDate = dto.DueDate,
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow
-            };
+            if (dto.UnitPrices == null || !dto.UnitPrices.Any())
+                throw new Exception("At least one material must be provided for invoicing.");
 
-            foreach (var od in order.OrderDetails)
-            {
-                var unitPriceDto = dto.UnitPrices?.FirstOrDefault(u => u.MaterialId == od.MaterialId);
-                if (unitPriceDto != null)
-                    od.UnitPrice = unitPriceDto.UnitPrice;
+            // ✅ Lấy danh sách vật tư được chọn từ DTO
+            var selectedMaterialIds = dto.UnitPrices.Select(u => u.MaterialId).ToList();
 
-                if (!od.UnitPrice.HasValue)
-                    throw new Exception($"UnitPrice not provided for MaterialId {od.MaterialId} in order.");
+            // ✅ Lọc những vật tư trong order có mặt trong danh sách được chọn
+            var selectedDetails = order.OrderDetails
+                .Where(od => selectedMaterialIds.Contains(od.MaterialId))
+                .ToList();
+
+            if (!selectedDetails.Any())
+                throw new Exception("No matching materials found in the order.");
+
+            var createdInvoices = new List<Invoice>();
+
+            foreach (var od in selectedDetails)
+            {
+                // Lấy giá theo MaterialId
+                var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
+                if (unitPriceDto == null)
+                    continue; // bỏ qua nếu không có giá
+
+                var unitPrice = unitPriceDto.UnitPrice;
+                var lineTotal = od.Quantity * unitPrice;
+
+                var invoice = new Invoice
+                {
+                    InvoiceCode = $"INV-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                    InvoiceType = "Export",
+                    PartnerId = partnerId.Value,
+                    CreatedBy = dto.CreatedBy,
+                    IssueDate = dto.IssueDate,
+                    DueDate = dto.DueDate,
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow,
+                    TotalAmount = lineTotal
+                };
 
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
                     MaterialId = od.MaterialId,
                     Quantity = od.Quantity,
-                    UnitPrice = od.UnitPrice!.Value,
-                    LineTotal = od.Quantity * od.UnitPrice!.Value
+                    UnitPrice = unitPrice,
+                    LineTotal = lineTotal
                 });
+
+                _invoices.Add(invoice);
+                createdInvoices.Add(invoice);
+
+                od.Status = "Invoiced";
             }
 
-            invoice.TotalAmount = invoice.InvoiceDetails.Sum(d => d.LineTotal ?? 0);
-            _invoices.Add(invoice);
-            return invoice;
+            if (order.OrderDetails.All(od => od.Status == "Invoiced"))
+                order.Status = "Invoiced";
+
+            _orderRepository.Update(order);
+
+            return createdInvoices;
         }
+
+
 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {

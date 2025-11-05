@@ -1,0 +1,130 @@
+﻿using Application.DTOs;
+using Application.Services.Interfaces;
+using AutoMapper;
+using Domain.Interfaces;
+using Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services.Implements
+{
+    public class NotificationService : INotificationService
+    {
+        private readonly INotificationRepository _repo;
+        private readonly IMapper _mapper;
+
+        public NotificationService(INotificationRepository repo, IMapper mapper)
+        {
+            _repo = repo;
+            _mapper = mapper;
+        }
+
+        public NotificationResponseDto CreateConversation(CreateConversationRequestDto dto)
+        {
+            if (!_repo.IsUserInPartner(dto.CreatedByUserId, dto.PartnerId)) throw new InvalidOperationException();
+            var n = new Notification
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                PartnerId = dto.PartnerId,
+                UserId = dto.CreatedByUserId,
+                CreatedAt = DateTime.UtcNow,
+                Type = (int)NotificationTypeDto.Conversation,
+                Status = 1,
+                DueAt = dto.DueAt,
+                RequireAcknowledge = false
+            };
+            _repo.AddNotification(n);
+            AddRecipientsByUsers(n.NotificationId, n.PartnerId, dto.RecipientUserIds);
+            AddRecipientsByRoles(n.NotificationId, n.PartnerId, dto.RecipientRoleIds);
+            var loaded = _repo.GetByIdWithRelations(n.NotificationId, n.PartnerId);
+            return _mapper.Map<NotificationResponseDto>(loaded);
+        }
+
+        public NotificationResponseDto CreateAlert(CreateAlertRequestDto dto)
+        {
+            if (!_repo.IsUserInPartner(dto.CreatedByUserId, dto.PartnerId)) throw new InvalidOperationException();
+            var n = new Notification
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                PartnerId = dto.PartnerId,
+                UserId = dto.CreatedByUserId,
+                CreatedAt = DateTime.UtcNow,
+                Type = (int)NotificationTypeDto.Alert,
+                Status = 1,
+                RequireAcknowledge = dto.RequireAcknowledge
+            };
+            _repo.AddNotification(n);
+            AddRecipientsByUsers(n.NotificationId, n.PartnerId, dto.RecipientUserIds);
+            AddRecipientsByRoles(n.NotificationId, n.PartnerId, dto.RecipientRoleIds);
+            var loaded = _repo.GetByIdWithRelations(n.NotificationId, n.PartnerId);
+            return _mapper.Map<NotificationResponseDto>(loaded);
+        }
+
+        public void AddRecipientsByUsers(int notificationId, int partnerId, IEnumerable<int> userIds)
+        {
+            if (userIds == null || !userIds.Any()) return;
+            _repo.AddRecipients(notificationId, partnerId, userIds);
+        }
+
+        public void AddRecipientsByRoles(int notificationId, int partnerId, IEnumerable<int> roleIds)
+        {
+            if (roleIds == null || !roleIds.Any()) return;
+            _repo.AddRecipientRoles(notificationId, partnerId, roleIds);
+            var userIds = _repo.GetUserIdsForRolesInPartner(roleIds, partnerId);
+            _repo.AddRecipients(notificationId, partnerId, userIds);
+        }
+
+        public void Reply(ReplyRequestDto dto)
+        {
+            var n = _repo.GetByIdWithRelations(dto.NotificationId, dto.PartnerId);
+            if (n == null || n.Type != (int)NotificationTypeDto.Conversation) throw new InvalidOperationException();
+            if (!_repo.IsUserInPartner(dto.UserId, dto.PartnerId)) throw new InvalidOperationException();
+            var r = new NotificationReply
+            {
+                NotificationId = dto.NotificationId,
+                PartnerId = dto.PartnerId,
+                UserId = dto.UserId,
+                Message = dto.Message,
+                CreatedAt = DateTime.UtcNow,
+                ParentReplyId = dto.ParentReplyId
+            };
+            _repo.AddReply(r, dto.PartnerId);
+        }
+
+        public void MarkRead(AckReadCloseRequestDto dto)
+        {
+            _repo.MarkRead(dto.NotificationId, dto.PartnerId, dto.UserId);
+        }
+
+        public void Acknowledge(AckReadCloseRequestDto dto)
+        {
+            _repo.Acknowledge(dto.NotificationId, dto.PartnerId, dto.UserId);
+        }
+
+        public void Close(AckReadCloseRequestDto dto)
+        {
+            var n = _repo.GetByIdWithRelations(dto.NotificationId, dto.PartnerId);
+            if (n == null) return;
+            n.Status = 2;
+            _repo.UpdateNotification(n, dto.PartnerId);
+        }
+
+        public NotificationResponseDto GetById(int id, int partnerId)
+        {
+            var n = _repo.GetByIdWithRelations(id, partnerId);
+            if (n == null) throw new KeyNotFoundException();
+            return _mapper.Map<NotificationResponseDto>(n);
+        }
+
+        public List<NotificationResponseDto> GetByPartner(int partnerId)
+        {
+            var list = _repo.GetByPartner(partnerId);
+            return list.Select(_mapper.Map<NotificationResponseDto>).ToList();
+        }
+    }
+}

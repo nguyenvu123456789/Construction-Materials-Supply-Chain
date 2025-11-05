@@ -8,7 +8,6 @@ namespace Infrastructure.Persistence
         {
             context.Database.EnsureCreated();
 
-            // 1️⃣ Seed PartnerTypes
             if (!context.PartnerTypes.Any())
             {
                 context.PartnerTypes.AddRange(
@@ -23,7 +22,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 2️⃣ Seed Partners
             if (!context.Partners.Any())
             {
                 var supplierType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà cung cấp");
@@ -53,7 +51,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 3️⃣ Seed Roles
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
@@ -68,19 +65,18 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 4️⃣ Seed Users
             if (!context.Users.Any())
             {
                 context.Users.AddRange(
                     new User { UserName = "admin", Email = "admin@scmvlxd.vn", FullName = "Nguyễn Văn Admin", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0901234567", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
-                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 2 },
-                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
-                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
-                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 6 },
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 7 },
-                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 8 },
-                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 9 }
+                    new User { UserName = "manager1", Email = "manager1@scmvlxd.vn", FullName = "Trần Thị Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0912345678", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 }
                 );
                 context.SaveChanges();
 
@@ -106,7 +102,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 5️⃣ Seed Categories
             if (!context.Categories.Any())
             {
                 var now = DateTime.Now;
@@ -122,7 +117,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 6️⃣ Seed Warehouses
             if (!context.Warehouses.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -138,12 +132,10 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 7️⃣ Seed Materials
             if (!context.Materials.Any())
             {
                 var now = DateTime.Now;
 
-                // Lấy sẵn các Category
                 var woodCat = context.Categories.First(c => c.CategoryName == "Gỗ");
                 var metalCat = context.Categories.First(c => c.CategoryName == "Kim loại");
                 var plasticCat = context.Categories.First(c => c.CategoryName == "Nhựa");
@@ -152,20 +144,19 @@ namespace Infrastructure.Persistence
                 var paintCat = context.Categories.First(c => c.CategoryName == "Sơn");
                 var glassCat = context.Categories.First(c => c.CategoryName == "Kính");
 
-                // Tạo danh sách vật tư
                 var materials = new List<Material>
-{
-    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "T001", MaterialName = "Tôn lạnh 1ly", Unit = "tấm", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "A001", MaterialName = "Ống nhựa PVC D60", Unit = "ống", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
-    new Material { MaterialCode = "F001", MaterialName = "Cát xây dựng hạt vừa", Unit = "m3", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now }
-};
+                {
+                    new Material { MaterialCode = "W001", MaterialName = "Gỗ thông tấm 2m", Unit = "tấm", CategoryId = woodCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "M001", MaterialName = "Thép cây D20", Unit = "cây", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "P001", MaterialName = "Tấm nhựa PVC 1m x 2m", Unit = "tấm", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "C001", MaterialName = "Xi măng PC40", Unit = "bao", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "B001", MaterialName = "Gạch đỏ 20x20", Unit = "viên", CategoryId = brickCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "S001", MaterialName = "Sơn nước Dulux 20L", Unit = "thùng", CategoryId = paintCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "G001", MaterialName = "Kính cường lực 8mm", Unit = "m2", CategoryId = glassCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "T001", MaterialName = "Tôn lạnh 1ly", Unit = "tấm", CategoryId = metalCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "A001", MaterialName = "Ống nhựa PVC D60", Unit = "ống", CategoryId = plasticCat.CategoryId, Status = "Active", CreatedAt = now },
+                    new Material { MaterialCode = "F001", MaterialName = "Cát xây dựng hạt vừa", Unit = "m3", CategoryId = cementCat.CategoryId, Status = "Active", CreatedAt = now }
+                };
 
                 context.Materials.AddRange(materials);
                 context.SaveChanges();
@@ -175,24 +166,21 @@ namespace Infrastructure.Persistence
                 var duytan = context.Partners.First(p => p.PartnerCode == "P003");
 
                 var materialPartners = new List<MaterialPartner>
-{
-    new MaterialPartner { Id = 1, MaterialId = 1, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
-    new MaterialPartner { Id = 2, MaterialId = 2, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId },
-    new MaterialPartner { Id = 3, MaterialId = 3, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
-    new MaterialPartner { Id = 4, MaterialId = 4, PartnerId = duytan.PartnerId, BuyerId = hoaphat.PartnerId },
-    new MaterialPartner { Id = 5, MaterialId = 5, PartnerId = goviet.PartnerId, BuyerId = hoaphat.PartnerId },
-    new MaterialPartner { Id = 6, MaterialId = 6, PartnerId = hoaphat.PartnerId, BuyerId = duytan.PartnerId },
-    new MaterialPartner { Id = 7, MaterialId = 7, PartnerId = goviet.PartnerId, BuyerId = duytan.PartnerId },
-    new MaterialPartner { Id = 8, MaterialId = 1, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId }
-};
-
+                {
+                    new MaterialPartner { Id = 1, MaterialId = 1, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
+                    new MaterialPartner { Id = 2, MaterialId = 2, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId },
+                    new MaterialPartner { Id = 3, MaterialId = 3, PartnerId = hoaphat.PartnerId, BuyerId = goviet.PartnerId },
+                    new MaterialPartner { Id = 4, MaterialId = 4, PartnerId = duytan.PartnerId, BuyerId = hoaphat.PartnerId },
+                    new MaterialPartner { Id = 5, MaterialId = 5, PartnerId = goviet.PartnerId, BuyerId = hoaphat.PartnerId },
+                    new MaterialPartner { Id = 6, MaterialId = 6, PartnerId = hoaphat.PartnerId, BuyerId = duytan.PartnerId },
+                    new MaterialPartner { Id = 7, MaterialId = 7, PartnerId = goviet.PartnerId, BuyerId = duytan.PartnerId },
+                    new MaterialPartner { Id = 8, MaterialId = 1, PartnerId = duytan.PartnerId, BuyerId = goviet.PartnerId }
+                };
 
                 context.MaterialPartners.AddRange(materialPartners);
                 context.SaveChanges();
             }
 
-
-            // 8️⃣ Seed Inventories
             if (!context.Inventories.Any())
             {
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
@@ -218,7 +206,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 9️⃣ Seed Invoices & InvoiceDetails
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -261,7 +248,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 🔟 Seed Imports & ImportDetails
             if (!context.Imports.Any())
             {
                 var pendingInvoices = context.Invoices
@@ -337,7 +323,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // 11️⃣ Seed Exports & ExportDetails
             if (!context.Exports.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -376,7 +361,6 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
 
-                // 12️⃣ Seed MaterialChecks
                 if (!context.MaterialChecks.Any())
                 {
                     var invUser = context.Users.First(u => u.UserName == "inventory1");
@@ -395,9 +379,6 @@ namespace Infrastructure.Persistence
                     context.SaveChanges();
                 }
 
-
-
-
                 var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01")
                     ?? throw new InvalidOperationException("User staff01 not found.");
                 var whHN = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Hà Nội")
@@ -406,7 +387,6 @@ namespace Infrastructure.Persistence
                 var prj1 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-001");
                 var prj2 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-002");
 
-                // Tạo PRJ-001 nếu chưa tồn tại
                 if (prj1 == null)
                 {
                     prj1 = new Export
@@ -420,10 +400,9 @@ namespace Infrastructure.Persistence
                         CreatedAt = DateTime.Now.AddDays(-10)
                     };
                     context.Exports.Add(prj1);
-                    context.SaveChanges(); // Lưu để đảm bảo prj1 có ExportId
+                    context.SaveChanges();
                 }
 
-                // Tạo PRJ-002 nếu chưa tồn tại
                 if (prj2 == null)
                 {
                     prj2 = new Export
@@ -437,17 +416,15 @@ namespace Infrastructure.Persistence
                         CreatedAt = DateTime.Now.AddDays(-4)
                     };
                     context.Exports.Add(prj2);
-                    context.SaveChanges(); // Lưu để đảm bảo prj2 có ExportId
+                    context.SaveChanges();
                 }
 
-                // Cập nhật ExportDate
                 prj1.ExportDate = DateTime.Now.AddDays(-12);
                 prj2.ExportDate = DateTime.Now.AddDays(-6);
                 context.Exports.Update(prj1);
                 context.Exports.Update(prj2);
                 context.SaveChanges();
 
-                // Thêm ExportDetails cho PRJ-001 nếu chưa có
                 if (!context.ExportDetails.Any(d => d.ExportId == prj1.ExportId))
                 {
                     context.ExportDetails.AddRange(
@@ -476,7 +453,6 @@ namespace Infrastructure.Persistence
                     );
                 }
 
-                // Thêm ExportDetails cho PRJ-002 nếu chưa có
                 if (!context.ExportDetails.Any(d => d.ExportId == prj2.ExportId))
                 {
                     context.ExportDetails.AddRange(
@@ -504,11 +480,9 @@ namespace Infrastructure.Persistence
                         }
                     );
                 }
-
                 context.SaveChanges();
             }
 
-            // Seed Orders & OrderDetails
             if (!context.Orders.Any())
             {
                 var customer = context.Users.First(u => u.UserName == "customer1");
@@ -524,23 +498,22 @@ namespace Infrastructure.Persistence
                 var supplier = context.Partners.First(p => p.PartnerCode == "P001");
 
                 var orders = new List<Order>
-    {
-        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
-        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
-        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
-        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
-        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
-        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
-        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
-        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
-        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
-        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
-    };
+                {
+                    new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
+                    new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
+                    new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
+                    new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
+                    new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
+                    new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
+                    new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
+                    new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
+                    new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
+                    new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
+                };
 
                 context.Orders.AddRange(orders);
                 context.SaveChanges();
 
-                // Seed OrderDetails with Status
                 context.OrderDetails.AddRange(
                     new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, Status = "Pending" },
                     new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, Status = "Pending" },
@@ -567,9 +540,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-
-
-            // A) Import and Export Invoices + Details
             if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -595,7 +565,6 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
 
-                // Update TotalAmount
                 var ids = new[] { invI1.InvoiceId, invI2.InvoiceId, invE1.InvoiceId };
                 var sums = context.InvoiceDetails
                     .Where(d => ids.Contains(d.InvoiceId))
@@ -610,7 +579,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // C) Inventory snapshots for forecast (W001 @ Kho Hà Nội)
             {
                 var whHN = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
@@ -629,7 +597,6 @@ namespace Infrastructure.Persistence
                 }
             }
 
-            // D) Project-coded exports (PRJ-001/PRJ-002) for consumption/forecast-consumption
             if (!context.Exports.Any(e => e.ExportCode.StartsWith("PRJ-")))
             {
                 var staff = context.Users.First(u => u.UserName == "staff01");
@@ -691,7 +658,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // Sales Invoices + details + cập nhật TotalAmount
             if (!context.Invoices.Any(i => i.InvoiceType == "Sales"))
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -726,7 +692,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // Money Account (Bank)
             if (!context.MoneyAccounts.Any())
             {
                 context.MoneyAccounts.AddRange(
@@ -736,7 +701,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // Receipts (Bank/Cash) và Payments (Bank/Cash)
             if (!context.Receipts.Any())
             {
                 var accBank = context.MoneyAccounts.First(a => a.Type == "Bank");
@@ -765,7 +729,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // BankStatement + Lines (gắn đối chiếu 1 phần)
             if (!context.BankStatements.Any())
             {
                 var accBank = context.MoneyAccounts.First(a => a.Type == "Bank");
@@ -784,7 +747,6 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // Bổ sung Export COGS test riêng
             var hasCogsExport = context.Exports.Any(e => e.ExportCode == "EX-COGS-001");
             if (!hasCogsExport)
             {
@@ -842,17 +804,14 @@ namespace Infrastructure.Persistence
 
             var partnerAId = partnerTransportA.PartnerId;
 
-            // ===== Transport seed =====
             if (!context.Addresses.Any(a => a.Name == "Main Depot"))
             {
-                // ===== Address =====
                 var depot = new Address { Name = "Main Depot", Line1 = "KCN A", City = "HCM", Lat = 10.8, Lng = 106.7 };
                 var whA = new Address { Name = "Kho Partner A", Line1 = "Quận 1", City = "HCM", Lat = 10.78, Lng = 106.70 };
                 var whB = new Address { Name = "Kho Partner B", Line1 = "Quận 7", City = "HCM", Lat = 10.73, Lng = 106.72 };
                 context.Addresses.AddRange(depot, whA, whB);
                 context.SaveChanges();
 
-                // ===== Vehicle =====
                 var v1 = new Vehicle
                 {
                     Code = "TRK-01",
@@ -886,7 +845,6 @@ namespace Infrastructure.Persistence
                 context.Vehicles.AddRange(v1, v2, v3);
                 context.SaveChanges();
 
-                // ===== Driver =====
                 var d1 = new Driver
                 {
                     FullName = "Nguyễn Văn Tài",
@@ -920,7 +878,6 @@ namespace Infrastructure.Persistence
                 context.Drivers.AddRange(d1, d2, d3);
                 context.SaveChanges();
 
-                // ===== Porter =====
                 var p1 = new Porter
                 {
                     FullName = "Lê Văn A",
@@ -951,7 +908,6 @@ namespace Infrastructure.Persistence
                 context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
 
-                // ===== Transport (GIỜ GÁN TRỰC TIẾP Vehicle/Driver) =====
                 var t1 = new Transport
                 {
                     TransportCode = "T-INIT-001",
@@ -966,14 +922,12 @@ namespace Infrastructure.Persistence
                 context.Transports.Add(t1);
                 context.SaveChanges();
 
-                // ===== Stops =====
                 var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };
                 var stop1 = new TransportStop { TransportId = t1.TransportId, Seq = 1, StopType = TransportStopType.Dropoff, AddressId = whA.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
                 var stop2 = new TransportStop { TransportId = t1.TransportId, Seq = 2, StopType = TransportStopType.Dropoff, AddressId = whB.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
                 context.TransportStops.AddRange(stop0, stop1, stop2);
                 context.SaveChanges();
 
-                // ===== TransportInvoices =====
                 var inv1 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-001") ?? context.Invoices.OrderBy(i => i.InvoiceId).First();
                 var inv2 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-002") ?? context.Invoices.OrderBy(i => i.InvoiceId).Skip(1).FirstOrDefault() ?? inv1;
 
@@ -983,18 +937,80 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
 
-
-                // ===== Porters của chuyến =====
                 context.TransportPorters.AddRange(
                     new TransportPorter { TransportId = t1.TransportId, PorterId = p1.PorterId, Role = "Member" },
                     new TransportPorter { TransportId = t1.TransportId, PorterId = p2.PorterId, Role = "Member" }
                 );
                 context.SaveChanges();
 
-                // ===== Logs =====
                 context.ShippingLogs.AddRange(
                     new ShippingLog { InvoiceId = inv1.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
                     new ShippingLog { InvoiceId = inv2.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
+                );
+                context.SaveChanges();
+            }
+
+            if (!context.Notifications.Any())
+            {
+                var partnerId = 1;
+                var admin = context.Users.First(u => u.UserName == "admin");
+                var manager = context.Users.First(u => u.UserName == "manager1");
+                var inventory = context.Users.First(u => u.UserName == "inventory1");
+                var support = context.Users.First(u => u.UserName == "support1");
+
+                var conversation = new Notification
+                {
+                    Title = "Trao đổi xác nhận hàng nhập",
+                    Content = "Quản lý yêu cầu thủ kho xác nhận lại số lượng xi măng nhập ngày 06/11.",
+                    PartnerId = partnerId,
+                    UserId = manager.UserId,
+                    Type = 1, // 1 = Conversation
+                    RequireAcknowledge = false,
+                    Status = 1,
+                    CreatedAt = DateTime.Now.AddMinutes(-30),
+                    DueAt = DateTime.Now.AddHours(4)
+                };
+
+                var alert = new Notification
+                {
+                    Title = "Cảnh báo tồn kho thấp",
+                    Content = "Kho chính chỉ còn 2 tấn xi măng, dưới mức tối thiểu 5 tấn.",
+                    PartnerId = partnerId,
+                    UserId = admin.UserId,
+                    Type = 2, // 2 = Alert
+                    RequireAcknowledge = true,
+                    Status = 1,
+                    CreatedAt = DateTime.Now.AddHours(-1)
+                };
+
+                context.Notifications.AddRange(conversation, alert);
+                context.SaveChanges();
+
+                context.NotificationRecipients.AddRange(
+                    new NotificationRecipient { NotificationId = conversation.NotificationId, PartnerId = partnerId, UserId = inventory.UserId, IsRead = false },
+                    new NotificationRecipient { NotificationId = conversation.NotificationId, PartnerId = partnerId, UserId = support.UserId, IsRead = false },
+                    new NotificationRecipient { NotificationId = alert.NotificationId, PartnerId = partnerId, UserId = manager.UserId, IsRead = false },
+                    new NotificationRecipient { NotificationId = alert.NotificationId, PartnerId = partnerId, UserId = inventory.UserId, IsRead = false }
+                );
+                context.SaveChanges();
+
+                context.NotificationReplies.AddRange(
+                    new NotificationReply
+                    {
+                        NotificationId = conversation.NotificationId,
+                        PartnerId = partnerId,
+                        UserId = inventory.UserId,
+                        Message = "Đã kiểm tra và xác nhận đủ hàng.",
+                        CreatedAt = DateTime.Now.AddMinutes(-10)
+                    },
+                    new NotificationReply
+                    {
+                        NotificationId = conversation.NotificationId,
+                        PartnerId = partnerId,
+                        UserId = manager.UserId,
+                        Message = "Đã nhận phản hồi, cảm ơn.",
+                        CreatedAt = DateTime.Now.AddMinutes(-5)
+                    }
                 );
                 context.SaveChanges();
             }

@@ -69,6 +69,9 @@ public partial class ScmVlxdContext : DbContext
     public DbSet<TransportPorter> TransportPorters { get; set; }
 
     public DbSet<PriceMaterialPartner> PriceMaterialPartners { get; set; }
+    public DbSet<NotificationRecipient> NotificationRecipients { get; set; }
+    public DbSet<NotificationRecipientRole> NotificationRecipientRoles { get; set; }
+    public DbSet<NotificationReply> NotificationReplies { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -393,22 +396,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasColumnName("KPIName");
             entity.Property(e => e.TargetValue).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E32681B6EAC");
-            entity.ToTable("Notification");
-            entity.Property(e => e.NotificationId).HasColumnName("NotificationID");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.IsRead).HasDefaultValue(false);
-            entity.Property(e => e.Title).HasMaxLength(255);
-            entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Notificat__UserI__787EE5A0");
         });
 
         modelBuilder.Entity<Order>(entity =>
@@ -944,6 +931,49 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.SellPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId);
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Content).HasMaxLength(4000);
+            entity.Property(e => e.Type).IsRequired();
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationRecipient>(entity =>
+        {
+            entity.HasKey(e => e.NotificationRecipientId);
+            entity.HasIndex(e => new { e.NotificationId, e.UserId }).IsUnique();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationRecipients).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationRecipientRole>(entity =>
+        {
+            entity.HasKey(e => e.NotificationRecipientRoleId);
+            entity.HasIndex(e => new { e.NotificationId, e.RoleId }).IsUnique();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationRecipientRoles).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationReply>(entity =>
+        {
+            entity.HasKey(e => e.NotificationReplyId);
+            entity.Property(e => e.Message).HasMaxLength(4000);
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationReplies).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<NotificationReply>().WithMany().HasForeignKey(e => e.ParentReplyId).OnDelete(DeleteBehavior.Restrict);
         });
 
         OnModelCreatingPartial(modelBuilder);

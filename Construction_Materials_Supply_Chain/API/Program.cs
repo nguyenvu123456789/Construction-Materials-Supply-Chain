@@ -73,7 +73,7 @@ builder.Services.AddScoped<IPorterRepository, PorterRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartnerRepository>();
-
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // Services
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPersonnelService, PersonnelService>();
 builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository>();
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

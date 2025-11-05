@@ -176,6 +176,14 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
+
+            CreateMap<NotificationReply, NotificationReplyDto>();
+
+            CreateMap<Notification, NotificationResponseDto>()
+                .ForMember(d => d.NotificationId, o => o.MapFrom(s => s.NotificationId))
+                .ForMember(d => d.RecipientUserIds, o => o.MapFrom(s => s.NotificationRecipients.Select(x => x.UserId)))
+                .ForMember(d => d.RecipientRoleIds, o => o.MapFrom(s => s.NotificationRecipientRoles.Select(x => x.RoleId)))
+                .ForMember(d => d.Replies, o => o.MapFrom(s => s.NotificationReplies.OrderBy(x => x.CreatedAt)));
         }
     }
 }

@@ -85,7 +85,10 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Details, o => o.MapFrom(s => s.ExportDetails));
             CreateMap<ExportDetail, ExportDetailResponseDto>();
             CreateMap<ExportReport, ExportReportResponseDto>()
+                .ForMember(dest => dest.ReportedBy, opt => opt.MapFrom(src => src.ReportedBy))
                 .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ExportReportDetails));
+
+
 
             CreateMap<ExportReportDetail, ExportReportDetailResponseDto>()
                 .ForMember(dest => dest.MaterialName, opt => opt.MapFrom(src => src.Material.MaterialName));

@@ -6,7 +6,6 @@ public interface IExportReportService
     ExportReport CreateReport(CreateExportReportDto dto);
     void ReviewReport(int reportId, ReviewExportReportDto dto);
     ExportReportResponseDto GetById(int reportId);
-    List<ExportReportResponseDto> GetAll();
-
+    List<ExportReportResponseDto> GetAllByPartner(int partnerId);
 
 }

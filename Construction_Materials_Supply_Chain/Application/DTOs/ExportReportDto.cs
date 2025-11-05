@@ -36,6 +36,7 @@ namespace Application.DTOs
         public int ExportId { get; set; }
         public string Status { get; set; } = null!;
         public DateTime ReportDate { get; set; }
+        public int ReportedBy { get; set; }
         public string? Notes { get; set; }
         public List<ExportReportDetailResponseDto> Details { get; set; } = new();
         public List<HandleRequestDto> HandleHistory { get; set; } = new();

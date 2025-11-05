@@ -9,7 +9,7 @@ public partial class OrderDetail
     public int MaterialId { get; set; }
 
     public int Quantity { get; set; }
-
+    public string? Status { get; set; }
     public decimal? UnitPrice { get; set; }
 
     public virtual Order Order { get; set; } = null!;

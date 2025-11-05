@@ -6,9 +6,12 @@ using Application.Services.Auth;
 using Application.Services.Implements;
 using Application.Services.Interfaces;
 using Application.Validation.ActivityLogs;
+using Application.Validation.Alerts;
 using Application.Validation.Auth;
+using Application.Validation.Notifications;
 using Application.Validation.Partners;
 using Application.Validation.Stock;
+using Application.Validation.Users;
 using Domain.Interface;
 using Domain.Interface.Base;
 using Domain.Interfaces;
@@ -115,6 +118,10 @@ builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 // Audit interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
 
+builder.Services.Configure<ZaloOptions>(builder.Configuration.GetSection("Zalo"));
+builder.Services.AddHttpClient<ZaloChannel>();
+builder.Services.AddScoped<IZaloChannel, ZaloChannel>();
+
 // DbContext + interceptor
 builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
 {
@@ -129,6 +136,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValida
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AckReadCloseRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AlertRuleCreateValidator>();
 
 // Controllers
 builder.Services.AddControllers()
@@ -190,7 +200,6 @@ if (string.IsNullOrWhiteSpace(keyValue))
     throw new InvalidOperationException("Missing Jwt:Key in configuration.");
 var key = Encoding.UTF8.GetBytes(keyValue);
 
-// ✅ Rất quan trọng: tắt auto-map claims & khai báo Name/Role claim type
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 builder.Services

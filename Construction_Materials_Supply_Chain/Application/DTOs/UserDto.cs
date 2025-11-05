@@ -11,6 +11,7 @@
         public string Status { get; set; } = string.Empty;
         public string? AvatarBase64 { get; set; }
         public int? PartnerId { get; set; }
+        public string? ZaloUserId { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
 
@@ -21,6 +22,8 @@
         public string Email { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public string? AvatarBase64 { get; set; }
+        public int? PartnerId { get; set; }
+        public string? ZaloUserId { get; set; }
         public List<int> RoleIds { get; set; } = new();
     }
 
@@ -33,5 +36,6 @@
         public string? Status { get; set; }
         public string? AvatarBase64 { get; set; }
         public int? PartnerId { get; set; }
+        public string? ZaloUserId { get; set; }
     }
 }

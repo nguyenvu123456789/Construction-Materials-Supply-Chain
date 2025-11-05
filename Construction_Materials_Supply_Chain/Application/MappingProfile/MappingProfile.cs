@@ -15,19 +15,22 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
 
             CreateMap<User, UserDto>()
-                .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles.Select(ur => ur.Role.RoleName).ToList()))
+                .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles != null ? s.UserRoles.Select(ur => ur.Role.RoleName).ToList() : new List<string>()))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64))
+                .ForMember(d => d.ZaloUserId, o => o.MapFrom(s => s.ZaloUserId));
 
             CreateMap<UserCreateDto, User>()
                 .ForMember(d => d.UserId, o => o.Ignore())
                 .ForMember(d => d.UserRoles, o => o.Ignore())
-                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64))
+                .ForMember(d => d.ZaloUserId, o => o.MapFrom(s => s.ZaloUserId));
 
             CreateMap<UserUpdateDto, User>()
                 .ForMember(d => d.UserId, o => o.Ignore())
                 .ForMember(d => d.UserRoles, o => o.Ignore())
-                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64));
+                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64))
+                .ForMember(d => d.ZaloUserId, o => o.MapFrom(s => s.ZaloUserId));
 
             CreateMap<Role, RoleDto>().ReverseMap();
             CreateMap<RoleCreateDto, Role>()

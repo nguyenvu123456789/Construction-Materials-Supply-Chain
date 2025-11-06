@@ -242,6 +242,20 @@ namespace Application.Services.Implements
 
             return result;
         }
+        // 🔹 Đánh dấu báo cáo là "Đã xem"
+        public void MarkAsViewed(int reportId)
+        {
+            var report = _reportRepo.GetById(reportId)
+                         ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
+
+            // Nếu đang ở trạng thái Pending thì mới cập nhật thành Viewed
+            if (report.Status == "Pending")
+            {
+                report.Status = "Viewed";
+                _reportRepo.Update(report);
+            }
+        }
+
 
     }
 }

@@ -8,5 +8,7 @@ namespace Application.Interfaces
         ImportReport? GetById(int id);
         List<ImportReport> GetAllPending();
         ImportReportResponseDto ReviewReport(int id, ReviewImportReportDto dto);
+        void MarkAsViewed(int reportId);
+
     }
 }

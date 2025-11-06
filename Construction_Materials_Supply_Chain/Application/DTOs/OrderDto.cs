@@ -66,6 +66,5 @@
         public int HandledBy { get; set; }
         public string ActionType { get; set; } = null!; // "Approved" hoặc "Rejected"
         public string? Note { get; set; }
-        public int? TransportId { get; set; }
     }
 }

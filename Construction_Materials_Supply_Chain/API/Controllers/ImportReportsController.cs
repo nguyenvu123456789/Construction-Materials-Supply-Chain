@@ -62,5 +62,20 @@ namespace API.Controllers
             if (report == null) return NotFound();
             return Ok(report);
         }
+
+        [HttpPut("{id:int}/view")]
+        public IActionResult MarkAsViewed(int id)
+        {
+            try
+            {
+                _service.MarkAsViewed(id);
+                return Ok(new { message = "Đã đánh dấu báo cáo nhập kho là đã xem." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

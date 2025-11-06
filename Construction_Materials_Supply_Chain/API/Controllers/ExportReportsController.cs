@@ -75,6 +75,20 @@ namespace API.Controllers
             }
         }
 
+        // 🔹 PUT: /api/ExportReports/{reportId}/view
+        [HttpPut("{reportId:int}/view")]
+        public IActionResult MarkAsViewed(int reportId)
+        {
+            try
+            {
+                _reportService.MarkAsViewed(reportId);
+                return Ok(new { message = "Đã đánh dấu báo cáo là đã xem." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
 
     }

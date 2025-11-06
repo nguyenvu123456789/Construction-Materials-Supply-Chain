@@ -249,5 +249,19 @@ namespace Services.Implementations
 
             return allReports.Where(r => pendingIds.Contains(r.ImportReportId)).ToList();
         }
+
+        public void MarkAsViewed(int reportId)
+        {
+            var report = _reports.GetById(reportId)
+                         ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
+
+            if (report.Status == "Pending")
+            {
+                report.Status = "Viewed";
+                _reports.Update(report);
+            }
+        }
+
+
     }
 }

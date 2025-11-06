@@ -69,6 +69,13 @@ public partial class ScmVlxdContext : DbContext
     public DbSet<TransportPorter> TransportPorters { get; set; }
 
     public DbSet<PriceMaterialPartner> PriceMaterialPartners { get; set; }
+    public DbSet<NotificationRecipient> NotificationRecipients { get; set; }
+    public DbSet<NotificationRecipientRole> NotificationRecipientRoles { get; set; }
+    public DbSet<NotificationReply> NotificationReplies { get; set; }
+
+    public virtual DbSet<InventoryAlertRule> InventoryAlertRules { get; set; } = null!;
+    public virtual DbSet<InventoryAlertRuleRole> InventoryAlertRuleRoles { get; set; } = null!;
+    public virtual DbSet<InventoryAlertRuleUser> InventoryAlertRuleUsers { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -395,22 +402,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E32681B6EAC");
-            entity.ToTable("Notification");
-            entity.Property(e => e.NotificationId).HasColumnName("NotificationID");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.IsRead).HasDefaultValue(false);
-            entity.Property(e => e.Title).HasMaxLength(255);
-            entity.Property(e => e.UserId).HasColumnName("UserID");
-            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Notificat__UserI__787EE5A0");
-        });
-
         modelBuilder.Entity<Order>(entity =>
         {
             entity.HasKey(e => e.OrderId).HasName("PK__Order__C3905BAF0731C5D2");
@@ -428,7 +419,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasForeignKey(d => d.CreatedBy)
                 .HasConstraintName("FK__Order__CreatedBy__5FB337D6");
         });
-
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
@@ -630,6 +620,8 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(u => u.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Active");
+
+            entity.Property(u => u.ZaloUserId).HasMaxLength(64);
         });
 
         modelBuilder.Entity<UserRole>(entity =>
@@ -686,7 +678,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        // Account
         modelBuilder.Entity<Account>(e =>
         {
             e.HasKey(x => x.AccountId);
@@ -699,7 +690,6 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // JournalEntry
         modelBuilder.Entity<JournalEntry>(e =>
         {
             e.HasKey(x => x.JournalEntryId);
@@ -707,10 +697,9 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.PostingDate).HasColumnType("datetime");
             e.Property(x => x.SourceType).HasMaxLength(50);
             e.Property(x => x.ReferenceNo).HasMaxLength(100);
-            e.HasIndex(x => new { x.SourceType, x.SourceId }).IsUnique(); // chống post trùng
+            e.HasIndex(x => new { x.SourceType, x.SourceId }).IsUnique();
         });
 
-        // JournalLine
         modelBuilder.Entity<JournalLine>(e =>
         {
             e.HasKey(x => x.JournalLineId);
@@ -726,11 +715,8 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Account).WithMany()
                 .HasForeignKey(x => x.AccountId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // PartnerId, InvoiceId: soft link — không khai báo FK để khỏi đụng bảng cũ
         });
 
-        // SubLedgerEntry
         modelBuilder.Entity<SubLedgerEntry>(e =>
         {
             e.HasKey(x => x.SubLedgerEntryId);
@@ -740,20 +726,17 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
             e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
             e.Property(x => x.Reference).HasMaxLength(120);
-            // PartnerId, InvoiceId soft link — không FK
         });
 
-        // MoneyAccount
         modelBuilder.Entity<MoneyAccount>(e =>
         {
             e.HasKey(x => x.MoneyAccountId);
             e.ToTable("MoneyAccount");
             e.Property(x => x.Name).HasMaxLength(100);
-            e.Property(x => x.Type).HasMaxLength(10); // Cash|Bank
+            e.Property(x => x.Type).HasMaxLength(10);
             e.Property(x => x.Number).HasMaxLength(50);
         });
 
-        // Receipt
         modelBuilder.Entity<Receipt>(e =>
         {
             e.HasKey(x => x.ReceiptId);
@@ -777,7 +760,6 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Payment
         modelBuilder.Entity<Payment>(e =>
         {
             e.HasKey(x => x.PaymentId);
@@ -801,7 +783,6 @@ public partial class ScmVlxdContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // PostingPolicy
         modelBuilder.Entity<PostingPolicy>(e =>
         {
             e.HasKey(x => x.PostingPolicyId);
@@ -812,7 +793,6 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.MaterialCategory).HasMaxLength(50);
         });
 
-        // BankStatement
         modelBuilder.Entity<BankStatement>(e =>
         {
             e.HasKey(x => x.BankStatementId);
@@ -944,6 +924,76 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.SellPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId);
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Content).HasMaxLength(4000);
+            entity.Property(e => e.Type).IsRequired();
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationRecipient>(entity =>
+        {
+            entity.HasKey(e => e.NotificationRecipientId);
+            entity.HasIndex(e => new { e.NotificationId, e.UserId }).IsUnique();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationRecipients).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationRecipientRole>(entity =>
+        {
+            entity.HasKey(e => e.NotificationRecipientRoleId);
+            entity.HasIndex(e => new { e.NotificationId, e.RoleId }).IsUnique();
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationRecipientRoles).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Role).WithMany().HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<NotificationReply>(entity =>
+        {
+            entity.HasKey(e => e.NotificationReplyId);
+            entity.Property(e => e.Message).HasMaxLength(4000);
+            entity.Property(e => e.PartnerId).IsRequired();
+            entity.HasOne(e => e.Notification).WithMany(n => n.NotificationReplies).HasForeignKey(e => e.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Partner).WithMany().HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<NotificationReply>().WithMany().HasForeignKey(e => e.ParentReplyId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<InventoryAlertRule>(e =>
+        {
+            e.HasKey(x => x.InventoryAlertRuleId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.Property(x => x.MinQuantity).HasPrecision(18, 2);
+            e.Property(x => x.CriticalMinQuantity).HasPrecision(18, 2);
+            e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<InventoryAlertRuleRole>(e =>
+        {
+            e.HasKey(x => x.InventoryAlertRuleRoleId);
+            e.HasOne(x => x.Rule).WithMany(r => r.Roles).HasForeignKey(x => x.InventoryAlertRuleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.InventoryAlertRuleId, x.RoleId }).IsUnique();
+        });
+
+        modelBuilder.Entity<InventoryAlertRuleUser>(e =>
+        {
+            e.HasKey(x => x.InventoryAlertRuleUserId);
+            e.HasOne(x => x.Rule).WithMany(r => r.Users).HasForeignKey(x => x.InventoryAlertRuleId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.InventoryAlertRuleId, x.UserId }).IsUnique();
         });
 
         OnModelCreatingPartial(modelBuilder);

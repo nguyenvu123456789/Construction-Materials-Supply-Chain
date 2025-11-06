@@ -13,6 +13,7 @@ public partial class User
     public DateTime? UpdatedAt { get; set; }
     public int? PartnerId { get; set; }
     public string? AvatarBase64 { get; set; }
+    public string? ZaloUserId { get; set; }
 
     public virtual Partner? Partner { get; set; }
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();

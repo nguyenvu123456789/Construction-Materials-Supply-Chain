@@ -8,5 +8,4 @@ public interface IInventoryRepository : IGenericRepository<Inventory>
     Inventory? GetByWarehouseAndMaterial(int warehouseId, int materialId);
     List<Inventory> GetAllByMaterialId(int materialId);
     List<Inventory> GetAllByPartnerId(int partnerId);
-
 }

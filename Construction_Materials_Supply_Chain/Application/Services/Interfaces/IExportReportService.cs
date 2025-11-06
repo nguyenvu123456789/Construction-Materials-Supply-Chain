@@ -7,5 +7,6 @@ public interface IExportReportService
     void ReviewReport(int reportId, ReviewExportReportDto dto);
     ExportReportResponseDto GetById(int reportId);
     List<ExportReportResponseDto> GetAllByPartner(int partnerId);
+    void MarkAsViewed(int reportId);
 
 }

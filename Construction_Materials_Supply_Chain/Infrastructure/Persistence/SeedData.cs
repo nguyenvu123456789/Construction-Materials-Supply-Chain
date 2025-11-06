@@ -186,6 +186,7 @@ namespace Infrastructure.Persistence
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
                 var wh2 = context.Warehouses.First(w => w.WarehouseName == "Kho TP.HCM");
                 var wh3 = context.Warehouses.First(w => w.WarehouseName == "Kho Đà Nẵng");
+
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
@@ -194,18 +195,27 @@ namespace Infrastructure.Persistence
                 var paint = context.Materials.First(m => m.MaterialCode == "S001");
                 var glass = context.Materials.First(m => m.MaterialCode == "G001");
 
-                context.Inventories.AddRange(
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, UnitPrice = 90000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, UnitPrice = 1200, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, UnitPrice = 1500000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, UnitPrice = 200000, CreatedAt = DateTime.Now }
-                );
+                var inventories = new List<Inventory>
+    {
+        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, UnitPrice = 90000, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, UnitPrice = 1200, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, UnitPrice = 1500000, CreatedAt = DateTime.Now },
+        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, UnitPrice = 200000, CreatedAt = DateTime.Now }
+    };
+
+                var uniqueInventories = inventories
+                    .GroupBy(i => new { i.WarehouseId, i.MaterialId })
+                    .Select(g => g.First())
+                    .ToList();
+
+                context.Inventories.AddRange(uniqueInventories);
                 context.SaveChanges();
             }
 
+            // 9️⃣ Seed Invoices & InvoiceDetails
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");

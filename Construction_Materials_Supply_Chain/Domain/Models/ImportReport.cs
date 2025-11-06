@@ -6,10 +6,9 @@
         public int? ImportId { get; set; }
         public int? InvoiceId { get; set; }
         public int CreatedBy { get; set; }
+        public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string? Notes { get; set; } // ghi chú thêm của thủ kho báo cáo
-
-        // 🔹 Navigation
+        public string Status { get; set; } = "Pending";
         public virtual Import Import { get; set; } = null!;
         public virtual Invoice? Invoice { get; set; }
         public virtual User CreatedByNavigation { get; set; } = null!;

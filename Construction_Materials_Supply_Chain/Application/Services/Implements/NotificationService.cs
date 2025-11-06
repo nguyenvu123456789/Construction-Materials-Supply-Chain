@@ -126,5 +126,37 @@ namespace Application.Services.Implements
             var list = _repo.GetByPartner(partnerId);
             return list.Select(_mapper.Map<NotificationResponseDto>).ToList();
         }
+
+        public void SendCrossPartnerAlert(CrossPartnerAlertRequestDto dto)
+        {
+            if (dto.SenderPartnerId <= 0 || dto.SenderUserId <= 0) return;
+            if (!_repo.IsUserInPartner(dto.SenderUserId, dto.SenderPartnerId)) return;
+
+            var roles = dto.RecipientRoleIds?.Where(r => r > 0).Distinct().ToArray() ?? Array.Empty<int>();
+            if (roles.Length == 0) return;
+
+            var targets = dto.TargetPartnerIds?.Where(p => p > 0 && p != dto.SenderPartnerId).Distinct().ToList() ?? new List<int>();
+            if (targets.Count == 0) return;
+
+            foreach (var partnerId in targets)
+            {
+                var recipients = _repo.GetUserIdsForRolesInPartner(roles, partnerId)?.Distinct().ToList() ?? new List<int>();
+                if (recipients.Count == 0) continue;
+
+                var createdBy = recipients[0];
+
+                var req = new CreateAlertRequestDto
+                {
+                    Title = dto.Title,
+                    Content = dto.Content,
+                    PartnerId = partnerId,
+                    CreatedByUserId = createdBy,
+                    RequireAcknowledge = dto.RequireAcknowledge,
+                    RecipientRoleIds = roles
+                };
+
+                _ = CreateAlert(req);
+            }
+        }
     }
 }

@@ -16,8 +16,8 @@
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
         public string? Notes { get; set; }
-        public int VehicleId { get; set; }
-        public int DriverId { get; set; }
+        public int? VehicleId { get; set; }
+        public int? DriverId { get; set; }
         public virtual Address Depot { get; set; } = default!;
         public virtual Partner ProviderPartner { get; set; } = default!;
         public virtual Vehicle Vehicle { get; set; } = default!;

@@ -1,5 +1,7 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Common;
 using Application.Interfaces;
+using Application.Services.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
@@ -16,6 +18,7 @@ namespace Application.Services.Implements
         private readonly IVehicleRepository _vehicleRepo;
         private readonly IPartnerRepository _partnerRepo;
         private readonly IMapper _mapper;
+        private readonly IEventNotificationService _event;
 
         public TransportService(
             ITransportRepository transportRepo,
@@ -25,7 +28,8 @@ namespace Application.Services.Implements
             IPorterRepository porterRepo,
             IVehicleRepository vehicleRepo,
             IPartnerRepository partnerRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IEventNotificationService eventSvc)
         {
             _transportRepo = transportRepo;
             _invoiceRepo = invoiceRepo;
@@ -35,6 +39,7 @@ namespace Application.Services.Implements
             _vehicleRepo = vehicleRepo;
             _partnerRepo = partnerRepo;
             _mapper = mapper;
+            _event = eventSvc;
         }
 
         private static readonly string[] LicenseOrder = new[]
@@ -88,8 +93,18 @@ namespace Application.Services.Implements
 
             _transportRepo.Add(t);
             _logRepo.Add(new ShippingLog { TransportId = t.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow });
+            var id = t.TransportId;
 
-            var loaded = _transportRepo.GetDetail(t.TransportId);
+            _event.Trigger(new EventNotifyTriggerDto
+            {
+                PartnerId = dto.ProviderPartnerId,
+                EventType = EventTypes.TransportCreated,
+                Title = $"Có chuyến đi mới Id:{id}",
+                Content = $"Transport #{id} vừa được tạo.",
+                OverrideRequireAcknowledge = true
+            });
+
+            var loaded = _transportRepo.GetDetail(id);
             return _mapper.Map<TransportResponseDto>(loaded!);
         }
 
@@ -168,19 +183,26 @@ namespace Application.Services.Implements
         public void Start(int transportId, DateTimeOffset at)
         {
             var t = _transportRepo.GetDetail(transportId) ?? throw new KeyNotFoundException();
+
+            if (t.VehicleId == null || t.DriverId == null)
+                throw new InvalidOperationException("Transport chưa được gán xe hoặc tài xế.");
+
+            var vehicleId = t.VehicleId.Value;
+            var driverId = t.DriverId.Value;
+
             var s = at;
             var e = t.EndTimePlanned;
 
-            var v = _vehicleRepo.GetById(t.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
-            var d = _driverRepo.GetById(t.DriverId) ?? throw new InvalidOperationException("Driver not found");
+            var v = _vehicleRepo.GetById(vehicleId) ?? throw new InvalidOperationException("Vehicle not found");
+            var d = _driverRepo.GetById(driverId) ?? throw new InvalidOperationException("Driver not found");
 
             if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
-                throw new InvalidOperationException($"Driver {d.FullName} (license {d.LicenseClass}) does not satisfy vehicle {v.Code} requirement ({v.MinLicenseClass}).");
+                throw new InvalidOperationException($"Driver {d.FullName} (license {d.LicenseClass}) không đạt yêu cầu {v.MinLicenseClass} của xe {v.Code}.");
 
-            if (_transportRepo.VehicleBusy(t.VehicleId, transportId, s, e))
+            if (_transportRepo.VehicleBusy(vehicleId, transportId, s, e))
                 throw new InvalidOperationException("Vehicle busy");
 
-            if (_transportRepo.DriverBusy(t.DriverId, transportId, s, e))
+            if (_transportRepo.DriverBusy(driverId, transportId, s, e))
                 throw new InvalidOperationException("Driver busy");
 
             var porterIds = _transportRepo.GetPorterIds(transportId);

@@ -76,6 +76,8 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<InventoryAlertRule> InventoryAlertRules { get; set; } = null!;
     public virtual DbSet<InventoryAlertRuleRole> InventoryAlertRuleRoles { get; set; } = null!;
     public virtual DbSet<InventoryAlertRuleUser> InventoryAlertRuleUsers { get; set; } = null!;
+    public virtual DbSet<EventNotificationSetting> EventNotificationSettings { get; set; } = null!;
+    public virtual DbSet<EventNotificationSettingRole> EventNotificationSettingRoles { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -860,8 +862,8 @@ public partial class ScmVlxdContext : DbContext
             e.HasKey(x => x.TransportId);
             e.HasOne(x => x.Depot).WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.ProviderPartner).WithMany().HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
             e.HasMany(x => x.TransportPorters).WithOne(tp => tp.Transport).HasForeignKey(tp => tp.TransportId);
             e.HasMany(x => x.TransportInvoices).WithOne(ti => ti.Transport).HasForeignKey(ti => ti.TransportId);
         });
@@ -994,6 +996,22 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Rule).WithMany(r => r.Users).HasForeignKey(x => x.InventoryAlertRuleId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.InventoryAlertRuleId, x.UserId }).IsUnique();
+        });
+
+        modelBuilder.Entity<EventNotificationSetting>(e =>
+        {
+            e.HasKey(x => x.EventNotificationSettingId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.Property(x => x.EventType).HasMaxLength(100).IsRequired();
+            e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.PartnerId, x.EventType }).IsUnique();
+        });
+        modelBuilder.Entity<EventNotificationSettingRole>(e =>
+        {
+            e.HasKey(x => x.EventNotificationSettingRoleId);
+            e.HasOne(x => x.Setting).WithMany(s => s.Roles).HasForeignKey(x => x.EventNotificationSettingId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.EventNotificationSettingId, x.RoleId }).IsUnique();
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -8,6 +8,7 @@ using Application.Services.Interfaces;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Alerts;
 using Application.Validation.Auth;
+using Application.Validation.Events;
 using Application.Validation.Notifications;
 using Application.Validation.Partners;
 using Application.Validation.Stock;
@@ -77,6 +78,7 @@ builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartnerRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IEventNotificationSettingRepository, EventNotificationSettingRepository>();
 
 // Services
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -108,6 +110,7 @@ builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -139,6 +142,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>()
 builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AckReadCloseRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AlertRuleCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EventNotifySettingUpsertValidator>();
 
 // Controllers
 builder.Services.AddControllers()

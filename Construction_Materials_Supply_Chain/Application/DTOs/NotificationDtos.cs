@@ -70,4 +70,16 @@ namespace Application.DTOs
         public List<int> RecipientRoleIds { get; set; } = new();
         public List<NotificationReplyDto> Replies { get; set; } = new();
     }
+
+    public class CrossPartnerAlertRequestDto
+    {
+        public int SenderPartnerId { get; set; }
+        public int SenderUserId { get; set; }
+        public int[] TargetPartnerIds { get; set; } = Array.Empty<int>();
+        public int[] RecipientRoleIds { get; set; } = Array.Empty<int>();
+        public string Title { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public bool RequireAcknowledge { get; set; } = false;
+        public bool SendZalo { get; set; } = false;
+    }
 }

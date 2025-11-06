@@ -19,5 +19,6 @@ namespace Application.Services.Interfaces
         void Close(AckReadCloseRequestDto dto);
         NotificationResponseDto GetById(int id, int partnerId);
         List<NotificationResponseDto> GetByPartner(int partnerId);
+        void SendCrossPartnerAlert(CrossPartnerAlertRequestDto dto);
     }
 }

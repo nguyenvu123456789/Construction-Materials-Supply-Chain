@@ -84,5 +84,12 @@ namespace API.Controllers
             var result = _svc.GetByPartner(partnerId);
             return Ok(result);
         }
+
+        [HttpPost("broadcast/alert")]
+        public IActionResult SendCrossPartnerAlert([FromBody] CrossPartnerAlertRequestDto dto)
+        {
+            _svc.SendCrossPartnerAlert(dto);
+            return Accepted();
+        }
     }
 }

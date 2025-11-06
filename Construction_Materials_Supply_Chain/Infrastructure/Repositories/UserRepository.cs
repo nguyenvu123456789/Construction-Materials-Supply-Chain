@@ -1,4 +1,4 @@
-using Domain.Interface;
+﻿using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
@@ -67,6 +67,27 @@ namespace Infrastructure.Implementations
                 .Include(u => u.Partner)
                 .ThenInclude(p => p.PartnerType)
                 .FirstOrDefault(u => u.UserId == id && u.Status != "Deleted");
+        }
+
+        public int GetOrCreateSystemUserId(int partnerId)
+        {
+            var u = _context.Users.FirstOrDefault(x => x.PartnerId == partnerId && x.UserName == "system");
+            if (u != null) return u.UserId;
+
+            u = new User
+            {
+                UserName = "system",
+                FullName = "Hệ thống",
+                Email = $"system+p{partnerId}@scmvlxd.vn",
+                Phone = "0000000000",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                PartnerId = partnerId
+            };
+            _context.Users.Add(u);
+            _context.SaveChanges();
+            return u.UserId;
         }
     }
 }

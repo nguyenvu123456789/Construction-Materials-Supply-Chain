@@ -790,20 +790,6 @@ namespace Infrastructure.Persistence
             ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;
             context.SaveChanges();
 
-            var partnerTransportA = context.Partners.FirstOrDefault(x => x.PartnerCode == "TP001")
-                ?? context.Partners.Add(new Partner
-                {
-                    PartnerCode = "TP001",
-                    PartnerName = "Transport A",
-                    PartnerTypeId = transportType.PartnerTypeId,
-                    ContactEmail = "transportA@example.com",
-                    ContactPhone = "0900000001",
-                    Status = "Active"
-                }).Entity;
-            context.SaveChanges();
-
-            var partnerAId = partnerTransportA.PartnerId;
-
             if (!context.Addresses.Any(a => a.Name == "Main Depot"))
             {
                 var depot = new Address { Name = "Main Depot", Line1 = "KCN A", City = "HCM", Lat = 10.8, Lng = 106.7 };
@@ -820,7 +806,7 @@ namespace Infrastructure.Persistence
                     MinLicenseClass = "C1",
                     PayloadTons = 5.0m,
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var v2 = new Vehicle
                 {
@@ -830,7 +816,7 @@ namespace Infrastructure.Persistence
                     MinLicenseClass = "C",
                     PayloadTons = 8.0m,
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var v3 = new Vehicle
                 {
@@ -840,7 +826,7 @@ namespace Infrastructure.Persistence
                     MinLicenseClass = "B",
                     PayloadTons = 1.5m,
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 context.Vehicles.AddRange(v1, v2, v3);
                 context.SaveChanges();
@@ -853,7 +839,7 @@ namespace Infrastructure.Persistence
                     Hometown = "Long An",
                     LicenseClass = "C1",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var d2 = new Driver
                 {
@@ -863,7 +849,7 @@ namespace Infrastructure.Persistence
                     Hometown = "Tiền Giang",
                     LicenseClass = "C",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var d3 = new Driver
                 {
@@ -873,7 +859,7 @@ namespace Infrastructure.Persistence
                     Hometown = "Đồng Nai",
                     LicenseClass = "B",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 context.Drivers.AddRange(d1, d2, d3);
                 context.SaveChanges();
@@ -885,7 +871,7 @@ namespace Infrastructure.Persistence
                     BirthYear = 1995,
                     Hometown = "Bình Dương",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var p2 = new Porter
                 {
@@ -894,7 +880,7 @@ namespace Infrastructure.Persistence
                     BirthYear = 1992,
                     Hometown = "Vĩnh Long",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 var p3 = new Porter
                 {
@@ -903,7 +889,7 @@ namespace Infrastructure.Persistence
                     BirthYear = 1998,
                     Hometown = "Hậu Giang",
                     Active = true,
-                    PartnerId = partnerAId
+                    PartnerId = 1
                 };
                 context.Porters.AddRange(p1, p2, p3);
                 context.SaveChanges();
@@ -912,7 +898,7 @@ namespace Infrastructure.Persistence
                 {
                     TransportCode = "T-INIT-001",
                     DepotId = depot.AddressId,
-                    ProviderPartnerId = partnerAId,
+                    ProviderPartnerId = 1,
                     Status = TransportStatus.Assigned,
                     StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
                     Notes = "Seed trip",

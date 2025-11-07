@@ -23,6 +23,9 @@ namespace Domain.Interfaces
         void MarkRead(int notificationId, int partnerId, int userId);
         void Acknowledge(int notificationId, int partnerId, int userId);
 
+        List<Notification> GetForUser(int partnerId, int userId);
+        int CountUnreadForUser(int partnerId, int userId);
+
         bool IsUserInPartner(int userId, int partnerId);
         IEnumerable<int> GetUserIdsForRolesInPartner(IEnumerable<int> roleIds, int partnerId);
     }

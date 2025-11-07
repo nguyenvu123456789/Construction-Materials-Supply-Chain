@@ -5,8 +5,8 @@ namespace Application.Interfaces
     public interface IImportReportService
     {
         ImportReport CreateReport(CreateImportReportDto dto);
-        ImportReport? GetById(int id);
-        List<ImportReport> GetAllPending();
+        List<ImportReportResponseDto> GetAll();
+        ImportReportResponseDto GetByIdResponse(int id);
         ImportReportResponseDto ReviewReport(int id, ReviewImportReportDto dto);
         void MarkAsViewed(int reportId);
 

@@ -34,13 +34,13 @@ namespace API.Controllers
         }
 
 
-        [HttpPost("{id}/review")]
-        public IActionResult Review(int id, [FromBody] ReviewImportReportDto dto)
+        [HttpGet]
+        public IActionResult GetAll()
         {
             try
             {
-                var report = _service.ReviewReport(id, dto);
-                return Ok(report);
+                var reports = _service.GetAll();
+                return Ok(reports);
             }
             catch (Exception ex)
             {
@@ -48,19 +48,21 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("pending")]
-        public IActionResult GetPending()
-        {
-            var reports = _service.GetAllPending();
-            return Ok(reports);
-        }
-
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public IActionResult GetById(int id)
         {
-            var report = _service.GetById(id);
-            if (report == null) return NotFound();
-            return Ok(report);
+            try
+            {
+                var report = _service.GetByIdResponse(id);
+                if (report == null)
+                    return NotFound(new { message = "Không tìm thấy báo cáo nhập kho." });
+
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}/view")]

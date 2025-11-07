@@ -59,7 +59,16 @@ namespace Application.MappingProfile
             CreateMap<ImportReport, ImportReportResponseDto>()
                 .ForMember(dest => dest.Invoice, opt => opt.MapFrom(src => src.Invoice))
                 .ForMember(dest => dest.Import, opt => opt.MapFrom(src => src.Import))
-                .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails));
+                .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src =>
+        src.CreatedByNavigation != null
+            ? (string.IsNullOrEmpty(src.CreatedByNavigation.FullName)
+                ? src.CreatedByNavigation.UserName
+                : src.CreatedByNavigation.FullName)
+            : null
+    ));
+
 
             CreateMap<Invoice, SimpleInvoiceDto>();
             CreateMap<Import, SimpleImportDto>();
@@ -69,8 +78,6 @@ namespace Application.MappingProfile
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
 
             CreateMap<ImportDetail, PendingImportMaterialResponseDto>();
-            CreateMap<ImportReport, ImportReportResponseDto>()
-                .ForMember(d => d.Details, o => o.MapFrom(s => s.ImportReportDetails));
 
             CreateMap<ImportReportDetail, ImportReportDetailDto>()
                 .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.Material.MaterialCode))

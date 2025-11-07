@@ -132,6 +132,8 @@ namespace Application.Services.Implements
             var report = _reportRepo.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
 
+            var reporter = _userRepo.GetById(report.ReportedBy);
+
             var details = report.ExportReportDetails.Select(d => new ExportReportDetailResponseDto
             {
                 MaterialId = d.MaterialId,
@@ -141,7 +143,6 @@ namespace Application.Services.Implements
                 Keep = d.Keep ?? false
             }).ToList();
 
-            // Chỉ lấy bản ghi handle cuối cùng
             var lastHandle = _handleRequests.GetByRequest("ExportReport", reportId)
                 .OrderByDescending(h => h.HandledAt)
                 .FirstOrDefault();
@@ -149,14 +150,14 @@ namespace Application.Services.Implements
             var handleHistory = lastHandle != null
                 ? new List<HandleRequestDto>
                 {
-                    new HandleRequestDto
-                    {
-                        HandledBy = lastHandle.HandledBy,
-                        HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
-                        ActionType = lastHandle.ActionType,
-                        Note = lastHandle.Note,
-                        HandledAt = lastHandle.HandledAt
-                    }
+            new HandleRequestDto
+            {
+                HandledBy = lastHandle.HandledBy,
+                HandledByName = _userRepo.GetById(lastHandle.HandledBy)?.FullName ?? "",
+                ActionType = lastHandle.ActionType,
+                Note = lastHandle.Note,
+                HandledAt = lastHandle.HandledAt
+            }
                 }
                 : new List<HandleRequestDto>();
 
@@ -166,12 +167,14 @@ namespace Application.Services.Implements
                 ExportId = report.ExportId,
                 Status = report.Status,
                 ReportedBy = report.ReportedBy,
+                ReportedByName = reporter?.FullName ?? "",
                 ReportDate = report.ReportDate,
                 Notes = report.Notes,
                 Details = details,
                 HandleHistory = handleHistory
             };
         }
+
 
         // 🔹 Lấy tất cả báo cáo theo PartnerId
         public List<ExportReportResponseDto> GetAllByPartner(int partnerId)
@@ -233,6 +236,7 @@ namespace Application.Services.Implements
                     ExportId = report.ExportId,
                     Status = report.Status,
                     ReportedBy = report.ReportedBy,
+                    ReportedByName = _userRepo.GetById(report.ReportedBy)?.FullName ?? "",
                     ReportDate = report.ReportDate,
                     Notes = report.Notes,
                     Details = details,
@@ -242,13 +246,13 @@ namespace Application.Services.Implements
 
             return result;
         }
+
         // 🔹 Đánh dấu báo cáo là "Đã xem"
         public void MarkAsViewed(int reportId)
         {
             var report = _reportRepo.GetById(reportId)
                          ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
 
-            // Nếu đang ở trạng thái Pending thì mới cập nhật thành Viewed
             if (report.Status == "Pending")
             {
                 report.Status = "Viewed";

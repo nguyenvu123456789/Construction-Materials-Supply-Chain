@@ -158,5 +158,18 @@ namespace Application.Services.Implements
                 _ = CreateAlert(req);
             }
         }
+
+        public List<NotificationResponseDto> GetForUser(int partnerId, int userId)
+        {
+            if (!_repo.IsUserInPartner(userId, partnerId)) return new List<NotificationResponseDto>();
+            var list = _repo.GetForUser(partnerId, userId);
+            return list.Select(_mapper.Map<NotificationResponseDto>).ToList();
+        }
+
+        public int CountUnreadForUser(int partnerId, int userId)
+        {
+            if (!_repo.IsUserInPartner(userId, partnerId)) return 0;
+            return _repo.CountUnreadForUser(partnerId, userId);
+        }
     }
 }

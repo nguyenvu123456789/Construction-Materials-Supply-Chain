@@ -6,5 +6,6 @@ namespace Domain.Interface
     public interface IImportReportRepository : IGenericRepository<ImportReport>
     {
         ImportReport? GetByIdWithDetails(int id);
+        IEnumerable<ImportReport> GetAllWithDetails();
     }
 }

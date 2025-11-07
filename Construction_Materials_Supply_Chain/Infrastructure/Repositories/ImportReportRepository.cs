@@ -33,7 +33,14 @@ namespace Infrastructure.Implementations
                 .Include(r => r.Invoice)
                 .ToList();
         }
-
+        public IEnumerable<ImportReport> GetAllWithDetails()
+        {
+            return _context.ImportReports
+                .Include(r => r.CreatedByNavigation)
+                .Include(r => r.ImportReportDetails)
+                    .ThenInclude(d => d.Material)
+                .ToList();
+        }
 
     }
 }

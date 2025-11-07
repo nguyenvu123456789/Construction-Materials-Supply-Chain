@@ -1,4 +1,6 @@
-﻿public class CreateImportReportDetailDto
+﻿using Application.DTOs;
+
+public class CreateImportReportDetailDto
 {
     public int MaterialId { get; set; }
     public int TotalQuantity { get; set; }
@@ -29,6 +31,7 @@ public class ImportReportResponseDto
     public SimpleImportDto Import { get; set; } = null!;
     public SimpleInvoiceDto Invoice { get; set; } = null!;
     public List<ImportReportDetailDto> Details { get; set; } = new();
+    public List<HandleRequestDto>? HandleHistory { get; set; }
 }
 
 public class SimpleImportDto

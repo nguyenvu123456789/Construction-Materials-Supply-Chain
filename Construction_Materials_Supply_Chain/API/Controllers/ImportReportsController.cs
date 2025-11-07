@@ -33,13 +33,12 @@ namespace API.Controllers
             }
         }
 
-
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll([FromQuery] int partnerId)
         {
             try
             {
-                var reports = _service.GetAll();
+                var reports = _service.GetAllByPartner(partnerId);
                 return Ok(reports);
             }
             catch (Exception ex)

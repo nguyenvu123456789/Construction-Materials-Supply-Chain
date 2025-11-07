@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.DTOs;
+using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
 
@@ -252,20 +253,73 @@ namespace Services.Implementations
                 }).ToList()
             };
         }
-
-        public List<ImportReportResponseDto> GetAll()
+        public List<ImportReportResponseDto> GetAllByPartner(int partnerId)
         {
-            var reports = _reports.GetAll();
-            return reports.Select(r => new ImportReportResponseDto
+            var reports = _reports.GetAllWithDetails()
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+
+            // 🔹 Lọc theo PartnerId người tạo
+            var filtered = reports
+                .Where(r => r.CreatedByNavigation != null && r.CreatedByNavigation.PartnerId == partnerId)
+                .ToList();
+
+            // 🔹 Lấy bản ghi mới nhất cho mỗi InvoiceId (hoặc ImportId tuỳ bạn)
+            var latestReports = filtered
+                .GroupBy(r => r.InvoiceId)
+                .Select(g => g.First())
+                .ToList();
+
+            var result = new List<ImportReportResponseDto>();
+
+            foreach (var report in latestReports)
             {
-                ImportReportId = r.ImportReportId,
-                Notes = r.Notes,
-                CreatedAt = r.CreatedAt,
-                CreatedBy = r.CreatedBy,
-                CreatedByName = r.CreatedByNavigation?.FullName ?? r.CreatedByNavigation?.UserName ?? "Không rõ",
-                Status = r.Status ?? "Pending"
-            }).ToList();
+                var details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
+                {
+                    MaterialId = d.MaterialId,
+                    MaterialCode = d.Material?.MaterialCode ?? "",
+                    MaterialName = d.Material?.MaterialName ?? "",
+                    TotalQuantity = d.TotalQuantity,
+                    GoodQuantity = d.GoodQuantity,
+                    DamagedQuantity = d.DamagedQuantity,
+                    Comment = d.Comment
+                }).ToList();
+
+                // 🔹 Lấy bản ghi xử lý cuối cùng
+                var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
+                    .OrderByDescending(h => h.HandledAt)
+                    .FirstOrDefault();
+
+                var handleHistory = lastHandle != null
+                    ? new List<HandleRequestDto>
+                    {
+                new HandleRequestDto
+                {
+                    HandledBy = lastHandle.HandledBy,
+                    HandledByName = lastHandle.HandledByNavigation?.FullName ?? "",
+                    ActionType = lastHandle.ActionType,
+                    Note = lastHandle.Note,
+                    HandledAt = lastHandle.HandledAt
+                }
+                    }
+                    : new List<HandleRequestDto>();
+
+                result.Add(new ImportReportResponseDto
+                {
+                    ImportReportId = report.ImportReportId,
+                    CreatedBy = report.CreatedBy,
+                    CreatedByName = report.CreatedByNavigation?.FullName ?? "Không rõ",
+                    Notes = report.Notes,
+                    CreatedAt = report.CreatedAt,
+                    Status = report.Status ?? "Pending",
+                    Details = details,
+                    HandleHistory = handleHistory
+                });
+            }
+
+            return result;
         }
+
 
         public void MarkAsViewed(int reportId)
         {

@@ -24,7 +24,8 @@ public class ImportReportResponseDto
     public DateTime CreatedAt { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public string? RejectReason { get; set; }
-
+    public int CreatedBy { get; set; }
+    public string? CreatedByName { get; set; }
     public SimpleImportDto Import { get; set; } = null!;
     public SimpleInvoiceDto Invoice { get; set; } = null!;
     public List<ImportReportDetailDto> Details { get; set; } = new();

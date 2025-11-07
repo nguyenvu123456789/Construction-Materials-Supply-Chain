@@ -226,28 +226,45 @@ namespace Services.Implementations
             };
         }
 
-
-
         // 🔹 Lấy theo ID
-        public ImportReport? GetById(int reportId)
+        public ImportReportResponseDto GetByIdResponse(int reportId)
         {
-            return _reports.GetByIdWithDetails(reportId);
+            var report = _reports.GetByIdWithDetails(reportId)
+                         ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
+
+            return new ImportReportResponseDto
+            {
+                ImportReportId = report.ImportReportId,
+                Notes = report.Notes,
+                CreatedAt = report.CreatedAt,
+                CreatedBy = report.CreatedBy,
+                CreatedByName = report.CreatedByNavigation?.FullName ?? report.CreatedByNavigation?.UserName ?? "Không rõ",
+                Status = report.Status ?? "Pending",
+                Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
+                {
+                    MaterialId = d.MaterialId,
+                    MaterialCode = d.Material?.MaterialCode ?? "",
+                    MaterialName = d.Material?.MaterialName ?? "",
+                    TotalQuantity = d.TotalQuantity,
+                    GoodQuantity = d.GoodQuantity,
+                    DamagedQuantity = d.DamagedQuantity,
+                    Comment = d.Comment
+                }).ToList()
+            };
         }
 
-        // 🔹 Lấy tất cả báo cáo chưa duyệt (Pending)
-        public List<ImportReport> GetAllPending()
+        public List<ImportReportResponseDto> GetAll()
         {
-            // Lấy toàn bộ ImportReport
-            var allReports = _reports.GetAll();
-
-            // Lọc những cái chưa có HandleRequest Approved/Rejected
-            var pendingIds = allReports
-                .Where(r =>
-                    !_handleRequests.Exists("ImportReport", r.ImportReportId, new[] { "Approved", "Rejected" }))
-                .Select(r => r.ImportReportId)
-                .ToList();
-
-            return allReports.Where(r => pendingIds.Contains(r.ImportReportId)).ToList();
+            var reports = _reports.GetAll();
+            return reports.Select(r => new ImportReportResponseDto
+            {
+                ImportReportId = r.ImportReportId,
+                Notes = r.Notes,
+                CreatedAt = r.CreatedAt,
+                CreatedBy = r.CreatedBy,
+                CreatedByName = r.CreatedByNavigation?.FullName ?? r.CreatedByNavigation?.UserName ?? "Không rõ",
+                Status = r.Status ?? "Pending"
+            }).ToList();
         }
 
         public void MarkAsViewed(int reportId)

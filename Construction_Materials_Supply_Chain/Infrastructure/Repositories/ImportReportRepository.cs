@@ -13,6 +13,7 @@ namespace Infrastructure.Implementations
         public ImportReport? GetByIdWithDetails(int id)
         {
             return _context.ImportReports
+                .Include(r => r.CreatedByNavigation) 
                 .Include(r => r.ImportReportDetails)
                     .ThenInclude(d => d.Material)
                 .Include(r => r.Import)
@@ -21,6 +22,18 @@ namespace Infrastructure.Implementations
                     .ThenInclude(inv => inv.InvoiceDetails)
                 .FirstOrDefault(r => r.ImportReportId == id);
         }
+
+        public List<ImportReport> GetAllWithIncludes()
+        {
+            return _context.ImportReports
+                .Include(r => r.CreatedByNavigation)
+                .Include(r => r.ImportReportDetails)
+                    .ThenInclude(d => d.Material)
+                .Include(r => r.Import)
+                .Include(r => r.Invoice)
+                .ToList();
+        }
+
 
     }
 }

@@ -20,7 +20,5 @@ namespace Application.Services.Interfaces
         NotificationResponseDto GetById(int id, int partnerId);
         List<NotificationResponseDto> GetByPartner(int partnerId);
         void SendCrossPartnerAlert(CrossPartnerAlertRequestDto dto);
-        List<NotificationResponseDto> GetForUser(int partnerId, int userId);
-        int CountUnreadForUser(int partnerId, int userId);
     }
 }

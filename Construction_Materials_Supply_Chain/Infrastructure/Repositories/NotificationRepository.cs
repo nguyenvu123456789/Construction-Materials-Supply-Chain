@@ -159,24 +159,5 @@ namespace Infrastructure.Repositories
                 .Select(u => u.UserId)
                 .ToList();
         }
-
-        public List<Notification> GetForUser(int partnerId, int userId)
-        {
-            return _context.Notifications
-                .Include(n => n.NotificationRecipients)
-                .Include(n => n.NotificationRecipientRoles)
-                .Include(n => n.NotificationReplies)
-                .Where(n => n.PartnerId == partnerId &&
-                            (n.NotificationRecipients.Any(r => r.UserId == userId) || n.UserId == userId))
-                .OrderByDescending(n => n.CreatedAt)
-                .ToList();
-        }
-
-        public int CountUnreadForUser(int partnerId, int userId)
-        {
-            return _context.NotificationRecipients
-                .Where(r => r.PartnerId == partnerId && r.UserId == userId && !r.IsRead)
-                .Count();
-        }
     }
 }

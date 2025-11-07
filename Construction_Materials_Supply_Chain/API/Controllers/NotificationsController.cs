@@ -91,19 +91,5 @@ namespace API.Controllers
             _svc.SendCrossPartnerAlert(dto);
             return Accepted();
         }
-
-        [HttpGet("{partnerId:int}/user/{userId:int}")]
-        public ActionResult<List<NotificationResponseDto>> GetForUser([FromRoute] int partnerId, [FromRoute] int userId)
-        {
-            var result = _svc.GetForUser(partnerId, userId);
-            return Ok(result);
-        }
-
-        [HttpGet("{partnerId:int}/user/{userId:int}/unread-count")]
-        public ActionResult<int> CountUnreadForUser([FromRoute] int partnerId, [FromRoute] int userId)
-        {
-            var result = _svc.CountUnreadForUser(partnerId, userId);
-            return Ok(result);
-        }
     }
 }

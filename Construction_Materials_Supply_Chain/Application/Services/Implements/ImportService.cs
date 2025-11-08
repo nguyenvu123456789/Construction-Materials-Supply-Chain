@@ -14,7 +14,6 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materialRepository;
         private readonly IMaterialPartnerRepository _materialPartners;
 
-
         public ImportService(
             IImportRepository imports,
             IInvoiceRepository invoices,
@@ -31,15 +30,19 @@ namespace Services.Implementations
             _materialPartners = materialPartners;
         }
 
+        // 🔹 Tạo Import từ hóa đơn
         public Import CreateImportFromInvoice(string? importCode, string? invoiceCode, int warehouseId, int createdBy, string? notes)
         {
+            if (string.IsNullOrEmpty(invoiceCode) && string.IsNullOrEmpty(importCode))
+                throw new Exception("Bạn phải cung cấp ít nhất một mã: invoiceCode hoặc importCode.");
+
             if (!string.IsNullOrEmpty(invoiceCode))
             {
-                // Nhập theo hóa đơn
                 var invoice = _invoices.GetByCode(invoiceCode);
                 if (invoice == null)
                     throw new Exception("Hóa đơn không tồn tại.");
-                if (invoice.Status == "Success")
+
+                if (invoice.ExportStatus == "Success")
                     throw new Exception("Hóa đơn đã được nhập.");
 
                 var import = new Import
@@ -56,7 +59,6 @@ namespace Services.Implementations
 
                 foreach (var detail in invoice.InvoiceDetails)
                 {
-                    // 1️⃣ Tạo chi tiết nhập kho
                     var importDetail = new ImportDetail
                     {
                         ImportId = import.ImportId,
@@ -70,7 +72,7 @@ namespace Services.Implementations
                     };
                     _importDetails.Add(importDetail);
 
-                    // 2️⃣ Cập nhật tồn kho
+                    // Cập nhật tồn kho
                     var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, detail.MaterialId);
                     if (inventory == null)
                     {
@@ -90,39 +92,33 @@ namespace Services.Implementations
                         _inventories.Update(inventory);
                     }
 
-                    // 3️⃣ Ghi nhận mối quan hệ Buyer - Supplier vào bảng MaterialPartner
+                    // Ghi nhận mối quan hệ Buyer - Supplier
                     var existingRelation = _materialPartners
                         .GetAll()
                         .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId
                                            && mp.BuyerId == invoice.CreatedBy
                                            && mp.PartnerId == invoice.PartnerId);
-
                     if (existingRelation == null)
                     {
-                        var newRelation = new MaterialPartner
+                        _materialPartners.Add(new MaterialPartner
                         {
                             MaterialId = detail.MaterialId,
-                            BuyerId = invoice.CreatedBy,  // buyer = người tạo hóa đơn
-                            PartnerId = invoice.PartnerId, // supplier = đối tác của hóa đơn
-                        };
-                        _materialPartners.Add(newRelation);
-                    }
-                    else
-                    {
-                        _materialPartners.Update(existingRelation);
+                            BuyerId = invoice.CreatedBy,
+                            PartnerId = invoice.PartnerId
+                        });
                     }
                 }
 
-                // 4️⃣ Cập nhật trạng thái hóa đơn
-                invoice.Status = "Success";
+                // Cập nhật trạng thái hóa đơn
+                invoice.ImportStatus = "Success";
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoices.Update(invoice);
 
                 return import;
             }
-            else if (!string.IsNullOrEmpty(importCode))
+            else
             {
-                // Chọn ImportCode → tạo hoặc cập nhật Pending Import
+                // importCode riêng → tạo hoặc cập nhật pending
                 var existingImport = _imports.GetAll().FirstOrDefault(i => i.ImportCode == importCode);
                 if (existingImport != null)
                 {
@@ -134,7 +130,7 @@ namespace Services.Implementations
 
                 var newImport = new Import
                 {
-                    ImportCode = importCode,
+                    ImportCode = importCode!,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
                     Status = "Pending",
@@ -144,13 +140,9 @@ namespace Services.Implementations
                 _imports.Add(newImport);
                 return newImport;
             }
-            else
-            {
-                throw new Exception("Bạn phải cung cấp ít nhất một mã: invoiceCode hoặc importCode.");
-            }
         }
 
-
+        // 🔹 Xác nhận phiếu nhập pending
         public Import ConfirmPendingImport(string importCode, string? notes)
         {
             var import = _imports.GetAll()
@@ -193,18 +185,13 @@ namespace Services.Implementations
             return import;
         }
 
-        public Import? GetById(int id)
-        {
-            var import = _imports.GetById(id);
-            return import;
-        }
+        public Import? GetById(int id) => _imports.GetById(id);
 
         public Import? GetByIdWithDetails(int id)
         {
             var import = _imports.GetById(id);
             if (import != null)
             {
-                // Lấy danh sách ImportDetails
                 import.ImportDetails = _importDetails.GetByImportId(id);
             }
             return import;
@@ -215,7 +202,6 @@ namespace Services.Implementations
             var imports = _imports.GetAll();
             foreach (var import in imports)
             {
-                // Lấy danh sách ImportDetails cho mỗi Import
                 import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
             }
             return imports;
@@ -235,7 +221,6 @@ namespace Services.Implementations
                 Notes = notes,
                 CreatedAt = DateTime.UtcNow
             };
-
             _imports.Add(import);
 
             foreach (var m in materials)
@@ -260,6 +245,8 @@ namespace Services.Implementations
 
             return import;
         }
+
+        // 🔹 Từ chối import pending
         public Import? RejectImport(int id)
         {
             var import = _imports.GetByIdWithDetails(id);
@@ -267,7 +254,7 @@ namespace Services.Implementations
                 return null;
 
             if (import.Status != "Pending")
-                throw new Exception("Only pending imports can be rejected.");
+                throw new Exception("Chỉ có thể từ chối phiếu nhập đang chờ.");
 
             import.Status = "Rejected";
             import.UpdatedAt = DateTime.UtcNow;
@@ -275,6 +262,7 @@ namespace Services.Implementations
 
             return import;
         }
+
         public List<Import> GetByPartnerId(int partnerId)
         {
             var imports = _imports.GetAllWithWarehouse();
@@ -292,6 +280,5 @@ namespace Services.Implementations
 
             return filtered;
         }
-
     }
 }

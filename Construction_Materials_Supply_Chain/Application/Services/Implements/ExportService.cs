@@ -27,13 +27,13 @@ namespace Services.Implementations
             _invoiceRepository = invoiceRepository;
         }
 
-        // ✅ Tạo phiếu xuất Pending, có kiểm tra tồn kho
+        // Tạo phiếu xuất Pending, kiểm tra tồn kho
         public Export CreatePendingExport(ExportRequestDto dto)
         {
             if (dto.Materials == null || !dto.Materials.Any())
                 throw new Exception("At least one material is required.");
 
-            // 🔹 Kiểm tra tồn kho trước khi tạo
+            // Kiểm tra tồn kho trước khi tạo
             foreach (var m in dto.Materials)
             {
                 var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, m.MaterialId);
@@ -56,7 +56,6 @@ namespace Services.Implementations
 
             _exports.Add(export);
 
-            // 🔹 Thêm chi tiết xuất kho
             foreach (var m in dto.Materials)
             {
                 var material = _materialRepository.GetById(m.MaterialId);
@@ -81,6 +80,7 @@ namespace Services.Implementations
             return export;
         }
 
+        // Xác nhận phiếu xuất Pending
         public Export ConfirmExport(string exportCode, string? notes)
         {
             var export = _exports.GetAll()
@@ -113,7 +113,7 @@ namespace Services.Implementations
             return export;
         }
 
-        // ✅ Từ chối phiếu xuất
+        // Từ chối phiếu xuất Pending
         public Export? RejectExport(int id)
         {
             var export = _exports.GetExportById(id);
@@ -130,19 +130,19 @@ namespace Services.Implementations
             return export;
         }
 
-        // ✅ Lấy phiếu xuất theo Id
+        // Lấy phiếu xuất theo Id
         public Export? GetById(int id)
         {
             return _exports.GetExportById(id);
         }
 
-        // ✅ Lấy tất cả phiếu xuất
+        // Lấy tất cả phiếu xuất
         public List<Export> GetAll()
         {
             return _exports.GetAll();
         }
 
-        // ✅ Tạo phiếu xuất từ hóa đơn (Invoice)
+        // Tạo phiếu xuất từ hóa đơn (Invoice)
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
         {
             var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
@@ -152,7 +152,7 @@ namespace Services.Implementations
             if (invoice.InvoiceDetails == null || !invoice.InvoiceDetails.Any())
                 throw new Exception("Invoice has no details.");
 
-            // 🔹 Kiểm tra tồn kho
+            // Kiểm tra tồn kho
             foreach (var item in invoice.InvoiceDetails)
             {
                 var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, item.MaterialId);
@@ -164,10 +164,9 @@ namespace Services.Implementations
                                         $"Available: {inventory.Quantity}, Required: {item.Quantity}");
             }
 
-            // 🔹 Sinh mã xuất mới
+            // Sinh mã xuất mới
             var exportCode = GenerateNextExportCode();
 
-            // ✅ Export là Pending
             var export = new Export
             {
                 ExportCode = exportCode,
@@ -179,7 +178,7 @@ namespace Services.Implementations
             };
             _exports.Add(export);
 
-            // 🔹 Tạo chi tiết phiếu xuất
+            // Tạo chi tiết phiếu xuất
             foreach (var item in invoice.InvoiceDetails)
             {
                 var detail = new ExportDetail
@@ -196,19 +195,15 @@ namespace Services.Implementations
                 _exportDetails.Add(detail);
             }
 
-            //  Cập nhật trạng thái hóa đơn: APPROVED → Exporting
-            if (invoice.Status?.ToUpper() == "PENDING")
-            {
-                invoice.Status = "Success";
-                invoice.UpdatedAt = DateTime.UtcNow;
-                _invoiceRepository.Update(invoice);
-            }
+            // Cập nhật trạng thái hóa đơn chỉ ExportStatus
+            invoice.ExportStatus = "Success";
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoiceRepository.Update(invoice);
 
             return export;
         }
 
-
-        //  Tạo mã phiếu xuất tăng dần
+        // Sinh mã phiếu xuất tăng dần
         private string GenerateNextExportCode()
         {
             int nextNumber = 1;
@@ -231,9 +226,9 @@ namespace Services.Implementations
             return $"EXP-{nextNumber:000}";
         }
 
+        // Lấy phiếu xuất theo Partner
         public List<Export> GetByPartnerId(int partnerId)
         {
-            // Lấy toàn bộ export kèm warehouse và manager
             var exports = _exports.GetAllWithWarehouse();
 
             var filtered = exports
@@ -242,7 +237,6 @@ namespace Services.Implementations
                          && e.Warehouse.Manager.PartnerId == partnerId)
                 .ToList();
 
-            // Lấy chi tiết export
             foreach (var export in filtered)
             {
                 export.ExportDetails = _exportDetails.GetByExportId(export.ExportId);
@@ -250,6 +244,5 @@ namespace Services.Implementations
 
             return filtered;
         }
-
     }
 }

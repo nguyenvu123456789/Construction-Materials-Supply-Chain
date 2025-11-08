@@ -346,7 +346,13 @@ public partial class ScmVlxdContext : DbContext
             entity.ToTable("Invoice");
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
             entity.Property(e => e.InvoiceType).HasMaxLength(50);
-            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.ImportStatus)
+                     .HasMaxLength(50)
+                     .HasDefaultValue("Pending");
+            entity.Property(e => e.ExportStatus)
+                  .HasMaxLength(50)
+                  .HasDefaultValue("Pending");
+
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");

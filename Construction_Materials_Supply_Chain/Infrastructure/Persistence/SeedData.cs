@@ -228,16 +228,17 @@ namespace Infrastructure.Persistence
                 var nguyenb = context.Partners.First(p => p.PartnerCode == "P007");
 
                 context.Invoices.AddRange(
-                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), Status = "Pending", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-15), Status = "Approved", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), Status = "Success", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-5), Status = "Pending", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-7), Status = "Approved", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-3), Status = "Success", CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-2), Status = "Pending", CreatedAt = DateTime.Now }
+                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), ExportStatus = "Pending", TotalAmount = 50 * 250000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-15), ExportStatus = "Approved", TotalAmount = 20 * 320000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), ExportStatus = "Success", TotalAmount = 100 * 180000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-5), ExportStatus = "Pending", TotalAmount = 80 * 90000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-7), ExportStatus = "Approved", TotalAmount = 2000 * 1200, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-3), ExportStatus = "Success", TotalAmount = 10 * 1500000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-2), ExportStatus = "Pending", TotalAmount = 50 * 200000, CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
 
+                // Lấy vật tư
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
@@ -246,6 +247,7 @@ namespace Infrastructure.Persistence
                 var paint = context.Materials.First(m => m.MaterialCode == "S001");
                 var glass = context.Materials.First(m => m.MaterialCode == "G001");
 
+                // Seed InvoiceDetails
                 context.InvoiceDetails.AddRange(
                     new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-001").InvoiceId, MaterialId = wood.MaterialId, Quantity = 50, UnitPrice = 250000, LineTotal = 50 * 250000 },
                     new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-002").InvoiceId, MaterialId = metal.MaterialId, Quantity = 20, UnitPrice = 320000, LineTotal = 20 * 320000 },
@@ -261,8 +263,9 @@ namespace Infrastructure.Persistence
             if (!context.Imports.Any())
             {
                 var pendingInvoices = context.Invoices
-                    .Where(i => i.Status == "Pending" && i.InvoiceType == "Import")
+                    .Where(i => i.InvoiceType == "Import" && i.ImportStatus == "Pending")
                     .ToList();
+
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
 
@@ -275,7 +278,7 @@ namespace Infrastructure.Persistence
                         WarehouseId = wh1.WarehouseId,
                         CreatedBy = invoice.CreatedBy,
                         Notes = $"Tự động nhập từ hóa đơn {invoice.InvoiceCode}",
-                        Status = "Pending",
+                        Status = "Pending", // Đây là trạng thái phiếu nhập, giữ nguyên
                         CreatedAt = DateTime.Now
                     };
                     context.Imports.Add(import);
@@ -284,6 +287,7 @@ namespace Infrastructure.Persistence
                     var invoiceDetails = context.InvoiceDetails
                         .Where(d => d.InvoiceId == invoice.InvoiceId)
                         .ToList();
+
                     foreach (var detail in invoiceDetails)
                     {
                         var material = context.Materials.First(m => m.MaterialId == detail.MaterialId);
@@ -302,7 +306,7 @@ namespace Infrastructure.Persistence
                     context.SaveChanges();
                 }
 
-                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+            var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
                 var cement = context.Materials.First(m => m.MaterialCode == "C001");
@@ -556,9 +560,44 @@ namespace Infrastructure.Persistence
                 var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var pHoaPhat = context.Partners.First(p => p.PartnerCode == "P002");
 
-                var invI1 = new Invoice { InvoiceCode = "IMP-001", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
-                var invI2 = new Invoice { InvoiceCode = "IMP-002", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(+2), Status = "Pending", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
-                var invE1 = new Invoice { InvoiceCode = "EXP-001", InvoiceType = "Export", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(+4), Status = "Success", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
+                var invI1 = new Invoice
+                {
+                    InvoiceCode = "IMP-001",
+                    InvoiceType = "Import",
+                    PartnerId = pGoviet.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-12),
+                    DueDate = DateTime.Now.AddDays(-2),
+                    ImportStatus = "Approved",
+                    CreatedAt = DateTime.Now.AddDays(-12),
+                    TotalAmount = 0m
+                };
+
+                var invI2 = new Invoice
+                {
+                    InvoiceCode = "IMP-002",
+                    InvoiceType = "Import",
+                    PartnerId = pGoviet.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-9),
+                    DueDate = DateTime.Now.AddDays(+2),
+                    ImportStatus = "Pending",
+                    CreatedAt = DateTime.Now.AddDays(-9),
+                    TotalAmount = 0m
+                };
+
+                var invE1 = new Invoice
+                {
+                    InvoiceCode = "EXP-001",
+                    InvoiceType = "Export",
+                    PartnerId = pHoaPhat.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-6),
+                    DueDate = DateTime.Now.AddDays(+4),
+                    ExportStatus = "Success",
+                    CreatedAt = DateTime.Now.AddDays(-6),
+                    TotalAmount = 0m
+                };
 
                 context.Invoices.AddRange(invI1, invI2, invE1);
                 context.SaveChanges();
@@ -675,9 +714,34 @@ namespace Infrastructure.Persistence
                 var pRetail = context.Partners.First(p => p.PartnerCode == "P005");
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var brick = context.Materials.First(m => m.MaterialCode == "B001");
+                var invS1 = new Invoice
+                {
+                    InvoiceCode = "SAL-001",
+                    InvoiceType = "Sales",
+                    PartnerId = pAgent.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-8),
+                    DueDate = DateTime.Now.AddDays(7),
+                    ExportStatus = "Approved", // dùng ExportStatus tạm
+                    CreatedAt = DateTime.Now.AddDays(-8),
+                    UpdatedAt = DateTime.Now.AddDays(-8),
+                    TotalAmount = 0m
+                };
 
-                var invS1 = new Invoice { InvoiceCode = "SAL-001", InvoiceType = "Sales", PartnerId = pAgent.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-8), DueDate = DateTime.Now.AddDays(7), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8), TotalAmount = 0m };
-                var invS2 = new Invoice { InvoiceCode = "SAL-002", InvoiceType = "Sales", PartnerId = pRetail.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(9), Status = "Approved", CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
+                var invS2 = new Invoice
+                {
+                    InvoiceCode = "SAL-002",
+                    InvoiceType = "Sales",
+                    PartnerId = pRetail.PartnerId,
+                    CreatedBy = manager.UserId,
+                    IssueDate = DateTime.Now.AddDays(-6),
+                    DueDate = DateTime.Now.AddDays(9),
+                    ExportStatus = "Approved", // dùng ExportStatus tạm
+                    CreatedAt = DateTime.Now.AddDays(-6),
+                    UpdatedAt = DateTime.Now.AddDays(-6),
+                    TotalAmount = 0m
+                };
+
                 context.Invoices.AddRange(invS1, invS2);
                 context.SaveChanges();
 

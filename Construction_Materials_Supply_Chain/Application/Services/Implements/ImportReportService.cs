@@ -183,7 +183,7 @@ namespace Services.Implementations
                 // Nếu bị từ chối, chỉ cập nhật hóa đơn nếu có
                 if (report.Invoice != null)
                 {
-                    report.Invoice.Status = "Rejected";
+                    report.Invoice.ImportStatus = "Rejected";
                     _invoices.Update(report.Invoice);
                 }
             }

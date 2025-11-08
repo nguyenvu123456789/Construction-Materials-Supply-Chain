@@ -84,7 +84,9 @@ namespace Application.MappingProfile
                 .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName));
 
             CreateMap<CreateInvoiceDto, Invoice>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Pending"))
+                .ForMember(dest => dest.ExportStatus, opt => opt.MapFrom(src => "Pending"))
+                .ForMember(dest => dest.ImportStatus, opt => opt.MapFrom(src => "Pending")) 
+
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.InvoiceDetails, opt => opt.MapFrom(src => src.Details));
 

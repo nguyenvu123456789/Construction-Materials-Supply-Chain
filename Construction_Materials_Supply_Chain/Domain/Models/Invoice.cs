@@ -11,7 +11,8 @@ public partial class Invoice
     public DateTime IssueDate { get; set; }
     public DateTime? DueDate { get; set; }
     public decimal TotalAmount { get; set; }
-    public string? Status { get; set; }
+    public string? ExportStatus { get; set; }
+    public string? ImportStatus { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 

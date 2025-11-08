@@ -27,6 +27,7 @@ namespace Services.Implementations
             _orderRepository = orderRepository;
         }
 
+        // 🔹 Tạo hóa đơn thủ công
         public Invoice CreateInvoice(CreateInvoiceDto dto)
         {
             if (_invoices.GetByCode(dto.InvoiceCode) != null)
@@ -40,14 +41,16 @@ namespace Services.Implementations
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,
                 DueDate = dto.DueDate,
-                Status = "Pending",
+                ExportStatus = "Pending",
+                ImportStatus = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
 
             foreach (var item in dto.Details)
             {
                 var material = _materials.GetById(item.MaterialId);
-                if (material == null) throw new Exception($"MaterialId {item.MaterialId} not found.");
+                if (material == null)
+                    throw new Exception($"MaterialId {item.MaterialId} not found.");
 
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
@@ -61,26 +64,16 @@ namespace Services.Implementations
             invoice.TotalAmount = invoice.InvoiceDetails.Sum(d => d.LineTotal ?? 0);
 
             _invoices.Add(invoice);
-
             return invoice;
         }
 
+        // 🔹 Lấy 1 hóa đơn theo ID kèm chi tiết
         public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
 
+        // 🔹 Lấy tất cả hóa đơn có chi tiết
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
 
-        public Invoice? RejectInvoice(int id)
-        {
-            var invoice = _invoices.GetByIdWithDetails(id);
-            if (invoice == null)
-                return null;
-            invoice.Status = "Rejected";
-            invoice.UpdatedAt = DateTime.UtcNow;
-            _invoices.Update(invoice);
-
-            return invoice;
-        }
-
+        // 🔹 Tạo hóa đơn từ Order
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
@@ -98,7 +91,6 @@ namespace Services.Implementations
                 throw new Exception("At least one material must be provided for invoicing.");
 
             var selectedMaterialIds = dto.UnitPrices.Select(u => u.MaterialId).ToList();
-
             var selectedDetails = order.OrderDetails
                 .Where(od => selectedMaterialIds.Contains(od.MaterialId))
                 .ToList();
@@ -108,7 +100,7 @@ namespace Services.Implementations
 
             var createdInvoices = new List<Invoice>();
 
-            // 🔹 Lấy hóa đơn cuối cùng để sinh mã mới
+            // 🔹 Sinh mã hóa đơn mới tự động
             var lastInvoice = _invoices.GetAllWithDetails()
                 .OrderByDescending(i => i.InvoiceId)
                 .FirstOrDefault();
@@ -118,12 +110,9 @@ namespace Services.Implementations
             {
                 var parts = lastInvoice.InvoiceCode.Split('-');
                 if (parts.Length == 2 && int.TryParse(parts[1], out int lastNumber))
-                {
                     nextNumber = lastNumber + 1;
-                }
             }
 
-            // 🔹 Tạo hóa đơn cho từng vật tư trong order
             foreach (var od in selectedDetails)
             {
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
@@ -132,10 +121,8 @@ namespace Services.Implementations
 
                 var unitPrice = unitPriceDto.UnitPrice;
                 var lineTotal = od.Quantity * unitPrice;
-
-                // ✅ Sinh mã hóa đơn mới tự tăng
                 var newCode = $"INV-{nextNumber:D3}";
-                nextNumber++; // tăng cho lần kế tiếp
+                nextNumber++;
 
                 var invoice = new Invoice
                 {
@@ -145,7 +132,8 @@ namespace Services.Implementations
                     CreatedBy = dto.CreatedBy,
                     IssueDate = dto.IssueDate,
                     DueDate = dto.DueDate,
-                    Status = "Pending",
+                    ExportStatus = "Pending",
+                    ImportStatus = "Pending",
                     CreatedAt = DateTime.UtcNow,
                     TotalAmount = lineTotal
                 };
@@ -160,7 +148,6 @@ namespace Services.Implementations
 
                 _invoices.Add(invoice);
                 createdInvoices.Add(invoice);
-
                 od.Status = "Invoiced";
             }
 
@@ -168,40 +155,62 @@ namespace Services.Implementations
                 order.Status = "Invoiced";
 
             _orderRepository.Update(order);
-
             return createdInvoices;
         }
 
+        // 🔹 Cập nhật trạng thái của bên xuất
+        public Invoice? UpdateExportStatus(int id, string newStatus)
+        {
+            var invoice = _invoices.GetByIdWithDetails(id);
+            if (invoice == null)
+                throw new Exception("Invoice not found.");
 
+            invoice.ExportStatus = newStatus;
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoices.Update(invoice);
+            return invoice;
+        }
 
+        // 🔹 Cập nhật trạng thái của bên nhập
+        public Invoice? UpdateImportStatus(int id, string newStatus)
+        {
+            var invoice = _invoices.GetByIdWithDetails(id);
+            if (invoice == null)
+                throw new Exception("Invoice not found.");
+
+            invoice.ImportStatus = newStatus;
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoices.Update(invoice);
+            return invoice;
+        }
+
+        // 🔹 Lấy hóa đơn theo Partner (phân biệt bên xem)
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
             if (invoice == null)
                 throw new Exception("Invoice not found");
 
-            // Xác định loại hiển thị theo partner đang xem
-            string displayType = (invoice.PartnerId == currentPartnerId)
-                ? "Export"   // Bên phát hành (bán hàng)
-                : "Import";  // Bên còn lại (mua hàng)
+            bool isExporter = invoice.CreatedByNavigation.PartnerId == currentPartnerId;
 
-            // Map sang DTO trả về
             var dto = new InvoiceDto
             {
                 InvoiceId = invoice.InvoiceId,
                 InvoiceCode = invoice.InvoiceCode,
-                InvoiceType = displayType,   // hiển thị động
+                InvoiceType = isExporter ? "Export" : "Import",
                 PartnerId = invoice.PartnerId,
                 PartnerName = invoice.Partner?.PartnerName ?? "N/A",
                 IssueDate = invoice.IssueDate,
                 DueDate = invoice.DueDate,
                 TotalAmount = invoice.TotalAmount,
-                Status = invoice.Status,
+                Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                 CreatedAt = invoice.CreatedAt
             };
 
             return dto;
         }
+
+        // 🔹 Lấy tất cả hóa đơn theo Partner (phân biệt vai trò)
         public List<InvoiceDto> GetAllInvoicesForPartner(int partnerId)
         {
             var invoices = _invoices.GetAllWithDetails()
@@ -212,31 +221,38 @@ namespace Services.Implementations
 
             foreach (var invoice in invoices)
             {
-                // Đổi chiều hiển thị tùy bên đang xem
-                string displayType;
-                if (invoice.PartnerId == partnerId)
-                    displayType = invoice.InvoiceType == "Export" ? "Import" : invoice.InvoiceType;
-                else
-                    displayType = invoice.InvoiceType == "Import" ? "Export" : invoice.InvoiceType;
+                bool isExporter = invoice.CreatedByNavigation.PartnerId == partnerId;
 
                 result.Add(new InvoiceDto
                 {
                     InvoiceId = invoice.InvoiceId,
                     InvoiceCode = invoice.InvoiceCode,
-                    InvoiceType = displayType,
+                    InvoiceType = isExporter ? "Export" : "Import",
                     PartnerId = invoice.PartnerId,
                     PartnerName = invoice.Partner?.PartnerName ?? "Không xác định",
                     IssueDate = invoice.IssueDate,
                     DueDate = invoice.DueDate,
                     TotalAmount = invoice.TotalAmount,
-                    Status = invoice.Status,
+                    Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                     CreatedAt = invoice.CreatedAt
                 });
             }
 
             return result;
         }
+        public Invoice? RejectInvoice(int id)
+        {
+            var invoice = _invoices.GetByIdWithDetails(id);
+            if (invoice == null)
+                return null;
 
+            invoice.ExportStatus = "Rejected";
+            invoice.ImportStatus = "Rejected";
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoices.Update(invoice);
+
+            return invoice;
+        }
 
     }
 }

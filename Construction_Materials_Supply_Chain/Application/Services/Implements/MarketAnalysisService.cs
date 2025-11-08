@@ -81,8 +81,9 @@ namespace Application.Services.Implements
         public List<WeeklyRevenueDto> GetWeeklyRevenueByPartner(int userId)
         {
             var invoices = _invoices.GetAll()
-                .Where(i => i.Status == "Success" && i.CreatedBy == userId)
-                .ToList();
+    .Where(i => i.ExportStatus == "Success" && i.CreatedBy == userId)
+    .ToList();
+
 
             if (!invoices.Any())
                 return new List<WeeklyRevenueDto>();

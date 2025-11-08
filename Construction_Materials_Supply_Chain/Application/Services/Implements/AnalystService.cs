@@ -72,7 +72,8 @@ namespace Application.Services.Implements
                     PartnerId = g.Key.PartnerId,
                     PartnerName = g.Key.Name ?? "",
                     TotalPayable = g.Sum(x => x.TotalAmount),
-                    OverdueAmount = g.Where(x => x.Status == "Overdue").Sum(x => x.TotalAmount)
+                    OverdueAmount = g.Where(x => x.ExportStatus == "Overdue").Sum(x => x.TotalAmount)
+
                 }).ToList();
         }
 
@@ -112,7 +113,7 @@ namespace Application.Services.Implements
 
         public List<OverdueDebtDto> GetOverdues(ReportFilterDto f)
         {
-            var q = _repo.PurchaseInvoicesWithPartner().Where(i => i.Status == "Overdue");
+            var q = _repo.PurchaseInvoicesWithPartner().Where(i => i.ExportStatus == "Overdue");
             if (f.From.HasValue) q = q.Where(i => i.CreatedAt >= f.From.Value);
             if (f.To.HasValue) q = q.Where(i => i.CreatedAt <= f.To.Value);
             if (f.PartnerId.HasValue) q = q.Where(i => i.PartnerId == f.PartnerId.Value);
@@ -282,7 +283,7 @@ namespace Application.Services.Implements
                     g.Key.PartnerId,
                     g.Key.PartnerName,
                     g.Key.Day,
-                    Overdue = g.Where(x => x.Status == "Overdue").Sum(x => x.TotalAmount)
+                    Overdue = g.Where(x => x.ExportStatus == "Overdue").Sum(x => x.TotalAmount)
                 })
                 .OrderBy(x => x.Day)
                 .ToList();

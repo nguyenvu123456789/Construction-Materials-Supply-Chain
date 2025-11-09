@@ -707,7 +707,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            if (!context.Invoices.Any(i => i.InvoiceType == "Sales"))
+            if (!context.Invoices.Any(i => i.InvoiceType == "Import"))
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var pAgent = context.Partners.First(p => p.PartnerCode == "P004");
@@ -717,7 +717,7 @@ namespace Infrastructure.Persistence
                 var invS1 = new Invoice
                 {
                     InvoiceCode = "SAL-001",
-                    InvoiceType = "Sales",
+                    InvoiceType = "Import",
                     PartnerId = pAgent.PartnerId,
                     CreatedBy = manager.UserId,
                     IssueDate = DateTime.Now.AddDays(-8),
@@ -731,7 +731,7 @@ namespace Infrastructure.Persistence
                 var invS2 = new Invoice
                 {
                     InvoiceCode = "SAL-002",
-                    InvoiceType = "Sales",
+                    InvoiceType = "Import",
                     PartnerId = pRetail.PartnerId,
                     CreatedBy = manager.UserId,
                     IssueDate = DateTime.Now.AddDays(-6),

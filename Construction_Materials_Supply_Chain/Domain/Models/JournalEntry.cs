@@ -3,8 +3,9 @@
     public class JournalEntry
     {
         public int JournalEntryId { get; set; }
+        public int PartnerId { get; set; }
         public DateTime PostingDate { get; set; }
-        public string SourceType { get; set; } = default!; // "SalesInvoice","PurchaseInvoice","Receipt","Payment","ExportCOGS"...
+        public string SourceType { get; set; } = default!;
         public int SourceId { get; set; }
         public string? ReferenceNo { get; set; }
         public string? Memo { get; set; }

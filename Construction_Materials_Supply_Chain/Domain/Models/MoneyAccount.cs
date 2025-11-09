@@ -3,9 +3,10 @@
     public class MoneyAccount
     {
         public int MoneyAccountId { get; set; }
+        public int PartnerId { get; set; }
         public string Name { get; set; } = default!;
-        public string Type { get; set; } = "Cash"; // "Cash"|"Bank"
-        public string? Number { get; set; }        // số tài khoản nếu Bank
+        public string Type { get; set; } = "Cash";
+        public string? Number { get; set; }
         public bool IsActive { get; set; } = true;
     }
 }

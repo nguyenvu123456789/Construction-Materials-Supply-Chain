@@ -63,67 +63,75 @@ namespace Application.Services.Implements
             };
         }
 
-        public AgingResponseDto GetARAging(DateTime asOf)
+        public AgingResponseDto GetARAging(DateTime asOf, int? partnerId = null)
         {
-            var items = _subRepo.GetAll()
-                                .Where(x => x.SubLedgerType == "AR" && x.Date <= asOf)
-                                .GroupBy(x => new { x.PartnerId, x.InvoiceId })
-                                .Select(g => new AgingItemDto
-                                {
-                                    PartnerId = g.Key.PartnerId,
-                                    InvoiceId = g.Key.InvoiceId,
-                                    Debit = g.Sum(x => x.Debit),
-                                    Credit = g.Sum(x => x.Credit),
-                                    Outstanding = g.Sum(x => x.Debit - x.Credit)
-                                })
-                                .Where(x => x.Outstanding != 0)
-                                .ToList();
+            var q = _subRepo.GetAll()
+                            .Where(x => x.SubLedgerType == "AR" && x.Date <= asOf);
+            if (partnerId is not null) q = q.Where(x => x.PartnerId == partnerId);
+
+            var items = q.GroupBy(x => new { x.PartnerId, x.InvoiceId })
+                         .Select(g => new AgingItemDto
+                         {
+                             PartnerId = g.Key.PartnerId,
+                             InvoiceId = g.Key.InvoiceId,
+                             Debit = g.Sum(x => x.Debit),
+                             Credit = g.Sum(x => x.Credit),
+                             Outstanding = g.Sum(x => x.Credit - x.Debit)
+                         })
+                         .Where(x => x.Outstanding != 0)
+                         .ToList();
 
             return new AgingResponseDto { AsOf = asOf, Items = items };
         }
 
-        public AgingResponseDto GetAPAging(DateTime asOf)
+        public AgingResponseDto GetAPAging(DateTime asOf, int? partnerId = null)
         {
-            var items = _subRepo.GetAll()
-                                .Where(x => x.SubLedgerType == "AP" && x.Date <= asOf)
-                                .GroupBy(x => new { x.PartnerId, x.InvoiceId })
-                                .Select(g => new AgingItemDto
-                                {
-                                    PartnerId = g.Key.PartnerId,
-                                    InvoiceId = g.Key.InvoiceId,
-                                    Debit = g.Sum(x => x.Debit),
-                                    Credit = g.Sum(x => x.Credit),
-                                    Outstanding = g.Sum(x => x.Credit - x.Debit)
-                                })
-                                .Where(x => x.Outstanding != 0)
-                                .ToList();
+            var q = _subRepo.GetAll()
+                            .Where(x => x.SubLedgerType == "AP" && x.Date <= asOf);
+            if (partnerId is not null) q = q.Where(x => x.PartnerId == partnerId);
+
+            var items = q.GroupBy(x => new { x.PartnerId, x.InvoiceId })
+                         .Select(g => new AgingItemDto
+                         {
+                             PartnerId = g.Key.PartnerId,
+                             InvoiceId = g.Key.InvoiceId,
+                             Debit = g.Sum(x => x.Debit),
+                             Credit = g.Sum(x => x.Credit),
+                             Outstanding = g.Sum(x => x.Debit - x.Credit)
+                         })
+                         .Where(x => x.Outstanding != 0)
+                         .ToList();
 
             return new AgingResponseDto { AsOf = asOf, Items = items };
         }
 
-        public CashbookResponseDto GetCashbook(DateTime from, DateTime to, string? method)
+        public CashbookResponseDto GetCashbook(DateTime from, DateTime to, string? method, int? partnerId = null)
         {
             method = string.IsNullOrWhiteSpace(method) ? "" : method;
 
-            var receiptEntities = _receiptRepo.GetAll()
-                .Where(r => r.Date.Date >= from.Date && r.Date.Date <= to.Date && (method == "" || r.Method == method))
+            var receipts = _receiptRepo.GetAll()
+                .Where(r => r.Date.Date >= from.Date && r.Date.Date <= to.Date
+                         && (method == "" || r.Method == method)
+                         && (partnerId == null || r.PartnerId == partnerId))
                 .ToList();
 
-            var paymentEntities = _paymentRepo.GetAll()
-                .Where(p => p.Date.Date >= from.Date && p.Date.Date <= to.Date && (method == "" || p.Method == method))
+            var payments = _paymentRepo.GetAll()
+                .Where(p => p.Date.Date >= from.Date && p.Date.Date <= to.Date
+                         && (method == "" || p.Method == method)
+                         && (partnerId == null || p.PartnerId == partnerId))
                 .ToList();
 
-            var receipts = _mapper.Map<List<CashbookItemDto>>(receiptEntities);
-            var payments = _mapper.Map<List<CashbookItemDto>>(paymentEntities);
+            var receiptsDto = _mapper.Map<List<CashbookItemDto>>(receipts);
+            var paymentsDto = _mapper.Map<List<CashbookItemDto>>(payments);
 
-            var items = receipts.Concat(payments).OrderBy(x => x.Date).ToList();
-            var totalIn = receipts.Sum(x => x.Amount);
-            var totalOut = payments.Sum(x => -x.Amount);
+            var items = receiptsDto.Concat(paymentsDto).OrderBy(x => x.Date).ToList();
+            var totalIn = receiptsDto.Sum(x => x.Amount);
+            var totalOut = paymentsDto.Sum(x => -x.Amount);
             var net = totalIn - totalOut;
 
             return new CashbookResponseDto
             {
-                Period = new { from, to, method = method == "" ? "All" : method },
+                Period = new { from, to },
                 TotalIn = totalIn,
                 TotalOut = totalOut,
                 Net = net,

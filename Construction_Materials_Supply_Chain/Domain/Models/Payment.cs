@@ -7,9 +7,9 @@
         public int? PartnerId { get; set; }
         public int? InvoiceId { get; set; }
         public decimal Amount { get; set; }
-        public string Method { get; set; } = "Bank"; // "Cash"|"Bank"
+        public string Method { get; set; } = "Bank";
         public int? MoneyAccountId { get; set; }
         public string? Reference { get; set; }
-        public string Status { get; set; } = "Draft"; // Draft|Posted|Canceled
+        public string Status { get; set; } = "Draft";
     }
 }

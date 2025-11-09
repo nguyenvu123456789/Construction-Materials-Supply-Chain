@@ -47,16 +47,17 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ExportReportDetail> ExportReportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
     public virtual DbSet<MaterialPartner> MaterialPartners { get; set; } = null!;
-    public virtual DbSet<Account> Accounts { get; set; }
-    public virtual DbSet<JournalEntry> JournalEntries { get; set; }
-    public virtual DbSet<JournalLine> JournalLines { get; set; }
-    public virtual DbSet<SubLedgerEntry> SubLedgerEntries { get; set; }
-    public virtual DbSet<MoneyAccount> MoneyAccounts { get; set; }
-    public virtual DbSet<Receipt> Receipts { get; set; }
-    public virtual DbSet<Payment> Payments { get; set; }
-    public virtual DbSet<PostingPolicy> PostingPolicies { get; set; }
-    public virtual DbSet<BankStatement> BankStatements { get; set; }
-    public virtual DbSet<BankStatementLine> BankStatementLines { get; set; }
+
+    public DbSet<GlAccount> GlAccounts => Set<GlAccount>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<JournalLine> JournalLines => Set<JournalLine>();
+    public DbSet<MoneyAccount> MoneyAccounts => Set<MoneyAccount>();
+    public DbSet<BankStatement> BankStatements => Set<BankStatement>();
+    public DbSet<BankStatementLine> BankStatementLines => Set<BankStatementLine>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<PostingPolicy> PostingPolicies => Set<PostingPolicy>();
+    public DbSet<SubLedgerEntry> SubLedgerEntries => Set<SubLedgerEntry>();
 
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Vehicle> Vehicles { get; set; }
@@ -686,146 +687,93 @@ public partial class ScmVlxdContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<Account>(e =>
+        modelBuilder.Entity<GlAccount>(e =>
         {
+            e.ToTable("GlAccount");
             e.HasKey(x => x.AccountId);
-            e.ToTable("Account");
-            e.Property(x => x.Code).HasMaxLength(20);
-            e.Property(x => x.Name).HasMaxLength(255);
-            e.Property(x => x.Type).HasMaxLength(20);
-            e.HasOne(x => x.Parent).WithMany(p => p.Children)
-                .HasForeignKey(x => x.ParentId)
-                .OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.Code).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Name).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => new { x.PartnerId, x.Code }).IsUnique();
+            e.HasOne(x => x.Parent).WithMany(p => p.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<JournalEntry>(e =>
         {
-            e.HasKey(x => x.JournalEntryId);
             e.ToTable("JournalEntry");
+            e.HasKey(x => x.JournalEntryId);
             e.Property(x => x.PostingDate).HasColumnType("datetime");
-            e.Property(x => x.SourceType).HasMaxLength(50);
-            e.Property(x => x.ReferenceNo).HasMaxLength(100);
-            e.HasIndex(x => new { x.SourceType, x.SourceId }).IsUnique();
+            e.HasIndex(x => new { x.SourceType, x.SourceId }).IsUnique(false);
         });
 
         modelBuilder.Entity<JournalLine>(e =>
         {
-            e.HasKey(x => x.JournalLineId);
             e.ToTable("JournalLine");
+            e.HasKey(x => x.JournalLineId);
             e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
             e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
-            e.Property(x => x.LineMemo).HasMaxLength(255);
-
-            e.HasOne(x => x.JournalEntry).WithMany(j => j.Lines)
-                .HasForeignKey(x => x.JournalEntryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            e.HasOne(x => x.Account).WithMany()
-                .HasForeignKey(x => x.AccountId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<SubLedgerEntry>(e =>
-        {
-            e.HasKey(x => x.SubLedgerEntryId);
-            e.ToTable("SubLedgerEntry");
-            e.Property(x => x.SubLedgerType).HasMaxLength(5);
-            e.Property(x => x.Date).HasColumnType("datetime");
-            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
-            e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
-            e.Property(x => x.Reference).HasMaxLength(120);
+            e.HasOne(x => x.JournalEntry).WithMany(j => j.Lines).HasForeignKey(x => x.JournalEntryId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Account).WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.PartnerId, x.AccountId });
         });
 
         modelBuilder.Entity<MoneyAccount>(e =>
         {
-            e.HasKey(x => x.MoneyAccountId);
             e.ToTable("MoneyAccount");
-            e.Property(x => x.Name).HasMaxLength(100);
-            e.Property(x => x.Type).HasMaxLength(10);
-            e.Property(x => x.Number).HasMaxLength(50);
-        });
-
-        modelBuilder.Entity<Receipt>(e =>
-        {
-            e.HasKey(x => x.ReceiptId);
-            e.ToTable("Receipt");
-            e.Property(x => x.Date).HasColumnType("datetime");
-            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
-            e.Property(x => x.Method).HasMaxLength(10);
-            e.Property(x => x.Reference).HasMaxLength(100);
-            e.Property(x => x.Status).HasMaxLength(20);
-
-            e.HasOne<MoneyAccount>().WithMany()
-                .HasForeignKey(x => x.MoneyAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne<Domain.Models.Partner>().WithMany()
-                .HasForeignKey(x => x.PartnerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne<Domain.Models.Invoice>().WithMany()
-                .HasForeignKey(x => x.InvoiceId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<Payment>(e =>
-        {
-            e.HasKey(x => x.PaymentId);
-            e.ToTable("Payment");
-            e.Property(x => x.Date).HasColumnType("datetime");
-            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
-            e.Property(x => x.Method).HasMaxLength(10);
-            e.Property(x => x.Reference).HasMaxLength(100);
-            e.Property(x => x.Status).HasMaxLength(20);
-
-            e.HasOne<MoneyAccount>().WithMany()
-                .HasForeignKey(x => x.MoneyAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne<Domain.Models.Partner>().WithMany()
-                .HasForeignKey(x => x.PartnerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne<Domain.Models.Invoice>().WithMany()
-                .HasForeignKey(x => x.InvoiceId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<PostingPolicy>(e =>
-        {
-            e.HasKey(x => x.PostingPolicyId);
-            e.ToTable("PostingPolicy");
-            e.Property(x => x.DocumentType).HasMaxLength(50);
-            e.Property(x => x.RuleKey).HasMaxLength(50);
-            e.Property(x => x.PartnerType).HasMaxLength(50);
-            e.Property(x => x.MaterialCategory).HasMaxLength(50);
+            e.HasKey(x => x.MoneyAccountId);
+            e.Property(x => x.Name).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(50).IsRequired();
         });
 
         modelBuilder.Entity<BankStatement>(e =>
         {
-            e.HasKey(x => x.BankStatementId);
             e.ToTable("BankStatement");
-            e.Property(x => x.From).HasColumnType("datetime");
-            e.Property(x => x.To).HasColumnType("datetime");
-
-            e.HasOne(x => x.MoneyAccount).WithMany()
-                .HasForeignKey(x => x.MoneyAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
+            e.HasKey(x => x.BankStatementId);
+            e.HasOne(x => x.MoneyAccount).WithMany().HasForeignKey(x => x.MoneyAccountId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<BankStatementLine>(e =>
         {
-            e.HasKey(x => x.BankStatementLineId);
             e.ToTable("BankStatementLine");
-            e.Property(x => x.Date).HasColumnType("datetime");
-            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
-            e.Property(x => x.Description).HasMaxLength(255);
-            e.Property(x => x.ExternalRef).HasMaxLength(100);
-            e.Property(x => x.Status).HasMaxLength(20);
+            e.HasKey(x => x.BankStatementLineId);
+            e.HasOne(x => x.BankStatement).WithMany(b => b.Lines).HasForeignKey(x => x.BankStatementId).OnDelete(DeleteBehavior.Cascade);
+        });
 
-            e.HasOne(x => x.BankStatement).WithMany(b => b.Lines)
-                .HasForeignKey(x => x.BankStatementId)
-                .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Receipt>(e =>
+        {
+            e.ToTable("Receipt");
+            e.HasKey(x => x.ReceiptId);
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Method).HasMaxLength(50);
+            e.HasIndex(x => new { x.Date, x.PartnerId });
+        });
+
+        modelBuilder.Entity<Payment>(e =>
+        {
+            e.ToTable("Payment");
+            e.HasKey(x => x.PaymentId);
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Method).HasMaxLength(50);
+            e.HasIndex(x => new { x.Date, x.PartnerId });
+        });
+
+        modelBuilder.Entity<PostingPolicy>(e =>
+        {
+            e.ToTable("PostingPolicy");
+            e.HasKey(x => x.PostingPolicyId);
+            e.Property(x => x.DocumentType).HasMaxLength(50).IsRequired();
+            e.Property(x => x.RuleKey).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => new { x.PartnerId, x.DocumentType, x.RuleKey }).IsUnique();
+        });
+
+        modelBuilder.Entity<SubLedgerEntry>(e =>
+        {
+            e.ToTable("SubLedgerEntry");
+            e.HasKey(x => x.SubLedgerEntryId);
+            e.Property(x => x.SubLedgerType).HasMaxLength(5).IsRequired();
+            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
+            e.HasIndex(x => new { x.PartnerId, x.SubLedgerType, x.Date });
         });
 
         modelBuilder.Entity<Address>(e =>

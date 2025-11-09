@@ -43,16 +43,16 @@ namespace API.Controllers
             => Ok(_query.GetGeneralLedger(from, to, accountCode));
 
         [HttpGet("ar-aging")]
-        public IActionResult GetARAging([FromQuery] DateTime asOf)
-            => Ok(_query.GetARAging(asOf));
+        public IActionResult GetARAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)
+    => Ok(_query.GetARAging(asOf, partnerId));
 
         [HttpGet("ap-aging")]
-        public IActionResult GetAPAging([FromQuery] DateTime asOf)
-            => Ok(_query.GetAPAging(asOf));
+        public IActionResult GetAPAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)
+            => Ok(_query.GetAPAging(asOf, partnerId));
 
         [HttpGet("cashbook")]
-        public IActionResult GetCashbook([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string? method)
-            => Ok(_query.GetCashbook(from, to, method));
+        public IActionResult GetCashbook([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string? method, [FromQuery] int? partnerId)
+            => Ok(_query.GetCashbook(from, to, method, partnerId));
 
         [HttpGet("bank-recon/{statementId:int}")]
         public IActionResult GetBankReconciliation(int statementId)

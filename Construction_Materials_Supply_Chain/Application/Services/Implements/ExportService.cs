@@ -194,6 +194,10 @@ namespace Services.Implementations
                 };
                 _exportDetails.Add(detail);
             }
+            invoice.ExportStatus = "Success";
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoiceRepository.Update(invoice);
+
             return export;
         }
 

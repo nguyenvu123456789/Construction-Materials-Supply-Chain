@@ -78,5 +78,23 @@ namespace API.Controllers
             }
         }
 
+        [HttpPost("{reportId}/review")]
+        public IActionResult ReviewReport(int reportId, [FromBody] ReviewImportReportDto dto)
+        {
+            try
+            {
+                var result = _service.ReviewReport(reportId, dto);
+                return Ok(new
+                {
+                    message = "Đã xử lý báo cáo nhập kho thành công.",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

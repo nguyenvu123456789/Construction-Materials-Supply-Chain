@@ -173,7 +173,7 @@ namespace Services.Implementations
                 WarehouseId = dto.WarehouseId,
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
-                Status = "Pending",
+                Status = "Success",
                 CreatedAt = DateTime.UtcNow,
             };
             _exports.Add(export);
@@ -194,6 +194,10 @@ namespace Services.Implementations
                 };
                 _exportDetails.Add(detail);
             }
+            invoice.ExportStatus = "Success";
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoiceRepository.Update(invoice);
+
             return export;
         }
 

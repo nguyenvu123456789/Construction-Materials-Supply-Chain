@@ -194,12 +194,6 @@ namespace Services.Implementations
                 };
                 _exportDetails.Add(detail);
             }
-
-            // Cập nhật trạng thái hóa đơn chỉ ExportStatus
-            invoice.ExportStatus = "Success";
-            invoice.UpdatedAt = DateTime.UtcNow;
-            _invoiceRepository.Update(invoice);
-
             return export;
         }
 

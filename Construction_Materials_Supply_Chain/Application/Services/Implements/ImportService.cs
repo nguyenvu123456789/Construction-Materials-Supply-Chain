@@ -51,7 +51,7 @@ namespace Services.Implementations
                     ImportDate = DateTime.UtcNow,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
-                    Status = "Success",
+                    Status = "Pending",
                     Notes = notes,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -110,7 +110,7 @@ namespace Services.Implementations
                 }
 
                 // Cập nhật trạng thái hóa đơn
-                invoice.ImportStatus = "Success";
+                invoice.ImportStatus = "Pending";
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoices.Update(invoice);
 

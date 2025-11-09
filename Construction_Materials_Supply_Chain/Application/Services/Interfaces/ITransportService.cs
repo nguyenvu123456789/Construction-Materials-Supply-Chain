@@ -10,6 +10,7 @@ namespace Application.Interfaces
         void Assign(int transportId, TransportAssignRequestDto dto);
         void AddStops(int transportId, TransportAddStopsRequestDto dto);
         void AddInvoices(int transportId, TransportAddInvoicesRequestDto dto);
+        void ReplaceInvoices(int transportId, List<int> invoiceIds); // 👈 thêm dòng này
         void Start(int transportId, DateTimeOffset at);
         void ArriveStop(int transportId, TransportStopArriveRequestDto dto);
         void CompleteStop(int transportId, TransportStopDoneRequestDto dto);

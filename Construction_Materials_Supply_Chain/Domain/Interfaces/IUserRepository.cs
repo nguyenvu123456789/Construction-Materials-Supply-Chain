@@ -17,5 +17,7 @@ namespace Domain.Interface
         IQueryable<User> QueryWithRolesAndPartner();
         User? GetByIdWithPartner(int id);
         int GetOrCreateSystemUserId(int partnerId);
+        IEnumerable<string> GetEmailsByUserIds(IEnumerable<int> userIds);
+
     }
 }

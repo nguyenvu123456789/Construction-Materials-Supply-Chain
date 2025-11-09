@@ -26,9 +26,6 @@ namespace API.Controllers
         [HttpPost("post/purchase-invoice/{id:int}")]
         public IActionResult PostPurchaseInvoice(int id) => Ok(_posting.PostPurchaseInvoice(id));
 
-        [HttpPost("post/export-cogs/{exportId:int}")]
-        public IActionResult PostExportCogs(int exportId) => Ok(_posting.PostExportCogs(exportId));
-
         [HttpPost("post/receipt/{id:int}")]
         public IActionResult PostReceipt(int id) => Ok(_posting.PostReceipt(id));
 
@@ -39,12 +36,12 @@ namespace API.Controllers
         public IActionResult Unpost(string sourceType, int sourceId) => Ok(_posting.Unpost(sourceType, sourceId));
 
         [HttpGet("gl")]
-        public IActionResult GetGeneralLedger([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string accountCode)
-            => Ok(_query.GetGeneralLedger(from, to, accountCode));
+        public IActionResult GetGeneralLedger([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string accountCode, [FromQuery] int partnerId)
+            => Ok(_query.GetGeneralLedger(from, to, accountCode, partnerId));
 
         [HttpGet("ar-aging")]
         public IActionResult GetARAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)
-    => Ok(_query.GetARAging(asOf, partnerId));
+            => Ok(_query.GetARAging(asOf, partnerId));
 
         [HttpGet("ap-aging")]
         public IActionResult GetAPAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)

@@ -7,6 +7,16 @@ using System.Threading.Tasks;
 
 namespace Application.Services.Interfaces
 {
+    public interface IEmailChannel
+    {
+        Task SendAsync(
+            int partnerId,
+            IEnumerable<string> toEmails,
+            string subject,
+            string body,
+            CancellationToken ct = default);
+    }
+
     public interface INotificationService
     {
         NotificationResponseDto CreateConversation(CreateConversationRequestDto dto);

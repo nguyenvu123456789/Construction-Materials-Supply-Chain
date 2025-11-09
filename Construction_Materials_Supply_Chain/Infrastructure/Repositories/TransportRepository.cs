@@ -71,15 +71,49 @@ namespace Infrastructure.Implementations
 
         public void AddInvoices(int transportId, List<int> invoiceIds)
         {
-            var exists = _context.Set<TransportInvoice>()
-                                 .Where(x => x.TransportId == transportId)
-                                 .Select(x => x.InvoiceId)
-                                 .ToHashSet();
-            foreach (var id in invoiceIds.Distinct())
-            {
-                if (!exists.Contains(id))
+            var ids = invoiceIds?.Distinct().ToList() ?? new List<int>();
+            if (ids.Count == 0) return;
+
+            var conflict = _context.Set<TransportInvoice>()
+                .Where(ti => ids.Contains(ti.InvoiceId) && ti.TransportId != transportId)
+                .Select(ti => ti.InvoiceId)
+                .ToList();
+            if (conflict.Any()) throw new InvalidOperationException($"Invoice đã gán transport khác: {string.Join(",", conflict)}");
+
+            var existing = _context.Set<TransportInvoice>()
+                .Where(x => x.TransportId == transportId && ids.Contains(x.InvoiceId))
+                .Select(x => x.InvoiceId)
+                .ToHashSet();
+
+            foreach (var id in ids)
+                if (!existing.Contains(id))
                     _context.Set<TransportInvoice>().Add(new TransportInvoice { TransportId = transportId, InvoiceId = id });
-            }
+
+            _context.SaveChanges();
+        }
+
+        public void ReplaceInvoices(int transportId, List<int> invoiceIds)
+        {
+            var ids = invoiceIds?.Distinct().ToList() ?? new List<int>();
+
+            var conflict = _context.Set<TransportInvoice>()
+                .Where(ti => ids.Contains(ti.InvoiceId) && ti.TransportId != transportId)
+                .Select(ti => ti.InvoiceId)
+                .ToList();
+            if (conflict.Any()) throw new InvalidOperationException($"Invoice đã gán transport khác: {string.Join(",", conflict)}");
+
+            var db = _context.Set<TransportInvoice>();
+            var current = db.Where(ti => ti.TransportId == transportId).ToList();
+            var keep = ids.ToHashSet();
+
+            var toRemove = current.Where(ti => !keep.Contains(ti.InvoiceId)).ToList();
+            if (toRemove.Count > 0) _context.RemoveRange(toRemove);
+
+            var existing = current.Select(ti => ti.InvoiceId).ToHashSet();
+            foreach (var id in ids)
+                if (!existing.Contains(id))
+                    db.Add(new TransportInvoice { TransportId = transportId, InvoiceId = id });
+
             _context.SaveChanges();
         }
 
@@ -265,5 +299,8 @@ namespace Infrastructure.Implementations
 
             _context.SaveChanges();
         }
+
+        public bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId) =>
+            _context.Set<TransportInvoice>().Any(ti => invoiceIds.Contains(ti.InvoiceId) && ti.TransportId != transportId);
     }
 }

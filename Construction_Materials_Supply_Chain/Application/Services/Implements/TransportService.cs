@@ -176,7 +176,24 @@ namespace Application.Services.Implements
         {
             foreach (var id in dto.InvoiceIds)
                 if (_invoiceRepo.GetById(id) == null) throw new InvalidOperationException($"Invoice {id} not found");
+
+            if (_transportRepo.InvoiceAssignedElsewhere(dto.InvoiceIds, transportId))
+                throw new InvalidOperationException("Có invoice đã gán transport khác");
+
             _transportRepo.AddInvoices(transportId, dto.InvoiceIds);
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.InvoicesUpdated", CreatedAt = DateTime.UtcNow });
+        }
+
+        public void ReplaceInvoices(int transportId, List<int> invoiceIds)
+        {
+            var list = invoiceIds ?? new List<int>();
+            foreach (var id in list)
+                if (_invoiceRepo.GetById(id) == null) throw new InvalidOperationException($"Invoice {id} not found");
+
+            if (_transportRepo.InvoiceAssignedElsewhere(list, transportId))
+                throw new InvalidOperationException("Có invoice đã gán transport khác");
+
+            _transportRepo.ReplaceInvoices(transportId, list);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.InvoicesUpdated", CreatedAt = DateTime.UtcNow });
         }
 

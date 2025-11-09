@@ -89,5 +89,14 @@ namespace Infrastructure.Implementations
             _context.SaveChanges();
             return u.UserId;
         }
+
+        public IEnumerable<string> GetEmailsByUserIds(IEnumerable<int> userIds)
+        {
+            if (userIds == null) return Enumerable.Empty<string>();
+            return _context.Users
+                .Where(u => userIds.Contains(u.UserId) && !string.IsNullOrEmpty(u.Email))
+                .Select(u => u.Email!)
+                .ToList();
+        }
     }
 }

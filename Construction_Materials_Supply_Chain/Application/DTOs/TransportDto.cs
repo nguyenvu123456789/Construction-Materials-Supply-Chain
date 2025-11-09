@@ -92,6 +92,8 @@
         public string DepotName { get; set; } = "";
         public int ProviderPartnerId { get; set; }
         public string ProviderPartnerName { get; set; } = "";
+        public int? VehicleId { get; set; }
+        public int? DriverId { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
         public DateTimeOffset? EndTimePlanned { get; set; }
         public DateTimeOffset? StartTimeActual { get; set; }

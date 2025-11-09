@@ -5,7 +5,7 @@ using Domain.Interface.Base;
 using Domain.Interfaces;
 using Domain.Models;
 
-namespace Application.Services.Implements
+namespace Application.Services
 {
     public class AccountingQueryService : IAccountingQueryService
     {
@@ -38,20 +38,32 @@ namespace Application.Services.Implements
             _mapper = mapper;
         }
 
-        public GeneralLedgerResponseDto GetGeneralLedger(DateTime from, DateTime to, string accountCode)
+        public GeneralLedgerResponseDto GetGeneralLedger(DateTime from, DateTime to, string accountCode, int partnerId)
         {
-            var acc = _accRepo.GetAll().FirstOrDefault(a => a.Code == accountCode);
+            var acc = _accRepo.GetAll().FirstOrDefault(a => a.Code == accountCode && a.PartnerId == partnerId);
             if (acc == null)
                 return new GeneralLedgerResponseDto { Account = new { Code = accountCode, NotFound = true }, Period = new { from, to } };
 
-            var lines = _jeRepo.QueryFull()
-                               .Where(j => j.PostingDate.Date >= from.Date && j.PostingDate.Date <= to.Date)
-                               .SelectMany(j => j.Lines.Where(l => l.AccountId == acc.AccountId))
-                               .ToList();
+            var items = _jeRepo.QueryFull()
+                .Where(j => j.PostingDate.Date >= from.Date && j.PostingDate.Date <= to.Date)
+                .SelectMany(j => j.Lines
+                    .Where(l => l.AccountId == acc.AccountId && l.PartnerId == partnerId)
+                    .Select(l => new LedgerLineDto
+                    {
+                        PostingDate = j.PostingDate,
+                        SourceType = j.SourceType,
+                        SourceId = j.SourceId,
+                        ReferenceNo = j.ReferenceNo,
+                        PartnerId = l.PartnerId,
+                        InvoiceId = l.InvoiceId,
+                        Debit = l.Debit,
+                        Credit = l.Credit
+                    }))
+                .OrderBy(x => x.PostingDate)
+                .ToList();
 
-            var dtoLines = _mapper.Map<List<LedgerLineDto>>(lines);
-            var totalDebit = dtoLines.Sum(x => x.Debit);
-            var totalCredit = dtoLines.Sum(x => x.Credit);
+            var totalDebit = items.Sum(x => x.Debit);
+            var totalCredit = items.Sum(x => x.Credit);
 
             return new GeneralLedgerResponseDto
             {
@@ -59,14 +71,13 @@ namespace Application.Services.Implements
                 Period = new { from, to },
                 TotalDebit = totalDebit,
                 TotalCredit = totalCredit,
-                Entries = dtoLines
+                Entries = items
             };
         }
 
         public AgingResponseDto GetARAging(DateTime asOf, int? partnerId = null)
         {
-            var q = _subRepo.GetAll()
-                            .Where(x => x.SubLedgerType == "AR" && x.Date <= asOf);
+            var q = _subRepo.GetAll().Where(x => x.SubLedgerType == "AR" && x.Date <= asOf);
             if (partnerId is not null) q = q.Where(x => x.PartnerId == partnerId);
 
             var items = q.GroupBy(x => new { x.PartnerId, x.InvoiceId })
@@ -76,7 +87,7 @@ namespace Application.Services.Implements
                              InvoiceId = g.Key.InvoiceId,
                              Debit = g.Sum(x => x.Debit),
                              Credit = g.Sum(x => x.Credit),
-                             Outstanding = g.Sum(x => x.Credit - x.Debit)
+                             Outstanding = g.Sum(x => x.Debit - x.Credit)
                          })
                          .Where(x => x.Outstanding != 0)
                          .ToList();
@@ -86,8 +97,7 @@ namespace Application.Services.Implements
 
         public AgingResponseDto GetAPAging(DateTime asOf, int? partnerId = null)
         {
-            var q = _subRepo.GetAll()
-                            .Where(x => x.SubLedgerType == "AP" && x.Date <= asOf);
+            var q = _subRepo.GetAll().Where(x => x.SubLedgerType == "AP" && x.Date <= asOf);
             if (partnerId is not null) q = q.Where(x => x.PartnerId == partnerId);
 
             var items = q.GroupBy(x => new { x.PartnerId, x.InvoiceId })
@@ -148,12 +158,18 @@ namespace Application.Services.Implements
             var matched = lines.Where(l => l.Status == "Reconciled").ToList();
             var unmatched = lines.Where(l => l.Status != "Reconciled").ToList();
 
+            var bookIn = _receiptRepo.GetAll()
+               .Where(r => r.Method == "Bank" && r.Date >= st.From && r.Date <= st.To)
+               .Sum(r => r.Amount);
+            var bookOut = _paymentRepo.GetAll()
+               .Where(p => p.Method == "Bank" && p.Date >= st.From && p.Date <= st.To)
+               .Sum(p => p.Amount);
+
             return new BankReconResponseDto
             {
                 Statement = new { st.BankStatementId, st.MoneyAccountId, st.From, st.To },
                 StatementAmount = lines.Sum(l => l.Amount),
-                BookNet = _receiptRepo.GetAll().Where(r => r.Method == "Bank" && r.Date >= st.From && r.Date <= st.To).Sum(r => r.Amount)
-                         - _paymentRepo.GetAll().Where(p => p.Method == "Bank" && p.Date >= st.From && p.Date <= st.To).Sum(p => p.Amount),
+                BookNet = bookIn - bookOut,
                 Matched = _mapper.Map<List<BankReconLineDto>>(matched),
                 Unmatched = _mapper.Map<List<BankReconLineDto>>(unmatched)
             };

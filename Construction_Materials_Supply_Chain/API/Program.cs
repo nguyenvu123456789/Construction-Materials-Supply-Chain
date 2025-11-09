@@ -111,6 +111,7 @@ builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
+builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -124,6 +125,7 @@ builder.Services.AddScoped<AuditLogInterceptor>();
 builder.Services.Configure<ZaloOptions>(builder.Configuration.GetSection("Zalo"));
 builder.Services.AddHttpClient<ZaloChannel>();
 builder.Services.AddScoped<IZaloChannel, ZaloChannel>();
+builder.Services.AddScoped<IEmailChannel, EmailChannel>();
 
 // DbContext + interceptor
 builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>

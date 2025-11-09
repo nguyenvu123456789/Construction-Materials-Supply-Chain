@@ -56,6 +56,13 @@ namespace Api.Controllers
             return Ok();
         }
 
+        [HttpPut("{id:int}/invoices")]
+        public IActionResult ReplaceInvoices(int id, [FromBody] List<int> invoiceIds)
+        {
+            _service.ReplaceInvoices(id, invoiceIds ?? new List<int>());
+            return Ok();
+        }
+
         [HttpPost("{id:int}/start")]
         public IActionResult Start(int id, [FromQuery] DateTimeOffset? at)
         {

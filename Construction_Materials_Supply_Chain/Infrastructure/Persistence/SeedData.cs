@@ -196,15 +196,15 @@ namespace Infrastructure.Persistence
                 var glass = context.Materials.First(m => m.MaterialCode == "G001");
 
                 var inventories = new List<Inventory>
-    {
-        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, UnitPrice = 90000, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, UnitPrice = 1200, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, UnitPrice = 1500000, CreatedAt = DateTime.Now },
-        new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, UnitPrice = 200000, CreatedAt = DateTime.Now }
-    };
+                {
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, UnitPrice = 90000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, UnitPrice = 1200, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, UnitPrice = 1500000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, UnitPrice = 200000, CreatedAt = DateTime.Now }
+                };
 
                 var uniqueInventories = inventories
                     .GroupBy(i => new { i.WarehouseId, i.MaterialId })
@@ -671,191 +671,177 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            using var tx = context.Database.BeginTransaction();
+            var pAgent = context.Partners.First(p => p.PartnerCode == "P004");
+            var pRetail = context.Partners.First(p => p.PartnerCode == "P005");
+            var pSupp1 = context.Partners.First(p => p.PartnerCode == "P001");
+            var pSupp2 = context.Partners.First(p => p.PartnerCode == "P002");
 
-            if (!context.Accounts.Any())
+            var userManager = context.Users.First(u => u.UserName == "manager1");
+            var userStaff = context.Users.First(u => u.UserName == "staff01");
+
+            var matWood = context.Materials.First(m => m.MaterialCode == "W001");
+            var matBrick = context.Materials.First(m => m.MaterialCode == "B001");
+
+            void SeedChartForPartner(int partnerId)
             {
-                context.Accounts.AddRange(
-                    new Account { Code = "111", Name = "Tiền mặt", Type = "Asset", IsPosting = true },
-                    new Account { Code = "112", Name = "Tiền gửi ngân hàng", Type = "Asset", IsPosting = true },
-                    new Account { Code = "131", Name = "Phải thu khách hàng", Type = "Asset", IsPosting = true },
-                    new Account { Code = "331", Name = "Phải trả nhà cung cấp", Type = "Liability", IsPosting = true },
-                    new Account { Code = "156", Name = "Hàng hóa tồn kho", Type = "Asset", IsPosting = true },
-                    new Account { Code = "511", Name = "Doanh thu bán hàng", Type = "Revenue", IsPosting = true },
-                    new Account { Code = "632", Name = "Giá vốn hàng bán", Type = "Expense", IsPosting = true },
-                    new Account { Code = "133", Name = "Thuế GTGT đầu vào", Type = "Asset", IsPosting = true },
-                    new Account { Code = "3331", Name = "Thuế GTGT đầu ra", Type = "Liability", IsPosting = true }
-                );
-                context.SaveChanges();
-            }
-
-            var acc = context.Accounts.ToDictionary(a => a.Code, a => a.AccountId);
-
-            if (!context.PostingPolicies.Any())
-            {
-                context.PostingPolicies.AddRange(
-                    new PostingPolicy { DocumentType = "SalesInvoice", RuleKey = "Revenue", DebitAccountId = acc["131"], CreditAccountId = acc["511"] },
-                    new PostingPolicy { DocumentType = "SalesInvoice", RuleKey = "VATOut", DebitAccountId = acc["131"], CreditAccountId = acc["3331"] },
-                    new PostingPolicy { DocumentType = "PurchaseInvoice", RuleKey = "Inventory", DebitAccountId = acc["156"], CreditAccountId = acc["331"] },
-                    new PostingPolicy { DocumentType = "PurchaseInvoice", RuleKey = "VATIn", DebitAccountId = acc["133"], CreditAccountId = acc["331"] },
-                    new PostingPolicy { DocumentType = "ExportCOGS", RuleKey = "COGS", DebitAccountId = acc["632"], CreditAccountId = acc["156"] },
-                    new PostingPolicy { DocumentType = "Receipt", RuleKey = "Cash", DebitAccountId = acc["111"], CreditAccountId = acc["131"] },
-                    new PostingPolicy { DocumentType = "Receipt", RuleKey = "Bank", DebitAccountId = acc["112"], CreditAccountId = acc["131"] },
-                    new PostingPolicy { DocumentType = "Payment", RuleKey = "Cash", DebitAccountId = acc["331"], CreditAccountId = acc["111"] },
-                    new PostingPolicy { DocumentType = "Payment", RuleKey = "Bank", DebitAccountId = acc["331"], CreditAccountId = acc["112"] }
-                );
-                context.SaveChanges();
-            }
-
-            if (!context.Invoices.Any(i => i.InvoiceType == "Import"))
-            {
-                var manager = context.Users.First(u => u.UserName == "manager1");
-                var pAgent = context.Partners.First(p => p.PartnerCode == "P004");
-                var pRetail = context.Partners.First(p => p.PartnerCode == "P005");
-                var wood = context.Materials.First(m => m.MaterialCode == "W001");
-                var brick = context.Materials.First(m => m.MaterialCode == "B001");
-                var invS1 = new Invoice
+                if (!context.GlAccounts.Any(a => a.PartnerId == partnerId))
                 {
-                    InvoiceCode = "SAL-001",
-                    InvoiceType = "Import",
-                    PartnerId = pAgent.PartnerId,
-                    CreatedBy = manager.UserId,
-                    IssueDate = DateTime.Now.AddDays(-8),
-                    DueDate = DateTime.Now.AddDays(7),
-                    ExportStatus = "Approved", // dùng ExportStatus tạm
-                    CreatedAt = DateTime.Now.AddDays(-8),
-                    UpdatedAt = DateTime.Now.AddDays(-8),
-                    TotalAmount = 0m
-                };
-
-                var invS2 = new Invoice
-                {
-                    InvoiceCode = "SAL-002",
-                    InvoiceType = "Import",
-                    PartnerId = pRetail.PartnerId,
-                    CreatedBy = manager.UserId,
-                    IssueDate = DateTime.Now.AddDays(-6),
-                    DueDate = DateTime.Now.AddDays(9),
-                    ExportStatus = "Approved", // dùng ExportStatus tạm
-                    CreatedAt = DateTime.Now.AddDays(-6),
-                    UpdatedAt = DateTime.Now.AddDays(-6),
-                    TotalAmount = 0m
-                };
-
-                context.Invoices.AddRange(invS1, invS2);
-                context.SaveChanges();
-
-                context.InvoiceDetails.AddRange(
-                    new InvoiceDetail { InvoiceId = invS1.InvoiceId, MaterialId = wood.MaterialId, Quantity = 30, UnitPrice = 255000m, LineTotal = 30m * 255000m },
-                    new InvoiceDetail { InvoiceId = invS1.InvoiceId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, LineTotal = 500m * 1200m },
-                    new InvoiceDetail { InvoiceId = invS2.InvoiceId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, LineTotal = 18m * 255000m }
-                );
-                context.SaveChanges();
-
-                var sumSales = context.InvoiceDetails
-                    .Where(d => d.InvoiceId == invS1.InvoiceId || d.InvoiceId == invS2.InvoiceId)
-                    .GroupBy(d => d.InvoiceId)
-                    .Select(g => new { Id = g.Key, Sum = g.Sum(x => (x.LineTotal ?? (x.Quantity * x.UnitPrice))) })
-                    .ToList();
-                foreach (var s in sumSales)
-                {
-                    var inv = context.Invoices.First(i => i.InvoiceId == s.Id);
-                    inv.TotalAmount = s.Sum;
-                    inv.UpdatedAt = DateTime.Now;
+                    context.GlAccounts.AddRange(
+                        new GlAccount { PartnerId = partnerId, Code = "111", Name = "Tiền mặt", Type = "Asset", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "112", Name = "Tiền gửi ngân hàng", Type = "Asset", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "131", Name = "Phải thu khách hàng", Type = "Asset", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "331", Name = "Phải trả NCC", Type = "Liability", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "156", Name = "Hàng hóa tồn kho", Type = "Asset", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "511", Name = "Doanh thu bán hàng", Type = "Revenue", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "632", Name = "Giá vốn hàng bán", Type = "Expense", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "133", Name = "Thuế GTGT đầu vào", Type = "Asset", IsPosting = true },
+                        new GlAccount { PartnerId = partnerId, Code = "3331", Name = "Thuế GTGT đầu ra", Type = "Liability", IsPosting = true }
+                    );
+                    context.SaveChanges();
                 }
-                context.SaveChanges();
             }
 
-            if (!context.MoneyAccounts.Any())
+            void SeedPolicyForPartner(int partnerId)
+            {
+                if (!context.PostingPolicies.Any(p => p.PartnerId == partnerId))
+                {
+                    var acc = context.GlAccounts.Where(a => a.PartnerId == partnerId).ToDictionary(a => a.Code, a => a.AccountId);
+                    context.PostingPolicies.AddRange(
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "SalesInvoice", RuleKey = "Revenue", DebitAccountId = acc["131"], CreditAccountId = acc["511"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "SalesInvoice", RuleKey = "VATOut", DebitAccountId = acc["131"], CreditAccountId = acc["3331"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "PurchaseInvoice", RuleKey = "Inventory", DebitAccountId = acc["156"], CreditAccountId = acc["331"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "PurchaseInvoice", RuleKey = "VATIn", DebitAccountId = acc["133"], CreditAccountId = acc["331"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Receipt", RuleKey = "Cash", DebitAccountId = acc["111"], CreditAccountId = acc["131"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Receipt", RuleKey = "Bank", DebitAccountId = acc["112"], CreditAccountId = acc["131"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Payment", RuleKey = "Cash", DebitAccountId = acc["331"], CreditAccountId = acc["111"] },
+                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Payment", RuleKey = "Bank", DebitAccountId = acc["331"], CreditAccountId = acc["112"] }
+                    );
+                    context.SaveChanges();
+                }
+            }
+
+            SeedChartForPartner(pAgent.PartnerId);
+            SeedChartForPartner(pRetail.PartnerId);
+            SeedChartForPartner(pSupp1.PartnerId);
+            SeedChartForPartner(pSupp2.PartnerId);
+
+            SeedPolicyForPartner(pAgent.PartnerId);
+            SeedPolicyForPartner(pRetail.PartnerId);
+            SeedPolicyForPartner(pSupp1.PartnerId);
+            SeedPolicyForPartner(pSupp2.PartnerId);
+
+            if (!context.MoneyAccounts.Any(a => a.PartnerId == pAgent.PartnerId))
             {
                 context.MoneyAccounts.AddRange(
-                    new MoneyAccount { Name = "Vietcombank - CN Hà Nội", Type = "Bank", Number = "0123456789", IsActive = true },
-                    new MoneyAccount { Name = "Quỹ tiền mặt", Type = "Cash", Number = "TM-001", IsActive = true }
+                    new MoneyAccount { PartnerId = pAgent.PartnerId, Name = "Vietcombank - CN Hà Nội", Type = "Bank", Number = "0123456789", IsActive = true },
+                    new MoneyAccount { PartnerId = pAgent.PartnerId, Name = "Quỹ tiền mặt", Type = "Cash", Number = "TM-001", IsActive = true }
                 );
                 context.SaveChanges();
             }
+
+            Invoice EnsureInvoice(string code, string type, int partnerId, int createdBy, DateTime issue, DateTime due, string status)
+            {
+                var existed = context.Invoices.SingleOrDefault(i => i.InvoiceCode == code);
+                if (existed != null) return existed;
+                var inv = new Invoice
+                {
+                    InvoiceCode = code,
+                    InvoiceType = type,
+                    PartnerId = partnerId,
+                    CreatedBy = createdBy,
+                    IssueDate = issue,
+                    DueDate = due,
+                    ImportStatus = type == "Import" ? status : null,
+                    ExportStatus = type == "Export" ? status : null,
+                    CreatedAt = issue,
+                    UpdatedAt = issue,
+                    TotalAmount = 0
+                };
+                context.Invoices.Add(inv);
+                context.SaveChanges();
+                return inv;
+            }
+
+            void EnsureInvoiceDetails(Invoice inv, IEnumerable<(int materialId, int qty, int price)> rows)
+            {
+                if (!context.InvoiceDetails.Any(d => d.InvoiceId == inv.InvoiceId))
+                {
+                    foreach (var r in rows)
+                        context.InvoiceDetails.Add(new InvoiceDetail { InvoiceId = inv.InvoiceId, MaterialId = r.materialId, Quantity = r.qty, UnitPrice = r.price, LineTotal = r.qty * r.price });
+                    context.SaveChanges();
+                    var total = context.InvoiceDetails.Where(d => d.InvoiceId == inv.InvoiceId).Sum(d => d.LineTotal ?? (d.Quantity * d.UnitPrice));
+                    inv.TotalAmount = total;
+                    inv.UpdatedAt = DateTime.Now;
+                    context.SaveChanges();
+                }
+            }
+
+            var invImp1 = EnsureInvoice("IMP-001", "Import", pSupp1.PartnerId, userManager.UserId, DateTime.Now.AddDays(-12), DateTime.Now.AddDays(5), "Success");
+            var invImp2 = EnsureInvoice("IMP-002", "Import", pSupp2.PartnerId, userManager.UserId, DateTime.Now.AddDays(-10), DateTime.Now.AddDays(7), "Success");
+            var invExp1 = EnsureInvoice("EXP-001", "Export", pRetail.PartnerId, userStaff.UserId, DateTime.Now.AddDays(-9), DateTime.Now.AddDays(10), "Success");
+            var invExp2 = EnsureInvoice("EXP-002", "Export", pAgent.PartnerId, userStaff.UserId, DateTime.Now.AddDays(-7), DateTime.Now.AddDays(12), "Success");
+
+            EnsureInvoiceDetails(invImp1, new[] { (matWood.MaterialId, 30, 255000), (matBrick.MaterialId, 500, 1200) });
+            EnsureInvoiceDetails(invImp2, new[] { (matWood.MaterialId, 18, 255000) });
+            EnsureInvoiceDetails(invExp1, new[] { (matWood.MaterialId, 10, 300000) });
+            EnsureInvoiceDetails(invExp2, new[] { (matBrick.MaterialId, 400, 2000) });
 
             if (!context.Receipts.Any())
             {
-                var accBank = context.MoneyAccounts.First(a => a.Type == "Bank");
-                var pAgent = context.Partners.First(p => p.PartnerCode == "P004");
-                var pRetail = context.Partners.First(p => p.PartnerCode == "P005");
-                var invS1Id = context.Invoices.First(i => i.InvoiceCode == "SAL-001").InvoiceId;
-                var invS2Id = context.Invoices.First(i => i.InvoiceCode == "SAL-002").InvoiceId;
-
+                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
+                var exp1 = context.Invoices.Single(i => i.InvoiceCode == "EXP-001");
+                var exp2 = context.Invoices.Single(i => i.InvoiceCode == "EXP-002");
                 context.Receipts.AddRange(
-                    new Receipt { Date = DateTime.Now.AddDays(-7), PartnerId = pAgent.PartnerId, InvoiceId = invS1Id, Amount = 5000000m, Method = "Bank", MoneyAccountId = accBank.MoneyAccountId, Reference = "Thu công nợ SAL-001", Status = "Draft" },
-                    new Receipt { Date = DateTime.Now.AddDays(-5), PartnerId = pRetail.PartnerId, InvoiceId = invS2Id, Amount = 2000000m, Method = "Cash", MoneyAccountId = null, Reference = "Thu công nợ SAL-002", Status = "Draft" }
+                    new Receipt { Date = DateTime.Now.AddDays(-6), PartnerId = pRetail.PartnerId, InvoiceId = exp1.InvoiceId, Amount = 5000000, Method = "Bank", MoneyAccountId = bankAgent.MoneyAccountId, Reference = "Thu công nợ EXP-001", Status = "Draft" },
+                    new Receipt { Date = DateTime.Now.AddDays(-5), PartnerId = pAgent.PartnerId, InvoiceId = exp2.InvoiceId, Amount = 2000000, Method = "Cash", MoneyAccountId = null, Reference = "Thu công nợ EXP-002", Status = "Draft" }
                 );
                 context.SaveChanges();
             }
 
             if (!context.Payments.Any())
             {
-                var accBank = context.MoneyAccounts.First(a => a.Type == "Bank");
-                var pSupplier1 = context.Partners.First(p => p.PartnerCode == "P001");
-                var pSupplier2 = context.Partners.First(p => p.PartnerCode == "P002");
-
+                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
+                var imp1 = context.Invoices.Single(i => i.InvoiceCode == "IMP-001");
                 context.Payments.AddRange(
-                    new Payment { Date = DateTime.Now.AddDays(-6), PartnerId = pSupplier1.PartnerId, InvoiceId = null, Amount = 1200000m, Method = "Bank", MoneyAccountId = accBank.MoneyAccountId, Reference = "Chi NCC GOVIET", Status = "Draft" },
-                    new Payment { Date = DateTime.Now.AddDays(-4), PartnerId = pSupplier2.PartnerId, InvoiceId = null, Amount = 800000m, Method = "Cash", MoneyAccountId = null, Reference = "Chi NCC Hòa Phát", Status = "Draft" }
+                    new Payment { Date = DateTime.Now.AddDays(-6), PartnerId = pSupp1.PartnerId, InvoiceId = imp1.InvoiceId, Amount = 1200000, Method = "Bank", MoneyAccountId = bankAgent.MoneyAccountId, Reference = "Chi NCC IMP-001", Status = "Draft" },
+                    new Payment { Date = DateTime.Now.AddDays(-4), PartnerId = pSupp2.PartnerId, InvoiceId = null, Amount = 800000, Method = "Cash", MoneyAccountId = null, Reference = "Chi NCC khác", Status = "Draft" }
                 );
                 context.SaveChanges();
             }
 
             if (!context.BankStatements.Any())
             {
-                var accBank = context.MoneyAccounts.First(a => a.Type == "Bank");
-                var stmt = new BankStatement { MoneyAccountId = accBank.MoneyAccountId, From = DateTime.Now.AddDays(-10), To = DateTime.Now.AddDays(0) };
+                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
+                var stmt = new BankStatement { PartnerId = pAgent.PartnerId, MoneyAccountId = bankAgent.MoneyAccountId, From = DateTime.Now.AddDays(-10), To = DateTime.Now };
                 context.BankStatements.Add(stmt);
                 context.SaveChanges();
 
-                var anyReceiptBank = context.Receipts.FirstOrDefault(r => r.Method == "Bank");
-                var anyPaymentBank = context.Payments.FirstOrDefault(p => p.Method == "Bank");
+                var rBank = context.Receipts.FirstOrDefault(r => r.Method == "Bank" && r.MoneyAccountId == bankAgent.MoneyAccountId);
+                var pBank = context.Payments.FirstOrDefault(p => p.Method == "Bank" && p.MoneyAccountId == bankAgent.MoneyAccountId);
 
-                var l1 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-7), Amount = 5000000m, Description = "Khách chuyển khoản", ExternalRef = "TXN-R-001", Status = anyReceiptBank != null ? "Reconciled" : "Unreconciled", ReceiptId = anyReceiptBank?.ReceiptId, PaymentId = null };
-                var l2 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-6), Amount = -1200000m, Description = "Chi trả NCC", ExternalRef = "TXN-P-001", Status = anyPaymentBank != null ? "Reconciled" : "Unreconciled", ReceiptId = null, PaymentId = anyPaymentBank?.PaymentId };
-                var l3 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-5), Amount = 750000m, Description = "Khách khác chuyển khoản", ExternalRef = "TXN-R-002", Status = "Unreconciled", ReceiptId = null, PaymentId = null };
+                var bl1 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-6), Amount = 5000000, Description = "Khách chuyển khoản", ExternalRef = "TXN-R-001", Status = rBank != null ? "Reconciled" : "Unreconciled", ReceiptId = rBank?.ReceiptId, PaymentId = null };
+                var bl2 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-6), Amount = -1200000, Description = "Chi trả NCC", ExternalRef = "TXN-P-001", Status = pBank != null ? "Reconciled" : "Unreconciled", ReceiptId = null, PaymentId = pBank?.PaymentId };
+                var bl3 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-5), Amount = 750000, Description = "Khách khác chuyển khoản", ExternalRef = "TXN-R-002", Status = "Unreconciled", ReceiptId = null, PaymentId = null };
 
-                context.BankStatementLines.AddRange(l1, l2, l3);
-                context.SaveChanges();
-            }
-
-            var hasCogsExport = context.Exports.Any(e => e.ExportCode == "EX-COGS-001");
-            if (!hasCogsExport)
-            {
-                var wh = context.Warehouses.First();
-                var staff = context.Users.First(u => u.UserName == "staff01");
-                var wood = context.Materials.First(m => m.MaterialCode == "W001");
-                var metal = context.Materials.First(m => m.MaterialCode == "M001");
-
-                var ex = new Export { ExportCode = "EX-COGS-001", ExportDate = DateTime.Now.AddDays(-3), WarehouseId = wh.WarehouseId, CreatedBy = staff.UserId, Notes = "COGS test", Status = "Success", CreatedAt = DateTime.Now.AddDays(-3) };
-                context.Exports.Add(ex);
-                context.SaveChanges();
-
-                context.ExportDetails.AddRange(
-                    new ExportDetail { ExportId = ex.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode ?? "", MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 250000m, Quantity = 8m, LineTotal = 8m * 250000m },
-                    new ExportDetail { ExportId = ex.ExportId, MaterialId = metal.MaterialId, MaterialCode = metal.MaterialCode ?? "", MaterialName = metal.MaterialName, Unit = metal.Unit, UnitPrice = 320000m, Quantity = 3m, LineTotal = 3m * 320000m }
-                );
+                context.BankStatementLines.AddRange(bl1, bl2, bl3);
                 context.SaveChanges();
             }
 
             if (!context.JournalEntries.Any())
             {
-                var acc111 = context.Accounts.First(a => a.Code == "111");
-                var acc131 = context.Accounts.First(a => a.Code == "131");
-
+                var acc111 = context.GlAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Code == "111");
+                var acc131 = context.GlAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Code == "131");
                 var je = new JournalEntry
                 {
+                    PartnerId = pAgent.PartnerId,
                     PostingDate = DateTime.Now.AddDays(-2),
                     SourceType = "ManualSeed",
                     SourceId = 1,
                     ReferenceNo = "TEST-001",
                     Memo = "Thu tiền mặt test"
                 };
-                je.Lines.Add(new JournalLine { AccountId = acc111.AccountId, Debit = 2000000m, Credit = 0m });
-                je.Lines.Add(new JournalLine { AccountId = acc131.AccountId, Debit = 0m, Credit = 2000000m });
-
+                je.Lines.Add(new JournalLine { PartnerId = pAgent.PartnerId, AccountId = acc111.AccountId, Debit = 2000000, Credit = 0 });
+                je.Lines.Add(new JournalLine { PartnerId = pAgent.PartnerId, AccountId = acc131.AccountId, Debit = 0, Credit = 2000000 });
                 context.JournalEntries.Add(je);
                 context.SaveChanges();
             }
@@ -1074,8 +1060,6 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
-
-            tx.Commit();
         }
     }
 }

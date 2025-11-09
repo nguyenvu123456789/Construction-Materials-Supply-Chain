@@ -84,4 +84,35 @@
         public List<BankReconLineDto> Matched { get; set; } = new();
         public List<BankReconLineDto> Unmatched { get; set; } = new();
     }
+
+    public class GlAccountCreateDto
+    {
+        public int PartnerId { get; set; }
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "";
+        public bool IsPosting { get; set; } = true;
+        public int? ParentId { get; set; }
+    }
+
+    public class GlAccountUpdateDto
+    {
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "";
+        public bool IsPosting { get; set; }
+        public int? ParentId { get; set; }
+    }
+
+    public class GlAccountDto
+    {
+        public int AccountId { get; set; }
+        public int PartnerId { get; set; }
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "";
+        public bool IsPosting { get; set; }
+        public int? ParentId { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
+    }
 }

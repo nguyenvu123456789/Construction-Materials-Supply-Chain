@@ -196,6 +196,20 @@ namespace Application.MappingProfile
                 .ForMember(d => d.RecipientUserIds, o => o.MapFrom(s => s.NotificationRecipients.Select(x => x.UserId)))
                 .ForMember(d => d.RecipientRoleIds, o => o.MapFrom(s => s.NotificationRecipientRoles.Select(x => x.RoleId)))
                 .ForMember(d => d.Replies, o => o.MapFrom(s => s.NotificationReplies.OrderBy(x => x.CreatedAt)));
+
+            CreateMap<GlAccount, GlAccountDto>();
+
+            CreateMap<GlAccountCreateDto, GlAccount>()
+                .ForMember(d => d.AccountId, o => o.Ignore())
+                .ForMember(d => d.IsDeleted, o => o.MapFrom(_ => false))
+                .ForMember(d => d.DeletedAt, o => o.MapFrom(_ => (DateTime?)null));
+
+            CreateMap<GlAccountUpdateDto, GlAccount>()
+                .ForMember(d => d.AccountId, o => o.Ignore())
+                .ForMember(d => d.Code, o => o.Ignore())
+                .ForMember(d => d.PartnerId, o => o.Ignore())
+                .ForMember(d => d.IsDeleted, o => o.Ignore())
+                .ForMember(d => d.DeletedAt, o => o.Ignore());
         }
     }
 }

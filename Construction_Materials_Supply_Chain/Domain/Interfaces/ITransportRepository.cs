@@ -9,6 +9,8 @@ namespace Domain.Interface
         List<Transport> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void AddStops(int transportId, List<TransportStop> stops);
         void AddInvoices(int transportId, List<int> invoiceIds);
+        void ReplaceInvoices(int transportId, List<int> invoiceIds);
+        bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId);
         void UpdateStatus(int transportId, TransportStatus status, DateTimeOffset? startActual, DateTimeOffset? endActual);
         void UpdateStopArrival(int transportId, int transportStopId, DateTimeOffset at);
         void UpdateStopDeparture(int transportId, int transportStopId, DateTimeOffset at);

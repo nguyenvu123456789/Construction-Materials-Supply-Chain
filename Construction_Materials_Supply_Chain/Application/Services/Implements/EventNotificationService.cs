@@ -15,16 +15,23 @@ namespace Application.Services.Implements
         private readonly IEventNotificationSettingRepository _settings;
         private readonly INotificationService _noti;
         private readonly INotificationRepository _repoNoti;
-        private readonly IZaloChannel _zalo;
+        private readonly IEmailChannel _email;
         private readonly IUserRepository _userRepo;
 
-        public EventNotificationService(IEventNotificationSettingRepository settings, INotificationService noti, INotificationRepository repoNoti, IZaloChannel zalo)
+        public EventNotificationService(
+            IEventNotificationSettingRepository settings,
+            INotificationService noti,
+            INotificationRepository repoNoti,
+            IEmailChannel email,
+            IUserRepository userRepo)
         {
-            _settings = settings; 
-            _noti = noti; 
-            _repoNoti = repoNoti; 
-            _zalo = zalo;
+            _settings = settings;
+            _noti = noti;
+            _repoNoti = repoNoti;
+            _email = email;
+            _userRepo = userRepo;
         }
+
 
         public EventNotifySettingDto Get(int partnerId, string eventType)
         {
@@ -95,7 +102,14 @@ namespace Application.Services.Implements
             var res = _noti.CreateAlert(alert);
 
             if (s.SendZalo && recipients.Count > 0)
-                _ = _zalo.SendAsync(dto.PartnerId, recipients, dto.Title, dto.Content);
+            {
+                var emails = _userRepo.GetEmailsByUserIds(recipients)
+                                      .Where(e => !string.IsNullOrWhiteSpace(e))
+                                      .Distinct()
+                                      .ToList();
+                if (emails.Count > 0)
+                    _ = _email.SendAsync(dto.PartnerId, emails, dto.Title, dto.Content);
+            }
         }
     }
 }

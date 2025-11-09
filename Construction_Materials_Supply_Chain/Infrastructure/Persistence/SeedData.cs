@@ -306,7 +306,7 @@ namespace Infrastructure.Persistence
                     context.SaveChanges();
                 }
 
-            var wood = context.Materials.First(m => m.MaterialCode == "W001");
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
                 var plastic = context.Materials.First(m => m.MaterialCode == "P001");
                 var cement = context.Materials.First(m => m.MaterialCode == "C001");

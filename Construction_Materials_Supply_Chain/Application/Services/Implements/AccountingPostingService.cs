@@ -1,14 +1,8 @@
 ﻿using Application.DTOs;
-using Application.Interfaces;
-using AutoMapper;
 using Domain.Interface;
 using Domain.Interface.Base;
 using Domain.Interfaces;
 using Domain.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Application.Services
 {

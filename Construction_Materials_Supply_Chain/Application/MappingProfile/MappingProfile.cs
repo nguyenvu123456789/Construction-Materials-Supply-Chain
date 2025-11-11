@@ -60,14 +60,7 @@ namespace Application.MappingProfile
                 .ForMember(dest => dest.Invoice, opt => opt.MapFrom(src => src.Invoice))
                 .ForMember(dest => dest.Import, opt => opt.MapFrom(src => src.Import))
                 .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
-                .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src =>
-        src.CreatedByNavigation != null
-            ? (string.IsNullOrEmpty(src.CreatedByNavigation.FullName)
-                ? src.CreatedByNavigation.UserName
-                : src.CreatedByNavigation.FullName)
-            : null
-    ));
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy));
 
 
             CreateMap<Invoice, SimpleInvoiceDto>();

@@ -198,7 +198,7 @@ namespace Services.Implementations
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 ReviewedAt = DateTime.UtcNow,
-                Status = report.Status, // 👈 lấy trạng thái đã cập nhật
+                Status = report.Status, 
                 Import = report.Import != null
                     ? new SimpleImportDto
                     {
@@ -230,20 +230,43 @@ namespace Services.Implementations
             };
         }
 
-
-        // 🔹 Lấy theo ID
+        // Lấy theo ID
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
 
+            //  Lấy bản ghi xử lý (HandleRequest) mới nhất
+            var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
+                .OrderByDescending(h => h.HandledAt)
+                .FirstOrDefault();
+
+            var handleHistory = lastHandle != null
+                ? new List<HandleRequestDto>
+                {
+            new HandleRequestDto
+            {
+                HandledBy = lastHandle.HandledBy,
+                HandledByName = lastHandle.HandledByNavigation?.FullName
+                                 ?? lastHandle.HandledByNavigation?.UserName
+                                 ?? "Không rõ",
+                ActionType = lastHandle.ActionType,
+                Note = lastHandle.Note,
+                HandledAt = lastHandle.HandledAt
+            }
+                }
+                : new List<HandleRequestDto>();
+
+            //  Trả về DTO kết hợp cả chi tiết và bản ghi xử lý mới nhất
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 CreatedBy = report.CreatedBy,
-                CreatedByName = report.CreatedByNavigation?.FullName ?? report.CreatedByNavigation?.UserName ?? "Không rõ",
+                CreatedByName = report.CreatedByNavigation?.FullName
+                                 ?? report.CreatedByNavigation?.UserName
+                                 ?? "Không rõ",
                 Status = report.Status ?? "Pending",
                 Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
                 {
@@ -254,9 +277,12 @@ namespace Services.Implementations
                     GoodQuantity = d.GoodQuantity,
                     DamagedQuantity = d.DamagedQuantity,
                     Comment = d.Comment
-                }).ToList()
+                }).ToList(),
+                HandleHistory = handleHistory
             };
         }
+
+
         public List<ImportReportResponseDto> GetAllByPartner(int partnerId)
         {
             var reports = _reports.GetAllWithDetails()

@@ -11,8 +11,6 @@
         public string Status { get; set; } = "Pending";
         public virtual Import Import { get; set; } = null!;
         public virtual Invoice? Invoice { get; set; }
-        public virtual User CreatedByNavigation { get; set; } = null!;
-        public virtual User? ReviewedByNavigation { get; set; }
         public virtual ICollection<ImportReportDetail> ImportReportDetails { get; set; } = new List<ImportReportDetail>();
     }
 }

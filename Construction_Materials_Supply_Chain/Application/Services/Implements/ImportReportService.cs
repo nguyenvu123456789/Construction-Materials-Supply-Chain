@@ -230,26 +230,28 @@ namespace Services.Implementations
             };
         }
 
-        // Lấy theo ID
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
 
-            //  Lấy bản ghi xử lý (HandleRequest) mới nhất
+            // Lấy bản ghi HandleRequest mới nhất
             var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
-                .OrderByDescending(h => h.HandledAt)
-                .FirstOrDefault();
+                                            .OrderByDescending(h => h.HandledAt)
+                                            .FirstOrDefault();
 
+            var reviewerName = lastHandle?.HandledByNavigation?.FullName
+                               ?? lastHandle?.HandledByNavigation?.UserName
+                               ?? "Chưa duyệt";
+
+            // Tạo 1 HandleRequestDto duy nhất
             var handleHistory = lastHandle != null
                 ? new List<HandleRequestDto>
                 {
             new HandleRequestDto
             {
                 HandledBy = lastHandle.HandledBy,
-                HandledByName = lastHandle.HandledByNavigation?.FullName
-                                 ?? lastHandle.HandledByNavigation?.UserName
-                                 ?? "Không rõ",
+                HandledByName = reviewerName,
                 ActionType = lastHandle.ActionType,
                 Note = lastHandle.Note,
                 HandledAt = lastHandle.HandledAt
@@ -257,16 +259,23 @@ namespace Services.Implementations
                 }
                 : new List<HandleRequestDto>();
 
-            //  Trả về DTO kết hợp cả chi tiết và bản ghi xử lý mới nhất
+            // Tên người tạo lấy từ CreatedBy
+            var createdByName = "Không rõ"; // mặc định
+            var creatorHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
+                                               .OrderBy(h => h.HandledAt)
+                                               .FirstOrDefault();
+            if (creatorHandle != null)
+                createdByName = creatorHandle.HandledByNavigation?.FullName
+                                ?? creatorHandle.HandledByNavigation?.UserName
+                                ?? "Không rõ";
+
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 CreatedBy = report.CreatedBy,
-                CreatedByName = report.CreatedByNavigation?.FullName
-                                 ?? report.CreatedByNavigation?.UserName
-                                 ?? "Không rõ",
+                CreatedByName = createdByName,
                 Status = report.Status ?? "Pending",
                 Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
                 {
@@ -283,42 +292,25 @@ namespace Services.Implementations
         }
 
 
+        // 🔹 Lấy tất cả theo Partner
         public List<ImportReportResponseDto> GetAllByPartner(int partnerId)
         {
             var reports = _reports.GetAllWithDetails()
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
 
-            // 🔹 Lọc theo PartnerId người tạo
-            var filtered = reports
-                .Where(r => r.CreatedByNavigation != null && r.CreatedByNavigation.PartnerId == partnerId)
-                .ToList();
-
-            // 🔹 Lấy bản ghi mới nhất cho mỗi InvoiceId (hoặc ImportId tuỳ bạn)
-            var latestReports = filtered
-                .GroupBy(r => r.InvoiceId)
-                .Select(g => g.First())
-                .ToList();
-
             var result = new List<ImportReportResponseDto>();
 
-            foreach (var report in latestReports)
+            foreach (var report in reports)
             {
-                var details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
-                {
-                    MaterialId = d.MaterialId,
-                    MaterialCode = d.Material?.MaterialCode ?? "",
-                    MaterialName = d.Material?.MaterialName ?? "",
-                    TotalQuantity = d.TotalQuantity,
-                    GoodQuantity = d.GoodQuantity,
-                    DamagedQuantity = d.DamagedQuantity,
-                    Comment = d.Comment
-                }).ToList();
-
-                // 🔹 Lấy bản ghi xử lý cuối cùng
+                // Lấy HandleRequest mới nhất
                 var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
-                    .OrderByDescending(h => h.HandledAt)
-                    .FirstOrDefault();
+                                                .OrderByDescending(h => h.HandledAt)
+                                                .FirstOrDefault();
+
+                // Nếu creator không phải partner thì bỏ qua
+                if (lastHandle?.HandledByNavigation?.PartnerId != partnerId)
+                    continue;
 
                 var handleHistory = lastHandle != null
                     ? new List<HandleRequestDto>
@@ -326,7 +318,9 @@ namespace Services.Implementations
                 new HandleRequestDto
                 {
                     HandledBy = lastHandle.HandledBy,
-                    HandledByName = lastHandle.HandledByNavigation?.FullName ?? "",
+                    HandledByName = lastHandle.HandledByNavigation?.FullName
+                                    ?? lastHandle.HandledByNavigation?.UserName
+                                    ?? "Không rõ",
                     ActionType = lastHandle.ActionType,
                     Note = lastHandle.Note,
                     HandledAt = lastHandle.HandledAt
@@ -334,21 +328,36 @@ namespace Services.Implementations
                     }
                     : new List<HandleRequestDto>();
 
+                var createdByName = lastHandle?.HandledByNavigation?.FullName
+                                    ?? lastHandle?.HandledByNavigation?.UserName
+                                    ?? "Không rõ";
+
                 result.Add(new ImportReportResponseDto
                 {
                     ImportReportId = report.ImportReportId,
                     CreatedBy = report.CreatedBy,
-                    CreatedByName = report.CreatedByNavigation?.FullName ?? "Không rõ",
+                    CreatedByName = createdByName,
                     Notes = report.Notes,
                     CreatedAt = report.CreatedAt,
                     Status = report.Status ?? "Pending",
-                    Details = details,
+                    Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
+                    {
+                        MaterialId = d.MaterialId,
+                        MaterialCode = d.Material?.MaterialCode ?? "",
+                        MaterialName = d.Material?.MaterialName ?? "",
+                        TotalQuantity = d.TotalQuantity,
+                        GoodQuantity = d.GoodQuantity,
+                        DamagedQuantity = d.DamagedQuantity,
+                        Comment = d.Comment
+                    }).ToList(),
                     HandleHistory = handleHistory
                 });
             }
 
             return result;
         }
+
+
 
 
         public void MarkAsViewed(int reportId)

@@ -107,14 +107,18 @@ namespace Services.Implementations
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception("Report not found.");
 
+            // 🔹 Cập nhật trạng thái ImportReport
+            report.Status = dto.Status; 
+            _reports.Update(report); 
+
             // 🔹 Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
                 RequestType = "ImportReport",
                 RequestId = report.ImportReportId,
                 HandledBy = dto.ReviewedBy,
-                ActionType = dto.Status,       // "Approved" hoặc "Rejected"
-                Note = dto.Note,               // 🔹 Giờ note sẽ chứa lý do hoặc ghi chú của người duyệt
+                ActionType = dto.Status,
+                Note = dto.Note,
                 HandledAt = DateTime.UtcNow
             };
             _handleRequests.Add(handle);
@@ -180,7 +184,6 @@ namespace Services.Implementations
             }
             else if (dto.Status == "Rejected")
             {
-                // Nếu bị từ chối, chỉ cập nhật hóa đơn nếu có
                 if (report.Invoice != null)
                 {
                     report.Invoice.ImportStatus = "Rejected";
@@ -188,14 +191,14 @@ namespace Services.Implementations
                 }
             }
 
-            // 🔹 Tạo response DTO trả về
+            // 🔹 Trả về DTO
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 ReviewedAt = DateTime.UtcNow,
-                Status = dto.Status,
+                Status = report.Status, // 👈 lấy trạng thái đã cập nhật
                 Import = report.Import != null
                     ? new SimpleImportDto
                     {
@@ -226,6 +229,7 @@ namespace Services.Implementations
                 }).ToList()
             };
         }
+
 
         // 🔹 Lấy theo ID
         public ImportReportResponseDto GetByIdResponse(int reportId)

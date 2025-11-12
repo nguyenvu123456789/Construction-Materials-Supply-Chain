@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -18,12 +19,20 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("all")]
-        public IActionResult GetAllOrders()
+        [HttpGet("purchase/{partnerId}")]
+        public IActionResult GetPurchaseOrders(int partnerId)
         {
-            var orders = _orderService.GetAllWithDetails();
+            var orders = _orderService.GetPurchaseOrders(partnerId);
             return Ok(orders);
         }
+
+        [HttpGet("sales/{partnerId}")]
+        public IActionResult GetSalesOrders(int partnerId)
+        {
+            var orders = _orderService.GetSalesOrders(partnerId);
+            return Ok(orders);
+        }
+
 
         [HttpGet("{orderCode}/details")]
         public IActionResult GetOrderDetails(string orderCode)

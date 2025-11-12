@@ -63,7 +63,6 @@ namespace Application.Services.Implements
                 Note = dto.Note
             };
 
-            // ✅ Gắn vật tư vào đơn hàng + trạng thái vật tư mặc định
             order.OrderDetails = dto.Materials.Select(m => new OrderDetail
             {
                 MaterialId = m.MaterialId,
@@ -94,7 +93,6 @@ namespace Application.Services.Implements
             };
         }
 
-        // ✅ Xử lý đơn hàng (Approve / Reject)
         public Order HandleOrder(HandleOrderRequestDto dto)
         {
             var order = _orderRepository.GetById(dto.OrderId);
@@ -154,9 +152,20 @@ namespace Application.Services.Implements
             };
         }
 
-        public List<Order> GetAllWithDetails()
+        public List<Order> GetPurchaseOrders(int partnerId)
         {
-            return _orderRepository.GetAllWithDetails().ToList();
+            return _orderRepository
+                .GetAllWithDetails()
+                .Where(o => o.CreatedBy == partnerId)
+                .ToList();
+        }
+
+        public List<Order> GetSalesOrders(int partnerId)
+        {
+            return _orderRepository
+                .GetAllWithDetails()
+                .Where(o => o.SupplierId == partnerId)
+                .ToList();
         }
     }
 }

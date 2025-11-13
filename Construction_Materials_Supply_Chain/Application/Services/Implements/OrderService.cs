@@ -156,7 +156,8 @@ namespace Application.Services.Implements
         {
             return _orderRepository
                 .GetAllWithDetails()
-                .Where(o => o.CreatedBy == partnerId)
+                .Where(o => o.CreatedByNavigation != null
+                            && o.CreatedByNavigation.PartnerId == partnerId)
                 .ToList();
         }
 

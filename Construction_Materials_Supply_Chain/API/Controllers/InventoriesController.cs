@@ -17,7 +17,6 @@ namespace API.Controllers
             _inventoryService = inventoryService;
         }
 
-        // GET: api/inventories/partner/{partnerId}?SearchTerm=...&PageNumber=1&PageSize=10
         [HttpGet("partner/{partnerId:int}")]
         public IActionResult GetInventoryByPartner(
             int partnerId,

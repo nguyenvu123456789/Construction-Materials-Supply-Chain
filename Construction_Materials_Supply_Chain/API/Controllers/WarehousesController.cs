@@ -9,7 +9,6 @@ namespace API.Controllers
     [ApiController]
     public class WarehousesController : ControllerBase
     {
-        private readonly IUserService _userService;
         private readonly IWarehouseService _service;
         private readonly IMapper _mapper;
 

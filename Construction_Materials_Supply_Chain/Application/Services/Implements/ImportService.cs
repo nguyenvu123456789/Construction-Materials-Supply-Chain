@@ -14,6 +14,7 @@ namespace Services.Implementations
         private readonly IInventoryRepository _inventories;
         private readonly IImportDetailRepository _importDetails;
         private readonly IMaterialRepository _materialRepository;
+        private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IMaterialPartnerRepository _materialPartners;
 
         public ImportService(
@@ -22,7 +23,8 @@ namespace Services.Implementations
             IInventoryRepository inventories,
             IImportDetailRepository importDetails,
             IMaterialRepository materialRepository,
-            IMaterialPartnerRepository materialPartners)
+            IMaterialPartnerRepository materialPartners,
+            IOrderDetailRepository orderDetailRepository) 
         {
             _imports = imports;
             _invoices = invoices;
@@ -30,22 +32,31 @@ namespace Services.Implementations
             _importDetails = importDetails;
             _materialRepository = materialRepository;
             _materialPartners = materialPartners;
+            _orderDetailRepository = orderDetailRepository; 
         }
 
-        public Import CreateImportFromInvoice(string? importCode, string? invoiceCode, int warehouseId, int createdBy, string? notes)
+        public Import CreateImportFromInvoice(
+    string? importCode,
+    string? invoiceCode,
+    int warehouseId,
+    int createdBy,
+    string? notes)
         {
+            // Kiểm tra input
             if (string.IsNullOrEmpty(invoiceCode) && string.IsNullOrEmpty(importCode))
                 throw new Exception(ImportMessages.MSG_MISSING_INVOICE_OR_IMPORT);
 
+            // Nếu có invoiceCode → nhập từ hóa đơn
             if (!string.IsNullOrEmpty(invoiceCode))
             {
                 var invoice = _invoices.GetByCode(invoiceCode);
                 if (invoice == null)
                     throw new Exception(ImportMessages.MSG_INVOICE_NOT_FOUND);
 
-                if (invoice.ExportStatus == "Success")
+                if (invoice.ExportStatus == ImportStatus.Success.ToString())
                     throw new Exception(ImportMessages.MSG_INVOICE_ALREADY_IMPORTED);
 
+                // Tạo import mới
                 var import = new Import
                 {
                     ImportCode = importCode ?? "IMP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
@@ -60,6 +71,7 @@ namespace Services.Implementations
 
                 foreach (var detail in invoice.InvoiceDetails)
                 {
+                    // Thêm chi tiết import
                     var importDetail = new ImportDetail
                     {
                         ImportId = import.ImportId,
@@ -73,6 +85,7 @@ namespace Services.Implementations
                     };
                     _importDetails.Add(importDetail);
 
+                    // Cập nhật tồn kho
                     var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, detail.MaterialId);
                     if (inventory == null)
                     {
@@ -81,7 +94,6 @@ namespace Services.Implementations
                             WarehouseId = warehouseId,
                             MaterialId = detail.MaterialId,
                             Quantity = detail.Quantity,
-                            UnitPrice = detail.UnitPrice,
                             CreatedAt = DateTime.UtcNow
                         });
                     }
@@ -92,6 +104,7 @@ namespace Services.Implementations
                         _inventories.Update(inventory);
                     }
 
+                    // Ghi nhận mối quan hệ Buyer - Partner
                     var existingRelation = _materialPartners
                         .GetAll()
                         .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId
@@ -106,8 +119,17 @@ namespace Services.Implementations
                             PartnerId = invoice.PartnerId
                         });
                     }
+
+                    // Cập nhật trạng thái OrderDetail 
+                    var orderDetail = _orderDetailRepository.GetByOrderAndMaterial(invoice.OrderId, detail.MaterialId);
+                    if (orderDetail != null)
+                    {
+                        orderDetail.Status = OrderDetailStatus.Success.ToString();
+                        _orderDetailRepository.Update(orderDetail);
+                    }
                 }
 
+                // Cập nhật trạng thái hóa đơn
                 invoice.ImportStatus = ImportStatus.Pending.ToString();
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoices.Update(invoice);
@@ -116,6 +138,7 @@ namespace Services.Implementations
             }
             else
             {
+                // Nếu chỉ có importCode → tạo mới hoặc cập nhật import đang Pending
                 var existingImport = _imports.GetAll().FirstOrDefault(i => i.ImportCode == importCode);
                 if (existingImport != null)
                 {
@@ -139,6 +162,7 @@ namespace Services.Implementations
             }
         }
 
+
         public Import ConfirmPendingImport(string importCode, string? notes)
         {
             var import = _imports.GetAll()
@@ -161,7 +185,6 @@ namespace Services.Implementations
                         WarehouseId = import.WarehouseId,
                         MaterialId = detail.MaterialId,
                         Quantity = detail.Quantity,
-                        UnitPrice = detail.UnitPrice,
                         CreatedAt = DateTime.UtcNow
                     });
                 }

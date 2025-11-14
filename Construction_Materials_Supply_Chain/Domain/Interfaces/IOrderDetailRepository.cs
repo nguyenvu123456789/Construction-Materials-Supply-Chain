@@ -10,5 +10,7 @@ namespace Domain.Interface
         void Add(OrderDetail detail);
         void Update(OrderDetail detail);
         void Delete(int id);
+        OrderDetail? GetByOrderAndMaterial(int orderId, int materialId);
+
     }
 }

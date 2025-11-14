@@ -8,6 +8,7 @@ namespace Application.DTOs.Material
         public int CategoryId { get; set; }
         public int PartnerId { get; set; }
         public string Unit { get; set; } = null!;
+        public int WarehouseId { get; set; }
     }
     public class MaterialDto
     {

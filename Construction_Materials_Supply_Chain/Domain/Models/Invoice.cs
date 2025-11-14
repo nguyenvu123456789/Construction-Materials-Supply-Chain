@@ -7,7 +7,7 @@ public partial class Invoice
     public string InvoiceType { get; set; } = null!;
     public int PartnerId { get; set; }
     public int CreatedBy { get; set; }
-
+    public int OrderId { get; set; }
     public DateTime IssueDate { get; set; }
     public DateTime? DueDate { get; set; }
     public decimal TotalAmount { get; set; }

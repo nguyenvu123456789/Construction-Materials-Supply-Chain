@@ -29,6 +29,22 @@ namespace Infrastructure.Repositories
                 .Include(od => od.Material)
                 .ToList();
         }
+        public OrderDetail? GetByOrderAndMaterial(int orderId, int materialId)
+        {
+            return _context.OrderDetails
+                .Include(od => od.Material)
+                .Include(od => od.Order)
+                .FirstOrDefault(od => od.OrderId == orderId && od.MaterialId == materialId);
+        }
+
+        public List<OrderDetail> GetByMaterialIds(List<int> materialIds)
+        {
+            return _context.OrderDetails
+                .Where(od => materialIds.Contains(od.MaterialId))
+                .Include(od => od.Material)
+                .Include(od => od.Order)
+                .ToList();
+        }
 
         public OrderDetail? GetById(int id)
         {
@@ -41,13 +57,11 @@ namespace Infrastructure.Repositories
         public void Add(OrderDetail detail)
         {
             _context.OrderDetails.Add(detail);
-            _context.SaveChanges();
         }
 
         public void Update(OrderDetail detail)
         {
             _context.OrderDetails.Update(detail);
-            _context.SaveChanges();
         }
 
         public void Delete(int id)
@@ -56,8 +70,11 @@ namespace Infrastructure.Repositories
             if (detail != null)
             {
                 _context.OrderDetails.Remove(detail);
-                _context.SaveChanges();
             }
+        }
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
         }
     }
 }

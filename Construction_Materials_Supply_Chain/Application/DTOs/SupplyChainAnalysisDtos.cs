@@ -17,8 +17,8 @@ namespace Application.DTOs
         public string CategoryName { get; set; } = string.Empty;
         public decimal TotalQuantity { get; set; }
         public decimal TotalRevenue { get; set; }
-        public decimal? TotalProfit { get; set; }
-        public decimal? GrowthRatePercent { get; set; }
+        public decimal TotalProfit { get; set; }
+        public decimal GrowthRatePercent { get; set; }
     }
 
     public class SalesTrendFilterDto
@@ -37,7 +37,7 @@ namespace Application.DTOs
         public DateTime PeriodEnd { get; set; }
         public decimal TotalQuantity { get; set; }
         public decimal TotalRevenue { get; set; }
-        public decimal? TotalProfit { get; set; }
+        public decimal TotalProfit { get; set; }
     }
 
     public class LocationSummaryDto
@@ -48,8 +48,8 @@ namespace Application.DTOs
         public string? Status { get; set; }
         public decimal TotalQuantity { get; set; }
         public decimal TotalRevenue { get; set; }
-        public decimal? TotalProfit { get; set; }
-        public decimal? GrowthRatePercent { get; set; }
+        public decimal TotalProfit { get; set; }
+        public decimal GrowthRatePercent { get; set; }
     }
 
     public class InventorySummaryDto
@@ -68,7 +68,7 @@ namespace Application.DTOs
         public decimal TotalSoldInPeriod { get; set; }
         public decimal RevenueInPeriod { get; set; }
         public decimal AverageInventory { get; set; }
-        public decimal? TurnoverRate { get; set; }
+        public decimal TurnoverRate { get; set; }
         public bool IsFastMoving { get; set; }
         public bool IsSlowMoving { get; set; }
     }

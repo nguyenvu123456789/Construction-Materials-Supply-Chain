@@ -86,7 +86,8 @@ namespace Application.Services.Implements
                     CategoryName = g.Key.categoryName,
                     TotalQuantity = g.Sum(x => x!.quantity),
                     TotalRevenue = g.Sum(x => x!.revenue),
-                    TotalProfit = g.Sum(x => x!.profit)
+                    TotalProfit = g.Sum(x => x!.profit),
+                    GrowthRatePercent = 0m
                 })
                 .ToList();
 
@@ -115,14 +116,11 @@ namespace Application.Services.Implements
 
             foreach (var item in currentData)
             {
-                if (previousRevenueByCategory.TryGetValue(item.CategoryId, out var prevRevenue) && prevRevenue > 0)
-                {
-                    item.GrowthRatePercent = (item.TotalRevenue - prevRevenue) * 100m / prevRevenue;
-                }
-                else
-                {
-                    item.GrowthRatePercent = null;
-                }
+                decimal previous = 0m;
+                if (previousRevenueByCategory.TryGetValue(item.CategoryId, out var prev))
+                    previous = prev;
+
+                item.GrowthRatePercent = CalculateGrowthPercent(item.TotalRevenue, previous);
             }
 
             return currentData
@@ -177,7 +175,7 @@ namespace Application.Services.Implements
                     PeriodEnd = g.Key.End,
                     TotalQuantity = g.Sum(x => x.quantity),
                     TotalRevenue = g.Sum(x => x.revenue),
-                    TotalProfit = null
+                    TotalProfit = 0m
                 })
                 .OrderBy(x => x.PeriodStart)
                 .ToList();
@@ -191,31 +189,28 @@ namespace Application.Services.Implements
                 .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
                 .ToList();
 
-            var grouped = invoicesCurrent
+            var groupedCurrent = invoicesCurrent
                 .Where(i => i.Partner != null)
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
                 {
+                    i.PartnerId,
                     Partner = i.Partner,
-                    d.Quantity,
-                    d.LineTotal,
-                    d.UnitPrice
+                    Quantity = Convert.ToDecimal(d.Quantity),
+                    Revenue = d.LineTotal ?? Convert.ToDecimal(d.Quantity) * d.UnitPrice
                 })
-                .GroupBy(x => x.Partner);
+                .GroupBy(x => x.PartnerId);
 
             var currentData = new List<LocationSummaryDto>();
 
-            foreach (var g in grouped)
+            foreach (var g in groupedCurrent)
             {
-                var partner = g.Key;
+                var partner = g.First().Partner;
                 var dto = _mapper.Map<LocationSummaryDto>(partner);
-                dto.TotalQuantity = g.Sum(x => Convert.ToDecimal(x.Quantity));
-                dto.TotalRevenue = g.Sum(x =>
-                {
-                    var q = Convert.ToDecimal(x.Quantity);
-                    return x.LineTotal ?? q * x.UnitPrice;
-                });
-                dto.TotalProfit = null;
-                dto.GrowthRatePercent = null;
+                dto.PartnerId = partner.PartnerId;
+                dto.TotalQuantity = g.Sum(x => x.Quantity);
+                dto.TotalRevenue = g.Sum(x => x.Revenue);
+                dto.TotalProfit = 0m;
+                dto.GrowthRatePercent = 0m;
                 currentData.Add(dto);
             }
 
@@ -227,7 +222,7 @@ namespace Application.Services.Implements
             var previousRevenueByPartner = invoicesPrevious
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
                 {
-                    PartnerId = i.PartnerId,
+                    i.PartnerId,
                     Revenue = d.LineTotal ?? Convert.ToDecimal(d.Quantity) * d.UnitPrice
                 })
                 .GroupBy(x => x.PartnerId)
@@ -237,14 +232,11 @@ namespace Application.Services.Implements
 
             foreach (var item in currentData)
             {
-                if (previousRevenueByPartner.TryGetValue(item.PartnerId, out var prevRevenue) && prevRevenue > 0)
-                {
-                    item.GrowthRatePercent = (item.TotalRevenue - prevRevenue) * 100m / prevRevenue;
-                }
-                else
-                {
-                    item.GrowthRatePercent = null;
-                }
+                decimal previous = 0m;
+                if (previousRevenueByPartner.TryGetValue(item.PartnerId, out var prev))
+                    previous = prev;
+
+                item.GrowthRatePercent = CalculateGrowthPercent(item.TotalRevenue, previous);
             }
 
             return currentData
@@ -310,13 +302,9 @@ namespace Application.Services.Implements
                 if (manager != null)
                 {
                     if (manager.PartnerId.HasValue)
-                    {
                         ownerPartnerId = manager.PartnerId.Value;
-                    }
                     if (manager.Partner != null)
-                    {
                         ownerPartnerName = manager.Partner.PartnerName;
-                    }
                 }
                 dto.OwnerPartnerId = ownerPartnerId;
                 dto.OwnerPartnerName = ownerPartnerName;
@@ -332,32 +320,25 @@ namespace Application.Services.Implements
                 dto.TotalSoldInPeriod = soldQty;
                 dto.RevenueInPeriod = soldRevenue;
 
-                var averageInventory = dto.QuantityOnHand;
-                dto.AverageInventory = averageInventory;
+                dto.AverageInventory = dto.QuantityOnHand;
 
-                if (averageInventory > 0)
+                if (dto.AverageInventory > 0m)
                 {
-                    dto.TurnoverRate = soldQty / averageInventory;
+                    dto.TurnoverRate = soldQty / dto.AverageInventory;
                 }
                 else
                 {
-                    dto.TurnoverRate = null;
+                    dto.TurnoverRate = 0m;
                 }
 
-                dto.IsFastMoving = false;
-                dto.IsSlowMoving = false;
-
-                if (dto.TurnoverRate.HasValue)
-                {
-                    dto.IsFastMoving = dto.TurnoverRate.Value >= 4m;
-                    dto.IsSlowMoving = dto.TurnoverRate.Value <= 1m;
-                }
+                dto.IsFastMoving = dto.TurnoverRate >= 4m;
+                dto.IsSlowMoving = dto.TurnoverRate <= 1m;
 
                 result.Add(dto);
             }
 
             return result
-                .OrderByDescending(x => x.TurnoverRate ?? 0m)
+                .OrderByDescending(x => x.TurnoverRate)
                 .ToList();
         }
 
@@ -600,6 +581,17 @@ namespace Application.Services.Implements
                 weekOfYear -= 1;
             }
             return firstMonday.AddDays(weekOfYear * 7);
+        }
+
+        private decimal CalculateGrowthPercent(decimal currentRevenue, decimal previousRevenue)
+        {
+            if (currentRevenue <= 0m && previousRevenue <= 0m)
+                return 0m;
+
+            if (previousRevenue <= 0m && currentRevenue > 0m)
+                return 100m;
+
+            return (currentRevenue - previousRevenue) * 100m / previousRevenue;
         }
     }
 }

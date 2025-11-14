@@ -102,13 +102,16 @@ namespace Application.MappingProfile
 
             CreateMap<Partner, PartnerDto>()
                 .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : null))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status));
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
             CreateMap<PartnerCreateDto, Partner>()
-                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status));
+                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
+                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
             CreateMap<PartnerUpdateDto, Partner>()
-                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status));
+                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
+                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
@@ -203,6 +206,25 @@ namespace Application.MappingProfile
                 .ForMember(d => d.PartnerId, o => o.Ignore())
                 .ForMember(d => d.IsDeleted, o => o.Ignore())
                 .ForMember(d => d.DeletedAt, o => o.Ignore());
+
+            CreateMap<Partner, LocationSummaryDto>()
+                .ForMember(d => d.TotalQuantity, o => o.Ignore())
+                .ForMember(d => d.TotalRevenue, o => o.Ignore())
+                .ForMember(d => d.TotalProfit, o => o.Ignore())
+                .ForMember(d => d.GrowthRatePercent, o => o.Ignore());
+
+            CreateMap<Inventory, InventorySummaryDto>()
+                .ForMember(d => d.MaterialCode, o => o.Ignore())
+                .ForMember(d => d.MaterialName, o => o.Ignore())
+                .ForMember(d => d.CategoryName, o => o.Ignore())
+                .ForMember(d => d.WarehouseName, o => o.Ignore())
+                .ForMember(d => d.TotalSoldInPeriod, o => o.Ignore())
+                .ForMember(d => d.RevenueInPeriod, o => o.Ignore())
+                .ForMember(d => d.AverageInventory, o => o.Ignore())
+                .ForMember(d => d.TurnoverRate, o => o.Ignore())
+                .ForMember(d => d.IsFastMoving, o => o.Ignore())
+                .ForMember(d => d.IsSlowMoving, o => o.Ignore())
+                .ForMember(d => d.QuantityOnHand, o => o.MapFrom(s => s.Quantity ?? 0m));
         }
     }
 }

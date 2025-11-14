@@ -14,7 +14,11 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public List<Warehouse> GetAll() => _context.Warehouses.ToList();
+        public List<Warehouse> GetAll() =>
+            _context.Warehouses
+                .Include(w => w.Manager)
+                .ThenInclude(m => m.Partner)
+                .ToList();
 
         public Warehouse? GetById(int id) => _context.Warehouses.FirstOrDefault(w => w.WarehouseId == id);
 

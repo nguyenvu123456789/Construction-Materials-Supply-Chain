@@ -10,6 +10,7 @@
         public int PartnerTypeId { get; set; }
         public string PartnerTypeName { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string? Region { get; set; }
     }
 
     public class PartnerTypeDto
@@ -26,6 +27,7 @@
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; }
+        public string? Region { get; set; }
     }
 
     public class PartnerCreateDto
@@ -35,5 +37,6 @@
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; }
+        public string? Region { get; set; } 
     }
 }

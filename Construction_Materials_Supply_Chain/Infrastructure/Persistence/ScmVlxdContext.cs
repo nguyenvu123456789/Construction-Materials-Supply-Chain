@@ -591,6 +591,9 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(p => p.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Active");
+
+            entity.Property(x => x.Region)
+                .HasMaxLength(200);
         });
 
         modelBuilder.Entity<User>(entity =>

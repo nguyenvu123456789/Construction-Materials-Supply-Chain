@@ -15,6 +15,11 @@ namespace Domain.Models
         public string Unit { get; set; } = null!;
         public string Status { get; set; } = "Active";
         public DateTime CreatedAt { get; set; }
+        public int? CreatedByPartnerId { get; set; }
+
+        [JsonIgnore]
+        [ForeignKey(nameof(CreatedByPartnerId))]
+        public virtual Partner? CreatedByPartner { get; set; }
 
         [JsonIgnore]
         public virtual Category? Category { get; set; }

@@ -13,6 +13,8 @@ namespace Domain.Interface
         List<Material> GetByWarehouse(int warehouseId);
         List<Material> GetAllWithInventory();
         Material? GetDetailById(int id);
+        void AddInventory(Inventory inventory);
+
 
     }
 }

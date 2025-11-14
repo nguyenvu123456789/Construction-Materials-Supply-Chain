@@ -205,13 +205,13 @@ namespace Infrastructure.Persistence
 
                 var inventories = new List<Inventory>
                 {
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, UnitPrice = 250000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, UnitPrice = 320000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, UnitPrice = 180000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, UnitPrice = 90000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, UnitPrice = 1200, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, UnitPrice = 1500000, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, UnitPrice = 200000, CreatedAt = DateTime.Now }
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200,CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150,CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000,CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50,CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, CreatedAt = DateTime.Now }
                 };
 
                 var uniqueInventories = inventories
@@ -222,8 +222,63 @@ namespace Infrastructure.Persistence
                 context.Inventories.AddRange(uniqueInventories);
                 context.SaveChanges();
             }
+            if (!context.Orders.Any())
+            {
+                var customer = context.Users.First(u => u.UserName == "customer1");
 
-            // 9️⃣ Seed Invoices & InvoiceDetails
+                var wood = context.Materials.First(m => m.MaterialCode == "W001");
+                var brick = context.Materials.First(m => m.MaterialCode == "B001");
+                var metal = context.Materials.First(m => m.MaterialCode == "M001");
+                var cement = context.Materials.First(m => m.MaterialCode == "C001");
+                var plastic = context.Materials.First(m => m.MaterialCode == "P001");
+                var paint = context.Materials.First(m => m.MaterialCode == "S001");
+                var glass = context.Materials.First(m => m.MaterialCode == "G001");
+
+                var supplier = context.Partners.First(p => p.PartnerCode == "P001");
+
+                var orders = new List<Order>
+                {
+                    new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
+                    new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
+                    new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
+                    new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
+                    new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
+                    new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
+                    new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
+                    new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
+                    new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
+                    new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
+                };
+
+                context.Orders.AddRange(orders);
+                context.SaveChanges();
+
+                context.OrderDetails.AddRange(
+                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, Status = "Delivered" },
+                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, Status = "Delivered" },
+                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, Status = "Delivered" },
+                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, Status = "Delivered" },
+                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, Status = "Pending" },
+                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, Status = "Approved" },
+                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, Status = "Approved" }
+                );
+
+                context.SaveChanges();
+            }
+            // 9️ Seed Invoices & InvoiceDetails
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -235,14 +290,22 @@ namespace Infrastructure.Persistence
                 var levan = context.Partners.First(p => p.PartnerCode == "P005");
                 var nguyenb = context.Partners.First(p => p.PartnerCode == "P007");
 
+                var order1 = context.Orders.First(o => o.OrderCode == "ORD-001");
+                var order2 = context.Orders.First(o => o.OrderCode == "ORD-002");
+                var order3 = context.Orders.First(o => o.OrderCode == "ORD-003");
+                var order4 = context.Orders.First(o => o.OrderCode == "ORD-004");
+                var order5 = context.Orders.First(o => o.OrderCode == "ORD-005");
+                var order6 = context.Orders.First(o => o.OrderCode == "ORD-006");
+                var order7 = context.Orders.First(o => o.OrderCode == "ORD-007");
+
                 context.Invoices.AddRange(
-                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-10), ExportStatus = "Pending", TotalAmount = 50 * 250000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-15), ExportStatus = "Approved", TotalAmount = 20 * 320000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-20), ExportStatus = "Success", TotalAmount = 100 * 180000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-5), ExportStatus = "Pending", TotalAmount = 80 * 90000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-7), ExportStatus = "Approved", TotalAmount = 2000 * 1200, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-3), ExportStatus = "Success", TotalAmount = 10 * 1500000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-2), ExportStatus = "Pending", TotalAmount = 50 * 200000, CreatedAt = DateTime.Now }
+                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, OrderId = order1.OrderId, IssueDate = DateTime.Now.AddDays(-10), ExportStatus = "Pending", TotalAmount = 50 * 250000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, OrderId = order2.OrderId, IssueDate = DateTime.Now.AddDays(-15), ExportStatus = "Approved", TotalAmount = 20 * 320000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, OrderId = order3.OrderId, IssueDate = DateTime.Now.AddDays(-20), ExportStatus = "Success", TotalAmount = 100 * 180000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, OrderId = order4.OrderId, IssueDate = DateTime.Now.AddDays(-5), ExportStatus = "Pending", TotalAmount = 80 * 90000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, OrderId = order5.OrderId, IssueDate = DateTime.Now.AddDays(-7), ExportStatus = "Approved", TotalAmount = 2000 * 1200, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, OrderId = order6.OrderId, IssueDate = DateTime.Now.AddDays(-3), ExportStatus = "Success", TotalAmount = 10 * 1500000, CreatedAt = DateTime.Now },
+                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, OrderId = order7.OrderId, IssueDate = DateTime.Now.AddDays(-2), ExportStatus = "Pending", TotalAmount = 50 * 200000, CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
 
@@ -267,6 +330,7 @@ namespace Infrastructure.Persistence
                 );
                 context.SaveChanges();
             }
+
 
             if (!context.Imports.Any())
             {
@@ -505,62 +569,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            if (!context.Orders.Any())
-            {
-                var customer = context.Users.First(u => u.UserName == "customer1");
-
-                var wood = context.Materials.First(m => m.MaterialCode == "W001");
-                var brick = context.Materials.First(m => m.MaterialCode == "B001");
-                var metal = context.Materials.First(m => m.MaterialCode == "M001");
-                var cement = context.Materials.First(m => m.MaterialCode == "C001");
-                var plastic = context.Materials.First(m => m.MaterialCode == "P001");
-                var paint = context.Materials.First(m => m.MaterialCode == "S001");
-                var glass = context.Materials.First(m => m.MaterialCode == "G001");
-
-                var supplier = context.Partners.First(p => p.PartnerCode == "P001");
-
-                var orders = new List<Order>
-                {
-                    new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
-                    new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
-                    new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
-                    new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
-                    new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
-                    new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
-                    new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
-                    new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
-                    new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
-                    new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
-                };
-
-                context.Orders.AddRange(orders);
-                context.SaveChanges();
-
-                context.OrderDetails.AddRange(
-                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, Status = "Delivered" },
-                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, Status = "Delivered" },
-                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, Status = "Delivered" },
-                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, Status = "Delivered" },
-                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, Status = "Pending" },
-                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, Status = "Approved" },
-                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, Status = "Approved" }
-                );
-
-                context.SaveChanges();
-            }
+            
 
             if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
             {
@@ -646,9 +655,9 @@ namespace Infrastructure.Persistence
                 if (!hasHistory)
                 {
                     context.Inventories.AddRange(
-                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 150m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-7) },
-                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 135m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-4) },
-                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120m, UnitPrice = 250000m, CreatedAt = DateTime.Now.AddDays(-1) }
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 150m, CreatedAt = DateTime.Now.AddDays(-7) },
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 135m, CreatedAt = DateTime.Now.AddDays(-4) },
+                        new Inventory { WarehouseId = whHN.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120m, CreatedAt = DateTime.Now.AddDays(-1) }
                     );
                     context.SaveChanges();
                 }
@@ -747,22 +756,25 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            Invoice EnsureInvoice(string code, string type, int partnerId, int createdBy, DateTime issue, DateTime due, string status)
+            Invoice EnsureInvoice(string code, string type, int partnerId, int createdBy,
+                      DateTime issueDate, DateTime dueDate, string status, int orderId)
             {
                 var existed = context.Invoices.SingleOrDefault(i => i.InvoiceCode == code);
                 if (existed != null) return existed;
+
                 var inv = new Invoice
                 {
                     InvoiceCode = code,
                     InvoiceType = type,
                     PartnerId = partnerId,
                     CreatedBy = createdBy,
-                    IssueDate = issue,
-                    DueDate = due,
+                    IssueDate = issueDate,
+                    DueDate = dueDate,
                     ImportStatus = type == "Import" ? status : null,
                     ExportStatus = type == "Export" ? status : null,
-                    CreatedAt = issue,
-                    UpdatedAt = issue,
+                    OrderId = orderId, 
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
                     TotalAmount = 0
                 };
                 context.Invoices.Add(inv);
@@ -784,15 +796,116 @@ namespace Infrastructure.Persistence
                 }
             }
 
-            var invImp1 = EnsureInvoice("IMP-001", "Import", pSupp1.PartnerId, userManager.UserId, DateTime.Now.AddDays(-12), DateTime.Now.AddDays(5), "Success");
-            var invImp2 = EnsureInvoice("IMP-002", "Import", pSupp2.PartnerId, userManager.UserId, DateTime.Now.AddDays(-10), DateTime.Now.AddDays(7), "Success");
-            var invExp1 = EnsureInvoice("EXP-001", "Export", pRetail.PartnerId, userStaff.UserId, DateTime.Now.AddDays(-9), DateTime.Now.AddDays(10), "Success");
-            var invExp2 = EnsureInvoice("EXP-002", "Export", pAgent.PartnerId, userStaff.UserId, DateTime.Now.AddDays(-7), DateTime.Now.AddDays(12), "Success");
+            // 1️⃣ Seed Orders
+            var ord1 = context.Orders.SingleOrDefault(o => o.OrderCode == "ORD-001");
+            if (ord1 == null)
+            {
+                ord1 = new Order
+                {
+                    OrderCode = "ORD-001",
+                    CustomerName = "Retail Customer 1",
+                    PhoneNumber = "0909123456",
+                    DeliveryAddress = "123 Retail St.",
+                    Status = "Pending",
+                    CreatedBy = userStaff.UserId,
+                    CreatedAt = DateTime.Now,
+                    SupplierId = pRetail.PartnerId
+                };
+                context.Orders.Add(ord1);
+                context.SaveChanges();
+            }
 
-            EnsureInvoiceDetails(invImp1, new[] { (matWood.MaterialId, 30, 255000), (matBrick.MaterialId, 500, 1200) });
-            EnsureInvoiceDetails(invImp2, new[] { (matWood.MaterialId, 18, 255000) });
-            EnsureInvoiceDetails(invExp1, new[] { (matWood.MaterialId, 10, 300000) });
-            EnsureInvoiceDetails(invExp2, new[] { (matBrick.MaterialId, 400, 2000) });
+            var ord2 = context.Orders.SingleOrDefault(o => o.OrderCode == "ORD-002");
+            if (ord2 == null)
+            {
+                ord2 = new Order
+                {
+                    OrderCode = "ORD-002",
+                    CustomerName = "Retail Customer 2",
+                    PhoneNumber = "0909876543",
+                    DeliveryAddress = "456 Retail Ave.",
+                    Status = "Pending",
+                    CreatedBy = userStaff.UserId,
+                    CreatedAt = DateTime.Now,
+                    SupplierId = pRetail.PartnerId
+                };
+                context.Orders.Add(ord2);
+                context.SaveChanges();
+            }
+
+            var ord3 = context.Orders.SingleOrDefault(o => o.OrderCode == "ORD-003");
+            if (ord3 == null)
+            {
+                ord3 = new Order
+                {
+                    OrderCode = "ORD-003",
+                    CustomerName = "Agent Customer",
+                    PhoneNumber = "0912345678",
+                    DeliveryAddress = "789 Agent Rd.",
+                    Status = "Pending",
+                    CreatedBy = userStaff.UserId,
+                    CreatedAt = DateTime.Now,
+                    SupplierId = pAgent.PartnerId
+                };
+                context.Orders.Add(ord3);
+                context.SaveChanges();
+            }
+
+            var invImp1 = EnsureInvoice("IMP-001", "Import", pSupp1.PartnerId, userManager.UserId,
+    DateTime.Now.AddDays(-12), DateTime.Now.AddDays(5), "Success", ord1.OrderId);
+
+            var invImp2 = EnsureInvoice("IMP-002", "Import", pSupp2.PartnerId, userManager.UserId,
+                DateTime.Now.AddDays(-10), DateTime.Now.AddDays(7), "Success", ord2.OrderId);
+
+            var invExp1 = EnsureInvoice("EXP-001", "Export", pRetail.PartnerId, userStaff.UserId,
+                DateTime.Now.AddDays(-9), DateTime.Now.AddDays(10), "Success", ord1.OrderId);
+
+            var invExp2 = EnsureInvoice("EXP-002", "Export", pAgent.PartnerId, userStaff.UserId,
+                DateTime.Now.AddDays(-7), DateTime.Now.AddDays(12), "Success", ord3.OrderId);
+
+            // 3️⃣ Seed InvoiceDetails
+            EnsureInvoiceDetails(invImp1, new[]
+            {
+    (matWood.MaterialId, 30, 255000),
+    (matBrick.MaterialId, 500, 1200)
+});
+
+            EnsureInvoiceDetails(invImp2, new[]
+            {
+    (matWood.MaterialId, 18, 255000)
+});
+
+            EnsureInvoiceDetails(invExp1, new[]
+            {
+    (matWood.MaterialId, 10, 300000)
+});
+
+            EnsureInvoiceDetails(invExp2, new[]
+            {
+    (matBrick.MaterialId, 400, 2000)
+});
+
+            // 3️⃣ Seed InvoiceDetails
+            EnsureInvoiceDetails(invImp1, new[]
+            {
+    (matWood.MaterialId, 30, 255000),
+    (matBrick.MaterialId, 500, 1200)
+});
+
+            EnsureInvoiceDetails(invImp2, new[]
+            {
+    (matWood.MaterialId, 18, 255000)
+});
+
+            EnsureInvoiceDetails(invExp1, new[]
+            {
+    (matWood.MaterialId, 10, 300000)
+});
+
+            EnsureInvoiceDetails(invExp2, new[]
+            {
+    (matBrick.MaterialId, 400, 2000)
+});
 
             if (!context.Receipts.Any())
             {

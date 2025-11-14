@@ -75,7 +75,7 @@ namespace Application.Services.Implements
             };
         }
 
-        public void Create(Material material)
+        public void CreateWithInventory(Material material, int warehouseId)
         {
             if (_materials.ExistsByName(material.MaterialName))
                 throw new Exception("Material name already exists.");
@@ -83,7 +83,18 @@ namespace Application.Services.Implements
             material.CreatedAt = DateTime.UtcNow;
             material.Status = "Active";
             _materials.Add(material);
+
+            var inventory = new Inventory
+            {
+                MaterialId = material.MaterialId,
+                WarehouseId = warehouseId,
+                Quantity = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _materials.AddInventory(inventory);
         }
+
 
         public void Update(Material material)
         {

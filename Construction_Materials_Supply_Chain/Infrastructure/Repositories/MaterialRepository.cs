@@ -66,5 +66,11 @@ namespace Infrastructure.Implementations
                     .ThenInclude(p => p.PartnerType)
                 .FirstOrDefault(m => m.MaterialId == id && m.Status != "Deleted");
         }
+        public void AddInventory(Inventory inventory)
+        {
+            _context.Inventories.Add(inventory);
+            _context.SaveChanges();
+        }
+
     }
 }

@@ -8,8 +8,7 @@ namespace Application.Interfaces
         List<Material> GetAll();
         MaterialDetailResponse? GetById(int id);
         MaterialDetailResponse? GetById(int id, int? buyerPartnerId);
-
-        void Create(Material material);
+        void CreateWithInventory(Material material, int warehouseId);
         void Update(Material material);
         void Delete(int id);
         List<Material> GetMaterialsFiltered(string? searchTerm, int pageNumber, int pageSize, out int totalCount);

@@ -296,9 +296,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasColumnType("decimal(18, 2)")
                 .HasDefaultValueSql("0");
 
-            entity.Property(e => e.UnitPrice)
-                .HasColumnType("decimal(18, 2)");
-
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
             entity.Property(e => e.WarehouseId).HasColumnName("WarehouseID");
 

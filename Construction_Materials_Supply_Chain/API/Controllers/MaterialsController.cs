@@ -35,7 +35,7 @@ namespace API.Controllers
                     Unit = request.Unit
                 };
 
-                _materialService.Create(material);
+                _materialService.CreateWithInventory(material, request.WarehouseId);
                 return Ok(ApiResponse<string>.SuccessResponse("Material created successfully"));
             }
             catch (Exception ex)
@@ -114,8 +114,6 @@ namespace API.Controllers
 
             return Ok(result);
         }
-
-
 
         // GET: api/materials
         [HttpGet]

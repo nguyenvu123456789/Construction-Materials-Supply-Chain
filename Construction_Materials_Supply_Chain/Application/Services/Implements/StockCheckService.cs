@@ -41,8 +41,8 @@ namespace Application.Services.Implements
             var sysQty = mats.ToDictionary(m => m.MaterialId,
                 m => m.Inventories.Sum(i => i.Quantity ?? 0m));
 
-            var avgPrice = mats.ToDictionary(m => m.MaterialId,
-                m => m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m);
+            //var avgPrice = mats.ToDictionary(m => m.MaterialId,
+            //    m => m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m);
 
             int skuWithChecks = latestByMat.Keys.Intersect(mats.Select(m => m.MaterialId)).Count();
             int skuAccurate = 0;
@@ -55,7 +55,7 @@ namespace Application.Services.Implements
                 var system = sysQty[m.MaterialId];
                 var diff = actual - system;
                 if (diff == 0) skuAccurate++;
-                totalValueDiff += diff * avgPrice[m.MaterialId];
+                //totalValueDiff += diff * avgPrice[m.MaterialId];
             }
 
             var accuracy = skuWithChecks == 0 ? 0 : (double)skuAccurate / skuWithChecks * 100.0;
@@ -99,9 +99,9 @@ namespace Application.Services.Implements
 
                 var wh = m.Inventories.FirstOrDefault()?.Warehouse?.WarehouseName ?? "—";
                 var sysQty = m.Inventories.Sum(i => i.Quantity ?? 0m);
-                var avgPrice = m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m;
+                //var avgPrice = m.Inventories.Any() ? m.Inventories.Average(i => i.UnitPrice) ?? 0m : 0m;
                 var diffQty = c.QuantityChecked - sysQty;
-                var diffVal = diffQty * avgPrice;
+                //var diffVal = diffQty * avgPrice;
                 var status = (DateTime.UtcNow - c.CheckDate).TotalHours <= 12 ? "Đang" : "Đã duyệt";
 
                 items.Add(new StockCheckListItemDto
@@ -112,7 +112,7 @@ namespace Application.Services.Implements
                     Status = status,
                     SkuCount = 1,
                     DiffQty = diffQty,
-                    DiffValue = diffVal,
+                    //DiffValue = diffVal,
                     CheckedAt = c.CheckDate
                 });
             }

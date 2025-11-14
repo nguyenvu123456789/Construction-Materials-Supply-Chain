@@ -21,7 +21,6 @@ namespace Application.Services.Implements
                 MaterialId = x.MaterialId,
                 MaterialName = x.Material.MaterialName,
                 Quantity = (decimal)x.Quantity,
-                UnitPrice = x.UnitPrice
             }).ToList();
         }
 

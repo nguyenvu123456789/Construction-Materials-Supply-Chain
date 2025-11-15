@@ -171,7 +171,8 @@ namespace Application.Services.Implements
                 .ToList();
 
             var groupedCurrent = invoicesCurrent
-                .Where(i => i.Partner != null)
+                .Where(i => i.Partner != null
+                         && !string.IsNullOrEmpty(i.Partner.Region))
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
                 {
                     i.PartnerId,
@@ -179,7 +180,8 @@ namespace Application.Services.Implements
                     Quantity = Convert.ToDecimal(d.Quantity),
                     Revenue = d.LineTotal ?? Convert.ToDecimal(d.Quantity) * d.UnitPrice
                 })
-                .GroupBy(x => x.PartnerId);
+                .GroupBy(x => x.PartnerId)
+                .ToList();
 
             var currentData = new List<LocationSummaryDto>();
 
@@ -356,6 +358,7 @@ namespace Application.Services.Implements
             }
 
             var locationSummary = GetLocationSummary(from, to)
+                .Where(x => !string.IsNullOrEmpty(x.Region))
                 .OrderByDescending(x => x.TotalRevenue)
                 .Take(5)
                 .ToList();

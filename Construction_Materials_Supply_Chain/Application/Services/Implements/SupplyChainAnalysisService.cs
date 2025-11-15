@@ -41,19 +41,6 @@ namespace Application.Services.Implements
             var materials = _materials.GetAllWithInclude();
             var materialDict = materials.ToDictionary(m => m.MaterialId);
 
-            var importDetails = _importDetails.GetAll();
-            var costByMaterial = importDetails
-                .GroupBy(d => d.MaterialId)
-                .ToDictionary(
-                    g => g.Key,
-                    g =>
-                    {
-                        var totalQty = g.Sum(x => x.Quantity);
-                        var totalCost = g.Sum(x => x.LineTotal);
-                        if (totalQty == 0) return 0m;
-                        return totalCost / totalQty;
-                    });
-
             var currentInvoices = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
                 .ToList();
@@ -66,16 +53,12 @@ namespace Application.Services.Implements
                     var categoryName = material.Category.CategoryName;
                     var quantity = Convert.ToDecimal(d.Quantity);
                     var revenue = d.LineTotal ?? quantity * d.UnitPrice;
-                    decimal unitCost = 0m;
-                    if (costByMaterial.TryGetValue(d.MaterialId, out var avgCost)) unitCost = avgCost;
-                    var profit = revenue - unitCost * quantity;
                     return new
                     {
                         categoryId,
                         categoryName,
                         quantity,
-                        revenue,
-                        profit
+                        revenue
                     };
                 })
                 .Where(x => x != null)
@@ -86,7 +69,6 @@ namespace Application.Services.Implements
                     CategoryName = g.Key.categoryName,
                     TotalQuantity = g.Sum(x => x!.quantity),
                     TotalRevenue = g.Sum(x => x!.revenue),
-                    TotalProfit = g.Sum(x => x!.profit),
                     GrowthRatePercent = 0m
                 })
                 .ToList();
@@ -124,7 +106,7 @@ namespace Application.Services.Implements
             }
 
             return currentData
-                .OrderByDescending(x => x.TotalRevenue)
+                .OrderByDescending(x => x.TotalQuantity)
                 .ToList();
         }
 
@@ -175,7 +157,6 @@ namespace Application.Services.Implements
                     PeriodEnd = g.Key.End,
                     TotalQuantity = g.Sum(x => x.quantity),
                     TotalRevenue = g.Sum(x => x.revenue),
-                    TotalProfit = 0m
                 })
                 .OrderBy(x => x.PeriodStart)
                 .ToList();
@@ -209,7 +190,6 @@ namespace Application.Services.Implements
                 dto.PartnerId = partner.PartnerId;
                 dto.TotalQuantity = g.Sum(x => x.Quantity);
                 dto.TotalRevenue = g.Sum(x => x.Revenue);
-                dto.TotalProfit = 0m;
                 dto.GrowthRatePercent = 0m;
                 currentData.Add(dto);
             }
@@ -284,34 +264,33 @@ namespace Application.Services.Implements
 
             var result = new List<InventorySummaryDto>();
 
-            foreach (var inv in inventories)
+            var groupedInventories = inventories
+                .GroupBy(inv => new { inv.MaterialId, inv.WarehouseId })
+                .ToList();
+
+            foreach (var group in groupedInventories)
             {
-                if (!materialDict.TryGetValue(inv.MaterialId, out var material)) continue;
-                if (!warehouseDict.TryGetValue(inv.WarehouseId, out var warehouse)) continue;
+                var anyInv = group.First();
 
-                var dto = _mapper.Map<InventorySummaryDto>(inv);
+                if (!materialDict.TryGetValue(anyInv.MaterialId, out var material)) continue;
+                if (!warehouseDict.TryGetValue(anyInv.WarehouseId, out var warehouse)) continue;
 
+                var dto = new InventorySummaryDto();
+
+                dto.MaterialId = anyInv.MaterialId;
                 dto.MaterialCode = material.MaterialCode;
                 dto.MaterialName = material.MaterialName;
                 dto.CategoryName = material.Category.CategoryName;
+
+                dto.WarehouseId = anyInv.WarehouseId;
                 dto.WarehouseName = warehouse.WarehouseName;
 
-                var ownerPartnerId = 0;
-                var ownerPartnerName = string.Empty;
-                var manager = warehouse.Manager;
-                if (manager != null)
-                {
-                    if (manager.PartnerId.HasValue)
-                        ownerPartnerId = manager.PartnerId.Value;
-                    if (manager.Partner != null)
-                        ownerPartnerName = manager.Partner.PartnerName;
-                }
-                dto.OwnerPartnerId = ownerPartnerId;
-                dto.OwnerPartnerName = ownerPartnerName;
+                dto.QuantityOnHand = group.Sum(x => x.Quantity ?? 0);
+                dto.AverageInventory = dto.QuantityOnHand;
 
                 decimal soldQty = 0m;
                 decimal soldRevenue = 0m;
-                if (soldByMaterial.TryGetValue(inv.MaterialId, out var sold))
+                if (soldByMaterial.TryGetValue(anyInv.MaterialId, out var sold))
                 {
                     soldQty = sold.Quantity;
                     soldRevenue = sold.Revenue;
@@ -320,17 +299,7 @@ namespace Application.Services.Implements
                 dto.TotalSoldInPeriod = soldQty;
                 dto.RevenueInPeriod = soldRevenue;
 
-                dto.AverageInventory = dto.QuantityOnHand;
-
-                if (dto.AverageInventory > 0m)
-                {
-                    dto.TurnoverRate = soldQty / dto.AverageInventory;
-                }
-                else
-                {
-                    dto.TurnoverRate = 0m;
-                }
-
+                dto.TurnoverRate = dto.AverageInventory > 0 ? soldQty / dto.AverageInventory : 0m;
                 dto.IsFastMoving = dto.TurnoverRate >= 4m;
                 dto.IsSlowMoving = dto.TurnoverRate <= 1m;
 
@@ -448,6 +417,8 @@ namespace Application.Services.Implements
             var inventories = partnerId.HasValue
                 ? _inventories.GetAllByPartnerId(partnerId.Value)
                 : _inventories.GetAll();
+
+            inventories = GroupInventory(inventories);
 
             var result = new List<StockForecastDto>();
 
@@ -592,6 +563,20 @@ namespace Application.Services.Implements
                 return 100m;
 
             return (currentRevenue - previousRevenue) * 100m / previousRevenue;
+        }
+
+        private List<Inventory> GroupInventory(List<Inventory> inventories)
+        {
+            return inventories
+                .GroupBy(i => new { i.WarehouseId, i.MaterialId })
+                .Select(g => new Inventory
+                {
+                    WarehouseId = g.Key.WarehouseId,
+                    MaterialId = g.Key.MaterialId,
+                    Quantity = g.Sum(x => x.Quantity),
+                    CreatedAt = g.First().CreatedAt
+                })
+                .ToList();
         }
     }
 }

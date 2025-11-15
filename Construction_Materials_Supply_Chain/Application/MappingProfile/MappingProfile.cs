@@ -210,7 +210,6 @@ namespace Application.MappingProfile
             CreateMap<Partner, LocationSummaryDto>()
                 .ForMember(d => d.TotalQuantity, o => o.Ignore())
                 .ForMember(d => d.TotalRevenue, o => o.Ignore())
-                .ForMember(d => d.TotalProfit, o => o.Ignore())
                 .ForMember(d => d.GrowthRatePercent, o => o.Ignore());
 
             CreateMap<Inventory, InventorySummaryDto>()

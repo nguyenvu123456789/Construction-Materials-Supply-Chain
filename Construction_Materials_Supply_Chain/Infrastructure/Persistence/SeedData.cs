@@ -194,6 +194,7 @@ namespace Infrastructure.Persistence
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
                 var wh2 = context.Warehouses.First(w => w.WarehouseName == "Kho TP.HCM");
                 var wh3 = context.Warehouses.First(w => w.WarehouseName == "Kho Đà Nẵng");
+                var whPartner3 = context.Warehouses.First(w => w.WarehouseName == "Kho Nhựa Duy Tân");
 
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
@@ -211,7 +212,8 @@ namespace Infrastructure.Persistence
                     new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150,CreatedAt = DateTime.Now },
                     new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000,CreatedAt = DateTime.Now },
                     new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50,CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, CreatedAt = DateTime.Now }
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = whPartner3.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 100, CreatedAt = DateTime.Now }
                 };
 
                 var uniqueInventories = inventories
@@ -222,6 +224,7 @@ namespace Infrastructure.Persistence
                 context.Inventories.AddRange(uniqueInventories);
                 context.SaveChanges();
             }
+
             if (!context.Orders.Any())
             {
                 var customer = context.Users.First(u => u.UserName == "customer1");

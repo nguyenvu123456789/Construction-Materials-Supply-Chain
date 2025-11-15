@@ -31,9 +31,9 @@ namespace API.Controllers
         }
 
         [HttpGet("locations")]
-        public IActionResult GetLocationSummary([FromQuery] DateTime from, [FromQuery] DateTime to)
+        public IActionResult GetLocationSummary([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string? region = null)
         {
-            var data = _service.GetLocationSummary(from, to);
+            var data = _service.GetLocationSummary(from, to, region);
             return Ok(data);
         }
 

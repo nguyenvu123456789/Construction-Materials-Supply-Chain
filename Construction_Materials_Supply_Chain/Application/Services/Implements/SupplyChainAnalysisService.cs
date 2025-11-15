@@ -164,15 +164,28 @@ namespace Application.Services.Implements
             return data;
         }
 
-        public List<LocationSummaryDto> GetLocationSummary(DateTime from, DateTime to)
+        public List<LocationSummaryDto> GetLocationSummary(DateTime from, DateTime to, string? region = null)
         {
             var invoicesCurrent = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
+                .Where(i => i.ExportStatus == "Success"
+                         && i.InvoiceType == "Export"
+                         && i.IssueDate >= from
+                         && i.IssueDate <= to)
                 .ToList();
 
+            if (!string.IsNullOrEmpty(region))
+                invoicesCurrent = invoicesCurrent
+                    .Where(i => i.Partner != null
+                             && !string.IsNullOrEmpty(i.Partner.Region)
+                             && string.Equals(i.Partner.Region, region, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            else
+                invoicesCurrent = invoicesCurrent
+                    .Where(i => i.Partner != null
+                             && !string.IsNullOrEmpty(i.Partner.Region))
+                    .ToList();
+
             var groupedCurrent = invoicesCurrent
-                .Where(i => i.Partner != null
-                         && !string.IsNullOrEmpty(i.Partner.Region))
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
                 {
                     i.PartnerId,
@@ -197,9 +210,25 @@ namespace Application.Services.Implements
             }
 
             var previousRange = GetPreviousPeriod(from, to);
+
             var invoicesPrevious = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= previousRange.from && i.IssueDate <= previousRange.to)
+                .Where(i => i.ExportStatus == "Success"
+                         && i.InvoiceType == "Export"
+                         && i.IssueDate >= previousRange.from
+                         && i.IssueDate <= previousRange.to)
                 .ToList();
+
+            if (!string.IsNullOrEmpty(region))
+                invoicesPrevious = invoicesPrevious
+                    .Where(i => i.Partner != null
+                             && !string.IsNullOrEmpty(i.Partner.Region)
+                             && string.Equals(i.Partner.Region, region, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            else
+                invoicesPrevious = invoicesPrevious
+                    .Where(i => i.Partner != null
+                             && !string.IsNullOrEmpty(i.Partner.Region))
+                    .ToList();
 
             var previousRevenueByPartner = invoicesPrevious
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new

@@ -189,12 +189,27 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            if (!context.Warehouses.Any(w => w.WarehouseName == "Kho Nhựa Duy Tân"))
+            {
+                var userPartner3 = context.Users.FirstOrDefault(u => u.PartnerId == 3);
+                var managerId = userPartner3 != null ? userPartner3.UserId : context.Users.First().UserId;
+
+                context.Warehouses.Add(new Warehouse
+                {
+                    WarehouseName = "Kho Nhựa Duy Tân",
+                    Location = "Hồ Chí Minh",
+                    ManagerId = managerId
+                });
+
+                context.SaveChanges();
+            }
+
             if (!context.Inventories.Any())
             {
                 var wh1 = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
                 var wh2 = context.Warehouses.First(w => w.WarehouseName == "Kho TP.HCM");
                 var wh3 = context.Warehouses.First(w => w.WarehouseName == "Kho Đà Nẵng");
-                var whPartner3 = context.Warehouses.First(w => w.WarehouseName == "Kho Nhựa Duy Tân");
+                var whPartner3 = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Nhựa Duy Tân");
 
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var metal = context.Materials.First(m => m.MaterialCode == "M001");
@@ -208,13 +223,23 @@ namespace Infrastructure.Persistence
                 {
                     new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = wood.MaterialId, Quantity = 120, CreatedAt = DateTime.Now },
                     new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = metal.MaterialId, Quantity = 80, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200,CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150,CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000,CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50,CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, CreatedAt = DateTime.Now },
-                    new Inventory { WarehouseId = whPartner3.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 100, CreatedAt = DateTime.Now }
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = plastic.MaterialId, Quantity = 200, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh2.WarehouseId, MaterialId = cement.MaterialId, Quantity = 150, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = brick.MaterialId, Quantity = 5000, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh3.WarehouseId, MaterialId = paint.MaterialId, Quantity = 50, CreatedAt = DateTime.Now },
+                    new Inventory { WarehouseId = wh1.WarehouseId, MaterialId = glass.MaterialId, Quantity = 100, CreatedAt = DateTime.Now }
                 };
+
+                if (whPartner3 != null)
+                {
+                    inventories.Add(new Inventory
+                    {
+                        WarehouseId = whPartner3.WarehouseId,
+                        MaterialId = plastic.MaterialId,
+                        Quantity = 100,
+                        CreatedAt = DateTime.Now
+                    });
+                }
 
                 var uniqueInventories = inventories
                     .GroupBy(i => new { i.WarehouseId, i.MaterialId })

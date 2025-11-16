@@ -108,8 +108,8 @@ namespace Services.Implementations
                          ?? throw new Exception("Report not found.");
 
             // 🔹 Cập nhật trạng thái ImportReport
-            report.Status = dto.Status; 
-            _reports.Update(report); 
+            report.Status = dto.Status;
+            _reports.Update(report);
 
             // 🔹 Lưu lịch sử xử lý
             var handle = new HandleRequest
@@ -198,7 +198,7 @@ namespace Services.Implementations
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 ReviewedAt = DateTime.UtcNow,
-                Status = report.Status, 
+                Status = report.Status,
                 Import = report.Import != null
                     ? new SimpleImportDto
                     {

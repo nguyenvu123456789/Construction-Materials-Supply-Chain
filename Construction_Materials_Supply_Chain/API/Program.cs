@@ -6,9 +6,7 @@ using Application.Services.Auth;
 using Application.Services.Implements;
 using Application.Services.Interfaces;
 using Application.Validation.ActivityLogs;
-using Application.Validation.Alerts;
 using Application.Validation.Auth;
-using Application.Validation.Events;
 using Application.Validation.Notifications;
 using Application.Validation.Partners;
 using Application.Validation.Stock;
@@ -77,7 +75,8 @@ builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartnerRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<IEventNotificationSettingRepository, EventNotificationSettingRepository>();
+builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEventSettingRepository>();
+builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowStockRuleRepository>();
 
 // Services
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -109,7 +108,6 @@ builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
 builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
@@ -120,10 +118,6 @@ builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
 
 // Audit interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
-
-builder.Services.Configure<ZaloOptions>(builder.Configuration.GetSection("Zalo"));
-builder.Services.AddHttpClient<ZaloChannel>();
-builder.Services.AddScoped<IZaloChannel, ZaloChannel>();
 builder.Services.AddScoped<IEmailChannel, EmailChannel>();
 
 // DbContext + interceptor
@@ -137,13 +131,11 @@ builder.Services.AddDbContext<ScmVlxdContext>((sp, options) =>
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ActivityLogPagedQueryValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<AckReadCloseRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<AlertRuleCreateValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<EventNotifySettingUpsertValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateConversationRequestDtoValidator>();
 
 // Controllers
 builder.Services.AddControllers()

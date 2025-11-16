@@ -1,5 +1,5 @@
-﻿using Application.DTOs;
-using Application.DTOs.Common;
+﻿using Application.Constants;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.Interfaces;
 using AutoMapper;
@@ -18,7 +18,7 @@ namespace Application.Services.Implements
         private readonly IVehicleRepository _vehicleRepo;
         private readonly IPartnerRepository _partnerRepo;
         private readonly IMapper _mapper;
-        private readonly IEventNotificationService _event;
+        private readonly INotificationService _event;
 
         public TransportService(
             ITransportRepository transportRepo,
@@ -29,7 +29,7 @@ namespace Application.Services.Implements
             IVehicleRepository vehicleRepo,
             IPartnerRepository partnerRepo,
             IMapper mapper,
-            IEventNotificationService eventSvc)
+            INotificationService eventSvc)
         {
             _transportRepo = transportRepo;
             _invoiceRepo = invoiceRepo;

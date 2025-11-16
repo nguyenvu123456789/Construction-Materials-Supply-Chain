@@ -18,6 +18,7 @@ namespace Domain.Interface
         User? GetByIdWithPartner(int id);
         int GetOrCreateSystemUserId(int partnerId);
         IEnumerable<string> GetEmailsByUserIds(IEnumerable<int> userIds);
-
+        bool ExistsByEmail(string email);
+        User? GetByEmail(string email);
     }
 }

@@ -1,217 +1,475 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Services.Interfaces;
 using AutoMapper;
+using Domain.Interface;
 using Domain.Interfaces;
 using Domain.Models;
-using Microsoft.Extensions.Configuration;
-using System.Net;
-using System.Net.Mail;
 
 namespace Application.Services.Implements
 {
     public class NotificationService : INotificationService
     {
-        private readonly INotificationRepository _repo;
-        private readonly IMapper _mapper;
+        private readonly INotificationRepository notificationRepository;
+        private readonly INotificationEventSettingRepository eventSettingRepository;
+        private readonly INotificationLowStockRuleRepository lowStockRuleRepository;
+        private readonly IUserRepository userRepository;
+        private readonly IInventoryRepository inventoryRepository;
+        private readonly IEmailChannel emailChannel;
+        private readonly IMapper mapper;
 
-        public NotificationService(INotificationRepository repo, IMapper mapper)
+        public NotificationService(
+            INotificationRepository notificationRepository,
+            INotificationEventSettingRepository eventSettingRepository,
+            INotificationLowStockRuleRepository lowStockRuleRepository,
+            IUserRepository userRepository,
+            IInventoryRepository inventoryRepository,
+            IEmailChannel emailChannel,
+            IMapper mapper)
         {
-            _repo = repo;
-            _mapper = mapper;
+            this.notificationRepository = notificationRepository;
+            this.eventSettingRepository = eventSettingRepository;
+            this.lowStockRuleRepository = lowStockRuleRepository;
+            this.userRepository = userRepository;
+            this.inventoryRepository = inventoryRepository;
+            this.emailChannel = emailChannel;
+            this.mapper = mapper;
         }
 
-        public NotificationResponseDto CreateConversation(CreateConversationRequestDto dto)
+        // ================= CORE NOTIFICATIONS =====================
+
+        public NotificationResponseDto CreateConversation(CreateConversationRequestDto request)
         {
-            if (!_repo.IsUserInPartner(dto.CreatedByUserId, dto.PartnerId)) throw new InvalidOperationException();
-            var n = new Notification
+            var notification = new Notification
             {
-                Title = dto.Title,
-                Content = dto.Content,
-                PartnerId = dto.PartnerId,
-                UserId = dto.CreatedByUserId,
-                CreatedAt = DateTime.UtcNow,
-                Type = (int)NotificationTypeDto.Conversation,
+                PartnerId = request.PartnerId,
+                UserId = request.CreatedByUserId,
+                Title = request.Title,
+                Content = request.Content,
+                Type = (int)NotificationType.Conversation,
+                RequireAcknowledge = request.RequireAcknowledge,
                 Status = 1,
-                DueAt = dto.DueAt,
-                RequireAcknowledge = false
+                CreatedAt = DateTime.UtcNow
             };
-            _repo.AddNotification(n);
-            AddRecipientsByUsers(n.NotificationId, n.PartnerId, dto.RecipientUserIds);
-            AddRecipientsByRoles(n.NotificationId, n.PartnerId, dto.RecipientRoleIds);
-            var loaded = _repo.GetByIdWithRelations(n.NotificationId, n.PartnerId);
-            return _mapper.Map<NotificationResponseDto>(loaded);
+
+            notificationRepository.AddNotification(notification);
+
+            var recipients = ResolveRecipientUserIds(
+                request.PartnerId,
+                request.RecipientUserIds,
+                request.RecipientRoleIds);
+
+            if (recipients.Any())
+            {
+                notificationRepository.AddRecipients(notification.NotificationId, request.PartnerId, recipients);
+                notificationRepository.AddRecipientRoles(notification.NotificationId, request.PartnerId, request.RecipientRoleIds);
+                SendNotificationEmails(notification, recipients);
+            }
+
+            return mapper.Map<NotificationResponseDto>(notification);
         }
 
-        public NotificationResponseDto CreateAlert(CreateAlertRequestDto dto)
+        public NotificationResponseDto CreateAlert(CreateAlertRequestDto request)
         {
-            if (!_repo.IsUserInPartner(dto.CreatedByUserId, dto.PartnerId)) throw new InvalidOperationException();
-            var n = new Notification
+            var notification = new Notification
             {
-                Title = dto.Title,
-                Content = dto.Content,
-                PartnerId = dto.PartnerId,
-                UserId = dto.CreatedByUserId,
-                CreatedAt = DateTime.UtcNow,
-                Type = (int)NotificationTypeDto.Alert,
+                PartnerId = request.PartnerId,
+                UserId = request.CreatedByUserId,
+                Title = request.Title,
+                Content = request.Content,
+                Type = (int)NotificationType.Alert,
+                RequireAcknowledge = request.RequireAcknowledge,
                 Status = 1,
-                RequireAcknowledge = dto.RequireAcknowledge
+                CreatedAt = DateTime.UtcNow
             };
-            _repo.AddNotification(n);
-            AddRecipientsByUsers(n.NotificationId, n.PartnerId, dto.RecipientUserIds);
-            AddRecipientsByRoles(n.NotificationId, n.PartnerId, dto.RecipientRoleIds);
-            var loaded = _repo.GetByIdWithRelations(n.NotificationId, n.PartnerId);
-            return _mapper.Map<NotificationResponseDto>(loaded);
-        }
 
-        public void AddRecipientsByUsers(int notificationId, int partnerId, IEnumerable<int> userIds)
-        {
-            if (userIds == null || !userIds.Any()) return;
-            _repo.AddRecipients(notificationId, partnerId, userIds);
-        }
+            notificationRepository.AddNotification(notification);
 
-        public void AddRecipientsByRoles(int notificationId, int partnerId, IEnumerable<int> roleIds)
-        {
-            if (roleIds == null || !roleIds.Any()) return;
-            _repo.AddRecipientRoles(notificationId, partnerId, roleIds);
-            var userIds = _repo.GetUserIdsForRolesInPartner(roleIds, partnerId);
-            _repo.AddRecipients(notificationId, partnerId, userIds);
-        }
+            var recipients = ResolveRecipientUserIds(
+                request.PartnerId,
+                request.RecipientUserIds,
+                request.RecipientRoleIds);
 
-        public void Reply(ReplyRequestDto dto)
-        {
-            var n = _repo.GetByIdWithRelations(dto.NotificationId, dto.PartnerId);
-            if (n == null || n.Type != (int)NotificationTypeDto.Conversation) throw new InvalidOperationException();
-            if (!_repo.IsUserInPartner(dto.UserId, dto.PartnerId)) throw new InvalidOperationException();
-            var r = new NotificationReply
+            if (recipients.Any())
             {
-                NotificationId = dto.NotificationId,
-                PartnerId = dto.PartnerId,
-                UserId = dto.UserId,
-                Message = dto.Message,
-                CreatedAt = DateTime.UtcNow,
-                ParentReplyId = dto.ParentReplyId
+                notificationRepository.AddRecipients(notification.NotificationId, request.PartnerId, recipients);
+                notificationRepository.AddRecipientRoles(notification.NotificationId, request.PartnerId, request.RecipientRoleIds);
+                SendNotificationEmails(notification, recipients);
+            }
+
+            return mapper.Map<NotificationResponseDto>(notification);
+        }
+
+        public void AddRecipientsByUsers(int notificationId, int partnerId, int[] userIds)
+        {
+            var ids = userIds?.Where(x => x > 0).Distinct().ToArray() ?? Array.Empty<int>();
+            if (ids.Length == 0) return;
+
+            notificationRepository.AddRecipients(notificationId, partnerId, ids);
+            var notification = notificationRepository.GetByIdWithRelations(notificationId, partnerId);
+            SendNotificationEmails(notification, ids);
+        }
+
+        public void AddRecipientsByRoles(int notificationId, int partnerId, int[] roleIds)
+        {
+            var roles = roleIds?.Where(x => x > 0).Distinct().ToArray() ?? Array.Empty<int>();
+            if (roles.Length == 0) return;
+
+            var userIds = notificationRepository
+                .GetUserIdsForRolesInPartner(roles, partnerId)
+                .Where(x => x > 0)
+                .Distinct()
+                .ToArray();
+
+            if (userIds.Length == 0) return;
+
+            notificationRepository.AddRecipientRoles(notificationId, partnerId, roles);
+            notificationRepository.AddRecipients(notificationId, partnerId, userIds);
+
+            var notification = notificationRepository.GetByIdWithRelations(notificationId, partnerId);
+            SendNotificationEmails(notification, userIds);
+        }
+
+        public void Reply(ReplyRequestDto request)
+        {
+            var reply = new NotificationReply
+            {
+                NotificationId = request.NotificationId,
+                PartnerId = request.PartnerId,
+                UserId = request.UserId,
+                Message = request.Content,
+                CreatedAt = DateTime.UtcNow
             };
-            _repo.AddReply(r, dto.PartnerId);
+
+            notificationRepository.AddReply(reply, request.PartnerId);
         }
 
-        public void MarkRead(AckReadCloseRequestDto dto)
+        public void MarkRead(AckReadCloseRequestDto request)
         {
-            _repo.MarkRead(dto.NotificationId, dto.PartnerId, dto.UserId);
+            notificationRepository.MarkRead(request.NotificationId, request.PartnerId, request.UserId);
         }
 
-        public void Acknowledge(AckReadCloseRequestDto dto)
+        public void Acknowledge(AckReadCloseRequestDto request)
         {
-            _repo.Acknowledge(dto.NotificationId, dto.PartnerId, dto.UserId);
+            notificationRepository.Acknowledge(request.NotificationId, request.PartnerId, request.UserId);
         }
 
-        public void Close(AckReadCloseRequestDto dto)
+        public void Close(AckReadCloseRequestDto request)
         {
-            var n = _repo.GetByIdWithRelations(dto.NotificationId, dto.PartnerId);
-            if (n == null) return;
-            n.Status = 2;
-            _repo.UpdateNotification(n, dto.PartnerId);
+            var notification = notificationRepository.GetByIdWithRelations(request.NotificationId, request.PartnerId);
+            notification.Status = 2;
+            notificationRepository.UpdateNotification(notification, request.PartnerId);
         }
 
-        public NotificationResponseDto GetById(int id, int partnerId)
+        public NotificationResponseDto? GetById(int id, int partnerId)
         {
-            var n = _repo.GetByIdWithRelations(id, partnerId);
-            if (n == null) throw new KeyNotFoundException();
-            return _mapper.Map<NotificationResponseDto>(n);
+            var notification = notificationRepository.GetByIdWithRelations(id, partnerId);
+            return notification == null ? null : mapper.Map<NotificationResponseDto>(notification);
         }
 
         public List<NotificationResponseDto> GetByPartner(int partnerId)
         {
-            var list = _repo.GetByPartner(partnerId);
-            return list.Select(_mapper.Map<NotificationResponseDto>).ToList();
-        }
-
-        public void SendCrossPartnerAlert(CrossPartnerAlertRequestDto dto)
-        {
-            if (dto.SenderPartnerId <= 0 || dto.SenderUserId <= 0) return;
-            if (!_repo.IsUserInPartner(dto.SenderUserId, dto.SenderPartnerId)) return;
-
-            var roles = dto.RecipientRoleIds?.Where(r => r > 0).Distinct().ToArray() ?? Array.Empty<int>();
-            if (roles.Length == 0) return;
-
-            var targets = dto.TargetPartnerIds?.Where(p => p > 0 && p != dto.SenderPartnerId).Distinct().ToList() ?? new List<int>();
-            if (targets.Count == 0) return;
-
-            foreach (var partnerId in targets)
-            {
-                var recipients = _repo.GetUserIdsForRolesInPartner(roles, partnerId)?.Distinct().ToList() ?? new List<int>();
-                if (recipients.Count == 0) continue;
-
-                var createdBy = recipients[0];
-
-                var req = new CreateAlertRequestDto
-                {
-                    Title = dto.Title,
-                    Content = dto.Content,
-                    PartnerId = partnerId,
-                    CreatedByUserId = createdBy,
-                    RequireAcknowledge = dto.RequireAcknowledge,
-                    RecipientRoleIds = roles
-                };
-
-                _ = CreateAlert(req);
-            }
+            var list = notificationRepository.GetByPartner(partnerId);
+            return mapper.Map<List<NotificationResponseDto>>(list);
         }
 
         public List<NotificationResponseDto> GetForUser(int partnerId, int userId)
         {
-            if (!_repo.IsUserInPartner(userId, partnerId)) return new List<NotificationResponseDto>();
-            var list = _repo.GetForUser(partnerId, userId);
-            return list.Select(_mapper.Map<NotificationResponseDto>).ToList();
+            var list = notificationRepository.GetForUser(partnerId, userId);
+            return mapper.Map<List<NotificationResponseDto>>(list);
         }
 
         public int CountUnreadForUser(int partnerId, int userId)
         {
-            if (!_repo.IsUserInPartner(userId, partnerId)) return 0;
-            return _repo.CountUnreadForUser(partnerId, userId);
+            return notificationRepository.CountUnreadForUser(partnerId, userId);
         }
-    }
 
-    public class EmailChannel : IEmailChannel
-    {
-        private readonly IConfiguration _cfg;
-        public EmailChannel(IConfiguration cfg) { _cfg = cfg; }
-
-        public async Task SendAsync(
-            int partnerId,
-            IEnumerable<string> toEmails,
-            string subject,
-            string body,
-            CancellationToken ct = default)
+        public void SendCrossPartnerAlert(CrossPartnerAlertRequestDto request)
         {
-            var host = _cfg["Smtp:Host"];
-            var port = int.TryParse(_cfg["Smtp:Port"], out var p) ? p : 587;
-            var user = _cfg["Smtp:User"];
-            var pass = _cfg["Smtp:Password"];
-            var from = _cfg["Smtp:From"] ?? user;
-            var enableSsl = bool.TryParse(_cfg["Smtp:EnableSsl"], out var ssl) ? ssl : true;
+            var roleIds = request.RecipientRoleIds ?? Array.Empty<int>();
 
-            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(from) || toEmails == null) return;
-
-            using var client = new SmtpClient(host, port)
+            foreach (var targetPartnerId in request.TargetPartnerIds ?? Array.Empty<int>())
             {
-                EnableSsl = enableSsl,
-                Credentials = string.IsNullOrWhiteSpace(user) ? null : new NetworkCredential(user, pass)
+                var notification = new Notification
+                {
+                    PartnerId = targetPartnerId,
+                    UserId = request.SenderUserId,
+                    Title = request.Title,
+                    Content = request.Content,
+                    Type = (int)NotificationType.CrossPartnerAlert,
+                    RequireAcknowledge = request.RequireAcknowledge,
+                    Status = 1,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                notificationRepository.AddNotification(notification);
+
+                var recipients = notificationRepository
+                    .GetUserIdsForRolesInPartner(roleIds, targetPartnerId)
+                    .Where(x => x > 0)
+                    .Distinct()
+                    .ToArray();
+
+                if (recipients.Any())
+                {
+                    notificationRepository.AddRecipients(notification.NotificationId, targetPartnerId, recipients);
+                    notificationRepository.AddRecipientRoles(notification.NotificationId, targetPartnerId, roleIds);
+                    SendNotificationEmails(notification, recipients);
+                }
+            }
+        }
+
+        // ================= EVENT RULES ============================
+
+        public EventNotifySettingDto? GetEventSetting(int partnerId, string eventType)
+        {
+            var setting = eventSettingRepository.Get(partnerId, eventType);
+            return setting == null ? null : mapper.Map<EventNotifySettingDto>(setting);
+        }
+
+        public IEnumerable<EventNotifySettingDto> GetEventSettings(int partnerId)
+        {
+            var settings = eventSettingRepository.GetAllByPartner(partnerId);
+            return settings.Select(x => mapper.Map<EventNotifySettingDto>(x));
+        }
+
+        public void UpsertEventSetting(EventNotifySettingUpsertDto request)
+        {
+            var entity = eventSettingRepository.Get(request.PartnerId, request.EventType)
+                         ?? new EventNotificationSetting();
+
+            entity.PartnerId = request.PartnerId;
+            entity.EventType = request.EventType;
+            entity.RequireAcknowledge = request.RequireAcknowledge;
+            entity.SendEmail = request.SendEmail;
+            entity.IsActive = request.IsActive;
+
+            eventSettingRepository.Upsert(entity);
+
+            eventSettingRepository.ReplaceRoles(
+                entity.EventNotificationSettingId,
+                entity.PartnerId,
+                request.RoleIds ?? Array.Empty<int>());
+        }
+
+        public void ToggleEventSetting(int settingId, int partnerId, bool isActive)
+        {
+            eventSettingRepository.SetActive(settingId, isActive, partnerId);
+        }
+
+        public void DeleteEventSetting(int settingId, int partnerId)
+        {
+            eventSettingRepository.Delete(settingId, partnerId);
+        }
+
+        public void TriggerEvent(EventNotifyTriggerDto request)
+        {
+            var setting = eventSettingRepository.GetOrCreate(request.PartnerId, request.EventType);
+            if (!setting.IsActive) return;
+
+            var roleIds = request.OverrideRoleIds ??
+                          setting.Roles.Select(r => r.RoleId).ToArray();
+
+            roleIds = roleIds.Where(x => x > 0).Distinct().ToArray();
+            if (roleIds.Length == 0) return;
+
+            var requireAcknowledge = request.OverrideRequireAcknowledge ?? setting.RequireAcknowledge;
+
+            var userIds = notificationRepository
+                .GetUserIdsForRolesInPartner(roleIds, request.PartnerId)
+                .Where(x => x > 0)
+                .Distinct()
+                .ToArray();
+
+            if (userIds.Length == 0) return;
+
+            var createdBy = request.CreatedByUserId.HasValue &&
+                            notificationRepository.IsUserInPartner(request.CreatedByUserId.Value, request.PartnerId)
+                ? request.CreatedByUserId.Value
+                : userIds.First();
+
+            var alertRequest = new CreateAlertRequestDto
+            {
+                PartnerId = request.PartnerId,
+                CreatedByUserId = createdBy,
+                Title = request.Title,
+                Content = request.Content,
+                RequireAcknowledge = requireAcknowledge,
+                RecipientUserIds = userIds,
+                RecipientRoleIds = roleIds
             };
 
-            using var msg = new MailMessage
+            CreateAlert(alertRequest);
+        }
+
+        public void Trigger(EventNotifyTriggerDto request)
+        {
+            TriggerEvent(request);
+        }
+
+        // ================= LOW STOCK RULES ========================
+
+        public IEnumerable<AlertRuleUpdateDto> GetLowStockRules(int partnerId)
+        {
+            var rules = lowStockRuleRepository.GetByPartner(partnerId);
+            return rules.Select(x => mapper.Map<AlertRuleUpdateDto>(x));
+        }
+
+        public int CreateLowStockRule(AlertRuleCreateDto request)
+        {
+            var rule = mapper.Map<InventoryAlertRule>(request);
+            lowStockRuleRepository.Add(rule);
+
+            if (request.RoleIds.Any())
+                lowStockRuleRepository.ReplaceRoles(rule.InventoryAlertRuleId, request.PartnerId, request.RoleIds);
+
+            if (request.UserIds.Any())
+                lowStockRuleRepository.ReplaceUsers(rule.InventoryAlertRuleId, request.PartnerId, request.UserIds);
+
+            return rule.InventoryAlertRuleId;
+        }
+
+        public void UpdateLowStockRule(AlertRuleUpdateDto request)
+        {
+            var rule = lowStockRuleRepository.Get(request.RuleId, request.PartnerId);
+            if (rule == null) return;
+
+            rule.WarehouseId = request.WarehouseId;
+            rule.MaterialId = request.MaterialId;
+            rule.MinQuantity = request.MinQuantity;
+            rule.CriticalMinQuantity = request.CriticalMinQuantity;
+            rule.SendEmail = request.SendEmail;
+            rule.IsActive = request.IsActive;
+            rule.RecipientMode = (AlertRecipientMode)request.RecipientMode;
+
+            lowStockRuleRepository.Update(rule);
+            lowStockRuleRepository.ReplaceRoles(rule.InventoryAlertRuleId, request.PartnerId, request.RoleIds ?? Array.Empty<int>());
+            lowStockRuleRepository.ReplaceUsers(rule.InventoryAlertRuleId, request.PartnerId, request.UserIds ?? Array.Empty<int>());
+        }
+
+        public void ToggleLowStockRule(int ruleId, int partnerId, bool isActive)
+        {
+            lowStockRuleRepository.SetActive(ruleId, isActive, partnerId);
+        }
+
+        public void DeleteLowStockRule(int ruleId, int partnerId)
+        {
+            lowStockRuleRepository.Delete(ruleId, partnerId);
+        }
+
+        public void RunLowStockAlerts(RunAlertDto request)
+        {
+            var rules = lowStockRuleRepository.GetActiveByPartner(request.PartnerId);
+            if (rules.Count == 0) return;
+
+            foreach (var rule in rules)
             {
-                From = new MailAddress(from),
-                Subject = subject ?? string.Empty,
-                Body = body ?? string.Empty,
-                IsBodyHtml = true
-            };
+                var inventories = GetInventoriesForRule(rule, request.PartnerId);
+                foreach (var inventory in inventories)
+                {
+                    var quantity = inventory.Quantity ?? 0m;
+                    if (quantity > rule.MinQuantity) continue;
 
-            foreach (var em in toEmails.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct())
-                msg.To.Add(em);
+                    var recipients = ResolveRecipientsForLowStockRule(rule, request.PartnerId, inventory)
+                        .Where(x => x > 0)
+                        .Distinct()
+                        .ToArray();
 
-            if (msg.To.Count == 0) return;
+                    if (!recipients.Any())
+                        continue;
 
-            await client.SendMailAsync(msg, ct);
+                    var title = NotificationMessages.LowStockTitle;
+                    var body = string.Format(
+                        NotificationMessages.LowStockBodyFormat,
+                        inventory.MaterialId,
+                        inventory.WarehouseId,
+                        quantity,
+                        rule.MinQuantity);
+
+                    var notification = new Notification
+                    {
+                        PartnerId = request.PartnerId,
+                        Title = title,
+                        Content = body,
+                        Type = (int)NotificationType.LowStockAlert,
+                        RequireAcknowledge = true,
+                        Status = 1,
+                        CreatedAt = DateTime.UtcNow,
+                        UserId = recipients.First()
+                    };
+
+                    notificationRepository.AddNotification(notification);
+                    notificationRepository.AddRecipients(notification.NotificationId, request.PartnerId, recipients);
+
+                    if (rule.SendEmail)
+                        SendNotificationEmails(notification, recipients);
+                }
+            }
+        }
+
+        // ================= PRIVATE HELPERS ========================
+
+        private int[] ResolveRecipientUserIds(int partnerId, int[] userIds, int[] roleIds)
+        {
+            var direct = userIds?.Where(x => x > 0).Distinct().ToArray() ?? Array.Empty<int>();
+
+            var fromRoles = roleIds == null || roleIds.Length == 0
+                ? Array.Empty<int>()
+                : notificationRepository.GetUserIdsForRolesInPartner(roleIds, partnerId)
+                    .Where(x => x > 0)
+                    .Distinct()
+                    .ToArray();
+
+            return direct.Concat(fromRoles).Distinct().ToArray();
+        }
+
+        private void SendNotificationEmails(Notification notification, IEnumerable<int> userIds)
+        {
+            var ids = userIds?.Where(x => x > 0).Distinct().ToList();
+            if (ids == null || ids.Count == 0) return;
+
+            var emails = userRepository.GetEmailsByUserIds(ids);
+            var subject = NotificationMessages.NewNotificationEmailSubjectPrefix + notification.Title;
+            var body = string.IsNullOrWhiteSpace(notification.Content)
+                ? NotificationMessages.DefaultNewNotificationEmailBody
+                : notification.Content;
+
+            emailChannel.SendAsync(notification.PartnerId, emails, subject, body);
+        }
+
+        private List<Inventory> GetInventoriesForRule(InventoryAlertRule rule, int partnerId)
+        {
+            if (rule.WarehouseId.HasValue)
+            {
+                var inv = inventoryRepository.GetByMaterialId(rule.MaterialId, rule.WarehouseId.Value);
+                return inv == null ? new List<Inventory>() : new List<Inventory> { inv };
+            }
+
+            return inventoryRepository
+                .GetAllByPartnerId(partnerId)
+                .Where(x => x.MaterialId == rule.MaterialId)
+                .ToList();
+        }
+
+        private IEnumerable<int> ResolveRecipientsForLowStockRule(InventoryAlertRule rule, int partnerId, Inventory inventory)
+        {
+            if (rule.RecipientMode == AlertRecipientMode.Manager)
+            {
+                if (inventory.Warehouse?.Manager != null)
+                    return new[] { inventory.Warehouse.Manager.UserId };
+                return Array.Empty<int>();
+            }
+
+            if (rule.RecipientMode == AlertRecipientMode.Roles)
+            {
+                var roleIds = rule.Roles.Select(r => r.RoleId).ToArray();
+                if (roleIds.Length == 0) return Array.Empty<int>();
+
+                return notificationRepository.GetUserIdsForRolesInPartner(roleIds, partnerId);
+            }
+
+            return rule.Users.Select(u => u.UserId).ToArray();
         }
     }
 }

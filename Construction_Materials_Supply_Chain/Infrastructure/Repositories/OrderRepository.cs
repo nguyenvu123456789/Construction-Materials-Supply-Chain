@@ -34,7 +34,7 @@ namespace Infrastructure.Repositories
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Material)
                 .Include(o => o.CreatedByNavigation)
-                    .ThenInclude(u => u.Partner)  
+                    .ThenInclude(u => u.Partner)
                 .Include(o => o.Supplier)
                 .ToList();
         }

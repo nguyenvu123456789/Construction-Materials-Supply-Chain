@@ -24,7 +24,7 @@ namespace Services.Implementations
             IImportDetailRepository importDetails,
             IMaterialRepository materialRepository,
             IMaterialPartnerRepository materialPartners,
-            IOrderDetailRepository orderDetailRepository) 
+            IOrderDetailRepository orderDetailRepository)
         {
             _imports = imports;
             _invoices = invoices;
@@ -32,7 +32,7 @@ namespace Services.Implementations
             _importDetails = importDetails;
             _materialRepository = materialRepository;
             _materialPartners = materialPartners;
-            _orderDetailRepository = orderDetailRepository; 
+            _orderDetailRepository = orderDetailRepository;
         }
 
         public Import CreateImportFromInvoice(

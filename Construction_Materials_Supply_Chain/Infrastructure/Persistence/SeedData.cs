@@ -33,7 +33,7 @@ namespace Infrastructure.Persistence
                 var collaboratorType = context.PartnerTypes.First(pt => pt.TypeName == "Cộng tác viên");
 
                 context.Partners.AddRange(
-                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active", Region = "Tay Ho"},
+                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active", Region = "Tay Ho" },
                     new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active", Region = "Tay Ho" },
                     new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active", Region = "Tay Ho" },
                     new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active", Region = "Tay Ho" },
@@ -43,7 +43,7 @@ namespace Infrastructure.Persistence
                     new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active", Region = "Tay Ho" },
                     new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active", Region = "Ba Dinh" },
                     new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active", Region = "Ba Dinh" },
-                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active", Region ="Thanh Xuan" },
+                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active", Region = "Thanh Xuan" },
                     new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active", Region = "Thanh Xuan" },
                     new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active", Region = "Thanh Xuan" },
                     new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active", Region = "Thanh Xuan" }
@@ -73,8 +73,8 @@ namespace Infrastructure.Persistence
                     new User { UserName = "staff01", Email = "staff01@scmvlxd.vn", FullName = "Lê Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0923456789", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
                     new User { UserName = "accountant1", Email = "accountant1@scmvlxd.vn", FullName = "Phạm Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0934567890", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
                     new User { UserName = "sales1", Email = "sales1@scmvlxd.vn", FullName = "Ngô Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0945678901", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
-                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3},
-                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3},
+                    new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
+                    new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
                     new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
                     new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 }
                 );
@@ -597,7 +597,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            
+
 
             if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
             {
@@ -800,7 +800,7 @@ namespace Infrastructure.Persistence
                     DueDate = dueDate,
                     ImportStatus = type == "Import" ? status : null,
                     ExportStatus = type == "Export" ? status : null,
-                    OrderId = orderId, 
+                    OrderId = orderId,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     TotalAmount = 0
@@ -1141,71 +1141,6 @@ namespace Infrastructure.Persistence
                 context.ShippingLogs.AddRange(
                     new ShippingLog { InvoiceId = inv1.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
                     new ShippingLog { InvoiceId = inv2.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
-                );
-                context.SaveChanges();
-            }
-
-            if (!context.Notifications.Any())
-            {
-                var partnerId = 1;
-                var admin = context.Users.First(u => u.UserName == "admin");
-                var manager = context.Users.First(u => u.UserName == "manager1");
-                var inventory = context.Users.First(u => u.UserName == "inventory1");
-                var support = context.Users.First(u => u.UserName == "support1");
-
-                var conversation = new Notification
-                {
-                    Title = "Trao đổi xác nhận hàng nhập",
-                    Content = "Quản lý yêu cầu thủ kho xác nhận lại số lượng xi măng nhập ngày 06/11.",
-                    PartnerId = partnerId,
-                    UserId = manager.UserId,
-                    Type = 1, // 1 = Conversation
-                    RequireAcknowledge = false,
-                    Status = 1,
-                    CreatedAt = DateTime.Now.AddMinutes(-30),
-                    DueAt = DateTime.Now.AddHours(4)
-                };
-
-                var alert = new Notification
-                {
-                    Title = "Cảnh báo tồn kho thấp",
-                    Content = "Kho chính chỉ còn 2 tấn xi măng, dưới mức tối thiểu 5 tấn.",
-                    PartnerId = partnerId,
-                    UserId = admin.UserId,
-                    Type = 2, // 2 = Alert
-                    RequireAcknowledge = true,
-                    Status = 1,
-                    CreatedAt = DateTime.Now.AddHours(-1)
-                };
-
-                context.Notifications.AddRange(conversation, alert);
-                context.SaveChanges();
-
-                context.NotificationRecipients.AddRange(
-                    new NotificationRecipient { NotificationId = conversation.NotificationId, PartnerId = partnerId, UserId = inventory.UserId, IsRead = false },
-                    new NotificationRecipient { NotificationId = conversation.NotificationId, PartnerId = partnerId, UserId = support.UserId, IsRead = false },
-                    new NotificationRecipient { NotificationId = alert.NotificationId, PartnerId = partnerId, UserId = manager.UserId, IsRead = false },
-                    new NotificationRecipient { NotificationId = alert.NotificationId, PartnerId = partnerId, UserId = inventory.UserId, IsRead = false }
-                );
-                context.SaveChanges();
-
-                context.NotificationReplies.AddRange(
-                    new NotificationReply
-                    {
-                        NotificationId = conversation.NotificationId,
-                        PartnerId = partnerId,
-                        UserId = inventory.UserId,
-                        Message = "Đã kiểm tra và xác nhận đủ hàng.",
-                        CreatedAt = DateTime.Now.AddMinutes(-10)
-                    },
-                    new NotificationReply
-                    {
-                        NotificationId = conversation.NotificationId,
-                        PartnerId = partnerId,
-                        UserId = manager.UserId,
-                        Message = "Đã nhận phản hồi, cảm ơn.",
-                        CreatedAt = DateTime.Now.AddMinutes(-5)
-                    }
                 );
                 context.SaveChanges();
             }

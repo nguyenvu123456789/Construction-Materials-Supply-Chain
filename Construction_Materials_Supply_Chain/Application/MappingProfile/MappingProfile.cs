@@ -185,13 +185,37 @@ namespace Application.MappingProfile
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
 
-            CreateMap<NotificationReply, NotificationReplyDto>();
+            CreateMap<NotificationReply, NotificationReplyDto>()
+                .ForMember(d => d.Content, o => o.MapFrom(s => s.Message));
 
             CreateMap<Notification, NotificationResponseDto>()
                 .ForMember(d => d.NotificationId, o => o.MapFrom(s => s.NotificationId))
                 .ForMember(d => d.RecipientUserIds, o => o.MapFrom(s => s.NotificationRecipients.Select(x => x.UserId)))
                 .ForMember(d => d.RecipientRoleIds, o => o.MapFrom(s => s.NotificationRecipientRoles.Select(x => x.RoleId)))
                 .ForMember(d => d.Replies, o => o.MapFrom(s => s.NotificationReplies.OrderBy(x => x.CreatedAt)));
+
+            CreateMap<EventNotificationSetting, EventNotifySettingDto>()
+                .ForMember(d => d.SettingId, o => o.MapFrom(s => s.EventNotificationSettingId))
+                .ForMember(d => d.SendEmail, o => o.MapFrom(s => s.SendEmail))
+                .ForMember(d => d.RoleIds, o => o.MapFrom(s => s.Roles.Select(r => r.RoleId)));
+
+            CreateMap<EventNotifySettingUpsertDto, EventNotificationSetting>();
+
+            CreateMap<InventoryAlertRule, AlertRuleUpdateDto>()
+                .ForMember(d => d.RuleId, o => o.MapFrom(s => s.InventoryAlertRuleId))
+                .ForMember(d => d.RecipientMode, o => o.MapFrom(s => (int)s.RecipientMode))
+                .ForMember(d => d.RoleIds, o => o.MapFrom(s => s.Roles.Select(r => r.RoleId)))
+                .ForMember(d => d.UserIds, o => o.MapFrom(s => s.Users.Select(u => u.UserId)));
+
+            CreateMap<AlertRuleCreateDto, InventoryAlertRule>()
+                .ForMember(d => d.InventoryAlertRuleId, o => o.Ignore())
+                .ForMember(d => d.RecipientMode, o => o.MapFrom(s => (AlertRecipientMode)s.RecipientMode))
+                .ForMember(d => d.SendEmail, o => o.MapFrom(s => s.SendEmail))
+                .ForMember(d => d.IsActive, o => o.MapFrom(_ => true));
+
+            CreateMap<AlertRuleUpdateDto, InventoryAlertRule>()
+                .ForMember(d => d.InventoryAlertRuleId, o => o.MapFrom(s => s.RuleId))
+                .ForMember(d => d.RecipientMode, o => o.MapFrom(s => (AlertRecipientMode)s.RecipientMode));
 
             CreateMap<GlAccount, GlAccountDto>();
 

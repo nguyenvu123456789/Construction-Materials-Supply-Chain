@@ -1,6 +1,11 @@
 ﻿namespace Domain.Models
 {
-    public enum AlertRecipientMode { Manager = 1, Roles = 2, Users = 3 }
+    public enum AlertRecipientMode
+    {
+        Users = 0,
+        Roles = 1,
+        Manager = 2
+    }
 
     public partial class InventoryAlertRule
     {
@@ -10,8 +15,8 @@
         public int MaterialId { get; set; }
         public decimal MinQuantity { get; set; }
         public decimal? CriticalMinQuantity { get; set; }
+        public bool SendEmail { get; set; } = true;
         public bool IsActive { get; set; } = true;
-        public bool SendZalo { get; set; } = true;
         public AlertRecipientMode RecipientMode { get; set; } = AlertRecipientMode.Manager;
         public virtual Partner Partner { get; set; } = null!;
         public virtual Warehouse? Warehouse { get; set; }

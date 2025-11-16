@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Application.Validation.Notifications
 {
-    public class AckReadCloseRequestValidator : AbstractValidator<AckReadCloseRequestDto>
+    public class AckReadCloseRequestDtoValidator : AbstractValidator<AckReadCloseRequestDto>
     {
-        public AckReadCloseRequestValidator()
+        public AckReadCloseRequestDtoValidator()
         {
             RuleFor(x => x.NotificationId).GreaterThan(0);
             RuleFor(x => x.PartnerId).GreaterThan(0);

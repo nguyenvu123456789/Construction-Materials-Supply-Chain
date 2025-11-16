@@ -98,5 +98,15 @@ namespace Infrastructure.Implementations
                 .Select(u => u.Email!)
                 .ToList();
         }
+
+        public bool ExistsByEmail(string email)
+        {
+            return _context.Users.Any(u => u.Email == email);
+        }
+
+        public User? GetByEmail(string email)
+        {
+            return _context.Users.FirstOrDefault(u => u.Email == email);
+        }
     }
 }

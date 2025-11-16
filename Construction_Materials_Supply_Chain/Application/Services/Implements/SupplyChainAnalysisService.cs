@@ -2,12 +2,8 @@
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
-using Domain.Interfaces;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace Application.Services.Implements
 {
@@ -463,7 +459,7 @@ namespace Application.Services.Implements
                 decimal lastQty = points.Last().Quantity;
                 decimal forecastQty;
                 string trend;
-                
+
                 if (points.Count >= 2)
                 {
                     var prevQty = points[points.Count - 2].Quantity;

@@ -4,8 +4,11 @@ namespace Application.Interfaces
 {
     public interface IAuthenticationService
     {
-        AuthResponseDto Register(RegisterRequestDto request);
         AuthResponseDto? Login(LoginRequestDto request);
         void Logout(int userId);
+
+        AuthResponseDto AdminCreateUser(AdminCreateUserRequestDto request);
+        void ChangePassword(ChangePasswordRequestDto request);
+        Task<List<AuthResponseDto>> BulkCreateUsersByEmailAsync(BulkCreateUsersByEmailRequestDto request, CancellationToken cancellationToken = default);
     }
 }

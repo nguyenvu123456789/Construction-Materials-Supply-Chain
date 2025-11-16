@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.Auth;
+using Application.Services.Interfaces;
 using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
@@ -15,53 +16,25 @@ namespace Application.Services.Implements
         private readonly IUserRepository _users;
         private readonly IActivityLogRepository _activityLogs;
         private readonly IMapper _mapper;
-        private readonly IValidator<RegisterRequestDto> _registerValidator;
         private readonly IValidator<LoginRequestDto> _loginValidator;
         private readonly IJwtTokenGenerator _jwt;
+        private readonly IEmailChannel _emailChannel;
 
         public AuthenticationService(
             IUserRepository users,
             IActivityLogRepository activityLogs,
             IMapper mapper,
-            IValidator<RegisterRequestDto> registerValidator,
             IValidator<LoginRequestDto> loginValidator,
-            IJwtTokenGenerator jwt
+            IJwtTokenGenerator jwt,
+            IEmailChannel emailChannel
         )
         {
             _users = users;
             _activityLogs = activityLogs;
             _mapper = mapper;
-            _registerValidator = registerValidator;
             _loginValidator = loginValidator;
             _jwt = jwt;
-        }
-
-        public AuthResponseDto Register(RegisterRequestDto request)
-        {
-            var vr = _registerValidator.Validate(request);
-            if (!vr.IsValid) throw new ValidationException(vr.Errors);
-
-            if (_users.ExistsByUsername(request.UserName))
-                throw new InvalidOperationException("Username already exists");
-
-            var user = new User
-            {
-                UserName = request.UserName,
-                PasswordHash = HashBase64(request.Password),
-                Email = request.Email,
-                CreatedAt = DateTime.UtcNow,
-                Status = "Active"
-            };
-
-            _users.Add(user);
-
-            var dto = _mapper.Map<AuthResponseDto>(user);
-
-            var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
-            dto.Roles = roles;
-            dto.Token = _jwt.GenerateToken(user, roles);
-
-            return dto;
+            _emailChannel = emailChannel;
         }
 
         public AuthResponseDto? Login(LoginRequestDto request)
@@ -86,6 +59,7 @@ namespace Application.Services.Implements
             dto.PartnerId = user.PartnerId;
             dto.PartnerName = user.Partner?.PartnerName;
             dto.PartnerType = user.Partner?.PartnerType?.TypeName;
+            dto.MustChangePassword = user.MustChangePassword;
 
             var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
             dto.Roles = roles;
@@ -115,6 +89,141 @@ namespace Application.Services.Implements
             var sb = new StringBuilder(hash.Length * 2);
             foreach (var b in hash) sb.Append(b.ToString("x2"));
             return sb.ToString();
+        }
+
+        private static string GenerateRandomPassword(int length = 12)
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@#$%^&*";
+            var bytes = new byte[length];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+
+            var result = new StringBuilder(length);
+            for (int i = 0; i < length; i++)
+            {
+                var idx = bytes[i] % chars.Length;
+                result.Append(chars[idx]);
+            }
+            return result.ToString();
+        }
+
+        public AuthResponseDto AdminCreateUser(AdminCreateUserRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new ValidationException("Email is required");
+
+            var email = request.Email.Trim();
+
+            if (_users.ExistsByEmail(email))
+                throw new InvalidOperationException("Email already exists");
+
+            var userName = email;
+
+            var rawPassword = GenerateRandomPassword();
+            var passwordHash = HashBase64(rawPassword);
+
+            var user = new User
+            {
+                UserName = userName,
+                Email = email,
+                PasswordHash = passwordHash,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                MustChangePassword = true,
+                FullName = null,
+                Phone = null,
+                PartnerId = null,
+                AvatarBase64 = null,
+                ZaloUserId = null
+            };
+
+            _users.Add(user);
+
+            var subject = "Tài khoản SCM VLXD của bạn";
+            var body = $"Tài khoản của bạn đã được tạo.\n" +
+                       $"Tên đăng nhập: {userName}\n" +
+                       $"Mật khẩu tạm: {rawPassword}\n\n" +
+                       $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
+
+            _emailChannel.SendAsync(0, new[] { email }, subject, body);
+
+            var dto = _mapper.Map<AuthResponseDto>(user);
+            dto.MustChangePassword = true;
+            dto.Roles = Array.Empty<string>();
+            dto.Token = _jwt.GenerateToken(user, dto.Roles);
+
+            return dto;
+        }
+
+        public void ChangePassword(ChangePasswordRequestDto request)
+        {
+            var user = _users.GetById(request.UserId);
+            if (user == null) throw new InvalidOperationException("User not found");
+            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("User is not active");
+
+            var currentHash = HashBase64(request.OldPassword);
+            var currentHex = HashHex(request.OldPassword);
+            var ok = string.Equals(user.PasswordHash, currentHash, StringComparison.Ordinal)
+                     || string.Equals(user.PasswordHash, currentHex, StringComparison.OrdinalIgnoreCase);
+            if (!ok) throw new InvalidOperationException("Old password is incorrect");
+
+            user.PasswordHash = HashBase64(request.NewPassword);
+            user.MustChangePassword = false;
+
+            _users.Update(user);
+            _activityLogs.LogAction(user.UserId, "User changed password", "User", user.UserId);
+        }
+
+        public async Task<List<AuthResponseDto>> BulkCreateUsersByEmailAsync(
+            BulkCreateUsersByEmailRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            var results = new List<AuthResponseDto>();
+
+            if (request.Emails == null || request.Emails.Count == 0)
+                return results;
+
+            var distinctEmails = request.Emails
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .Select(e => e.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var email in distinctEmails)
+            {
+                if (_users.ExistsByEmail(email))
+                    continue;
+
+                var rawPassword = GenerateRandomPassword();
+                var passwordHash = HashBase64(rawPassword);
+
+                var user = new User
+                {
+                    UserName = email,
+                    Email = email,
+                    PasswordHash = passwordHash,
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    MustChangePassword = true
+                };
+
+                _users.Add(user);
+
+                var subject = "Tài khoản SCM VLXD của bạn";
+                var body = $"Tài khoản của bạn đã được tạo.\n" +
+                           $"Tên đăng nhập: {email}\n" +
+                           $"Mật khẩu tạm: {rawPassword}\n\n" +
+                           $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
+
+                await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body, cancellationToken);
+
+                var dto = _mapper.Map<AuthResponseDto>(user);
+                dto.MustChangePassword = true;
+                results.Add(dto);
+            }
+
+            return results;
         }
     }
 }

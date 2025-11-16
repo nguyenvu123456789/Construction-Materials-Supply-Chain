@@ -14,6 +14,7 @@ public partial class User
     public int? PartnerId { get; set; }
     public string? AvatarBase64 { get; set; }
     public string? ZaloUserId { get; set; }
+    public bool MustChangePassword { get; set; }
 
     public virtual Partner? Partner { get; set; }
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();

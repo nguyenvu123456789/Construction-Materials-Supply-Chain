@@ -622,6 +622,8 @@ public partial class ScmVlxdContext : DbContext
                 .HasDefaultValue("Active");
 
             entity.Property(u => u.ZaloUserId).HasMaxLength(64);
+            entity.Property(u => u.MustChangePassword)
+                .HasDefaultValue(false);
         });
 
         modelBuilder.Entity<UserRole>(entity =>
@@ -934,6 +936,8 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.SendEmail).HasDefaultValue(true);
+            e.Property(x => x.IsActive).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<InventoryAlertRuleRole>(e =>
@@ -959,6 +963,8 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.EventType).HasMaxLength(100).IsRequired();
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.PartnerId, x.EventType }).IsUnique();
+            e.Property(x => x.SendEmail).HasDefaultValue(true);
+            e.Property(x => x.IsActive).HasDefaultValue(true);
         });
         modelBuilder.Entity<EventNotificationSettingRole>(e =>
         {

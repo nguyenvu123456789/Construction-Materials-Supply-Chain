@@ -37,6 +37,6 @@
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; }
-        public string? Region { get; set; } 
+        public string? Region { get; set; }
     }
 }

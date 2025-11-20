@@ -1158,11 +1158,11 @@ namespace Infrastructure.Persistence
                 var inv1 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-001") ?? context.Invoices.OrderBy(i => i.InvoiceId).First();
                 var inv2 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-002") ?? context.Invoices.OrderBy(i => i.InvoiceId).Skip(1).FirstOrDefault() ?? inv1;
 
-                context.TransportInvoices.AddRange(
-                    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv1.InvoiceId },
-                    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv2.InvoiceId }
-                );
-                context.SaveChanges();
+                //context.TransportInvoices.AddRange(
+                //    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv1.InvoiceId },
+                //    new TransportInvoice { TransportId = t1.TransportId, InvoiceId = inv2.InvoiceId }
+                //);
+                //context.SaveChanges();
 
                 context.TransportPorters.AddRange(
                     new TransportPorter { TransportId = t1.TransportId, PorterId = p1.PorterId, Role = "Member" },

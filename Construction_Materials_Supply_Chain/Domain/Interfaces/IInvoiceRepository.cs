@@ -15,5 +15,7 @@ namespace Domain.Interface
         List<Invoice> GetAll();
         Invoice GetWithDetails(int id);
         Invoice? GetWithDetailsByCode(string code);
+        List<Invoice> GetCustomerImportInvoices(int customerPartnerId);
+        List<Invoice> GetExportInvoicesByOrderIds(List<int> orderIds);
     }
 }

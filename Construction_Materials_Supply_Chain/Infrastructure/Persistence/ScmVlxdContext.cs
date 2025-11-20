@@ -819,7 +819,6 @@ public partial class ScmVlxdContext : DbContext
             e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);
             e.HasMany(x => x.TransportPorters).WithOne(tp => tp.Transport).HasForeignKey(tp => tp.TransportId);
-            e.HasMany(x => x.TransportInvoices).WithOne(ti => ti.Transport).HasForeignKey(ti => ti.TransportId);
         });
 
         modelBuilder.Entity<TransportStop>(e =>
@@ -828,15 +827,17 @@ public partial class ScmVlxdContext : DbContext
             e.ToTable("TransportStop");
             e.Property(x => x.StopType).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.ProofImageBase64);
             e.HasOne(x => x.Transport).WithMany(t => t.Stops).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Address).WithMany().HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(x => x.TransportInvoices).WithOne(ti => ti.TransportStop).HasForeignKey(ti => ti.TransportStopId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TransportInvoice>(e =>
         {
             e.ToTable("TransportInvoice");
-            e.HasKey(x => new { x.TransportId, x.InvoiceId });
-            e.HasOne(x => x.Transport).WithMany(t => t.TransportInvoices).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
+            e.HasKey(x => new { x.TransportStopId, x.InvoiceId });
+            e.HasOne(x => x.TransportStop).WithMany(s => s.TransportInvoices).HasForeignKey(x => x.TransportStopId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Invoice).WithMany().HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.InvoiceId).IsUnique();
         });

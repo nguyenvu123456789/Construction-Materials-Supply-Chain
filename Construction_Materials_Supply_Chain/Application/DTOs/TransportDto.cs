@@ -55,6 +55,12 @@
         public DateTimeOffset At { get; set; }
     }
 
+    public class TransportStopProofBase64Dto
+    {
+        public int TransportStopId { get; set; }
+        public string Base64 { get; set; } = default!;
+    }
+
     public class TransportStopDto
     {
         public int TransportStopId { get; set; }
@@ -72,6 +78,7 @@
         public DateTimeOffset? ETD { get; set; }
         public DateTimeOffset? ATA { get; set; }
         public DateTimeOffset? ATD { get; set; }
+        public List<SimpleInvoiceDto> Invoices { get; set; } = new();
     }
 
     public class TransportPorterDto
@@ -102,5 +109,16 @@
         public List<SimpleInvoiceDto> Invoices { get; set; } = new();
         public List<TransportPorterDto> Porters { get; set; } = new();
         public string? Notes { get; set; }
+    }
+
+    public class CustomerOrderStatusDto
+    {
+        public int InvoiceId { get; set; }
+        public string InvoiceCode { get; set; } = default!;
+        public DateTimeOffset IssueDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string InvoiceType { get; set; } = default!;
+        public string ExportStatus { get; set; } = default!;
+        public string DeliveryStatus { get; set; } = default!;
     }
 }

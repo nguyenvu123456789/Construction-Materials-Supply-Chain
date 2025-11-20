@@ -1,6 +1,8 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 
 namespace Api.Controllers
 {
@@ -34,7 +36,6 @@ namespace Api.Controllers
             return Ok(data);
         }
 
-
         [HttpPost("{id:int}/assign")]
         public IActionResult Assign(int id, [FromBody] TransportAssignRequestDto dto)
         {
@@ -49,17 +50,17 @@ namespace Api.Controllers
             return Ok();
         }
 
-        [HttpPost("{id:int}/invoices")]
-        public IActionResult AddInvoices(int id, [FromBody] TransportAddInvoicesRequestDto dto)
+        [HttpPut("{id:int}/stops/{stopId:int}/invoices")]
+        public IActionResult SetStopInvoices(int id, int stopId, [FromBody] TransportAddInvoicesRequestDto dto)
         {
-            _service.AddInvoices(id, dto);
+            _service.SetStopInvoices(id, stopId, dto.InvoiceIds ?? new List<int>());
             return Ok();
         }
 
-        [HttpPut("{id:int}/invoices")]
-        public IActionResult ReplaceInvoices(int id, [FromBody] List<int> invoiceIds)
+        [HttpPost("{id:int}/stops/proof-base64")]
+        public IActionResult UploadStopProofBase64(int id, [FromBody] TransportStopProofBase64Dto dto)
         {
-            _service.ReplaceInvoices(id, invoiceIds ?? new List<int>());
+            _service.UploadStopProofBase64(id, dto);
             return Ok();
         }
 
@@ -110,6 +111,13 @@ namespace Api.Controllers
         {
             _service.Cancel(id, reason);
             return Ok();
+        }
+
+        [HttpGet("by-invoice/{invoiceId:int}")]
+        public ActionResult<List<TransportResponseDto>> GetByInvoice(int invoiceId)
+        {
+            var data = _service.GetByInvoice(invoiceId);
+            return Ok(data);
         }
     }
 }

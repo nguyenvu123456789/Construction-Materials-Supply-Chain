@@ -62,7 +62,6 @@ namespace Application.MappingProfile
                 .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ImportReportDetails))
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy));
 
-
             CreateMap<Invoice, SimpleInvoiceDto>();
             CreateMap<Import, SimpleImportDto>();
             CreateMap<ImportReportDetail, ImportReportDetailDto>();
@@ -79,7 +78,6 @@ namespace Application.MappingProfile
             CreateMap<CreateInvoiceDto, Invoice>()
                 .ForMember(dest => dest.ExportStatus, opt => opt.MapFrom(src => "Pending"))
                 .ForMember(dest => dest.ImportStatus, opt => opt.MapFrom(src => "Pending"))
-
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.InvoiceDetails, opt => opt.MapFrom(src => src.Details));
 
@@ -92,8 +90,6 @@ namespace Application.MappingProfile
             CreateMap<ExportReport, ExportReportResponseDto>()
                 .ForMember(dest => dest.ReportedBy, opt => opt.MapFrom(src => src.ReportedBy))
                 .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.ExportReportDetails));
-
-
 
             CreateMap<ExportReportDetail, ExportReportDetailResponseDto>()
                 .ForMember(dest => dest.MaterialName, opt => opt.MapFrom(src => src.Material.MaterialName));
@@ -169,19 +165,21 @@ namespace Application.MappingProfile
                 .ForMember(d => d.AddressLine1, o => o.MapFrom(s => s.Address.Line1))
                 .ForMember(d => d.City, o => o.MapFrom(s => s.Address.City))
                 .ForMember(d => d.Lat, o => o.MapFrom(s => s.Address.Lat))
-                .ForMember(d => d.Lng, o => o.MapFrom(s => s.Address.Lng));
+                .ForMember(d => d.Lng, o => o.MapFrom(s => s.Address.Lng))
+                .ForMember(d => d.Invoices, o => o.MapFrom(s => s.TransportInvoices.Select(ti => ti.Invoice)));
 
             CreateMap<TransportPorter, TransportPorterDto>()
                 .ForMember(d => d.PorterName, o => o.MapFrom(s => s.Porter.FullName))
                 .ForMember(d => d.Phone, o => o.MapFrom(s => s.Porter.Phone));
 
             CreateMap<Transport, TransportResponseDto>()
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
-                .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
-                .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
-                .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
-                .ForMember(d => d.Invoices, o => o.MapFrom(s => s.TransportInvoices.Select(ti => ti.Invoice)))
-                .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
+                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                 .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
+                 .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
+                 .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
+                 .ForMember(d => d.Invoices, o => o.MapFrom(s =>
+                     s.Stops.SelectMany(st => st.TransportInvoices.Select(ti => ti.Invoice))))
+                 .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();
 

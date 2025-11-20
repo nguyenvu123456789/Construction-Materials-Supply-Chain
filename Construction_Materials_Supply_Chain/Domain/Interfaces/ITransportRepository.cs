@@ -1,4 +1,6 @@
-﻿using Domain.Interface.Base;
+﻿using System;
+using System.Collections.Generic;
+using Domain.Interface.Base;
 using Domain.Models;
 
 namespace Domain.Interface
@@ -8,12 +10,12 @@ namespace Domain.Interface
         Transport? GetDetail(int transportId);
         List<Transport> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void AddStops(int transportId, List<TransportStop> stops);
-        void AddInvoices(int transportId, List<int> invoiceIds);
-        void ReplaceInvoices(int transportId, List<int> invoiceIds);
-        bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId);
+        void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds);
+        bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId, int transportStopId);
         void UpdateStatus(int transportId, TransportStatus status, DateTimeOffset? startActual, DateTimeOffset? endActual);
         void UpdateStopArrival(int transportId, int transportStopId, DateTimeOffset at);
         void UpdateStopDeparture(int transportId, int transportStopId, DateTimeOffset at);
+        void UpdateStopProofImage(int transportId, int transportStopId, string proofImageBase64);
         bool AllNonDepotStopsDone(int transportId);
         void Cancel(int transportId, string reason);
         void RemoveStop(int transportId, int transportStopId);
@@ -28,5 +30,6 @@ namespace Domain.Interface
         DateTimeOffset? DriverBusyUntil(int driverId, DateTimeOffset s, DateTimeOffset e);
         DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e);
         void ReplacePorters(int transportId, List<int> porterIds);
+        List<Transport> GetByInvoiceId(int invoiceId);
     }
 }

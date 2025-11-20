@@ -3,6 +3,9 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Infrastructure.Implementations
 {
@@ -22,7 +25,7 @@ namespace Infrastructure.Implementations
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
-                .Include(t => t.TransportInvoices).ThenInclude(ti => ti.Invoice)
+                .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .Include(t => t.Vehicle)
                 .Include(t => t.Driver)
@@ -34,7 +37,7 @@ namespace Infrastructure.Implementations
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
                 .Include(t => t.Stops).ThenInclude(s => s.Address)
-                .Include(t => t.TransportInvoices).ThenInclude(ti => ti.Invoice)
+                .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .AsQueryable();
 
@@ -69,41 +72,22 @@ namespace Infrastructure.Implementations
             _context.SaveChanges();
         }
 
-        public void AddInvoices(int transportId, List<int> invoiceIds)
-        {
-            var ids = invoiceIds?.Distinct().ToList() ?? new List<int>();
-            if (ids.Count == 0) return;
-
-            var conflict = _context.Set<TransportInvoice>()
-                .Where(ti => ids.Contains(ti.InvoiceId) && ti.TransportId != transportId)
-                .Select(ti => ti.InvoiceId)
-                .ToList();
-            if (conflict.Any()) throw new InvalidOperationException($"Invoice đã gán transport khác: {string.Join(",", conflict)}");
-
-            var existing = _context.Set<TransportInvoice>()
-                .Where(x => x.TransportId == transportId && ids.Contains(x.InvoiceId))
-                .Select(x => x.InvoiceId)
-                .ToHashSet();
-
-            foreach (var id in ids)
-                if (!existing.Contains(id))
-                    _context.Set<TransportInvoice>().Add(new TransportInvoice { TransportId = transportId, InvoiceId = id });
-
-            _context.SaveChanges();
-        }
-
-        public void ReplaceInvoices(int transportId, List<int> invoiceIds)
+        public void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds)
         {
             var ids = invoiceIds?.Distinct().ToList() ?? new List<int>();
 
+            var stop = _context.TransportStops.First(x => x.TransportStopId == transportStopId && x.TransportId == transportId);
+
             var conflict = _context.Set<TransportInvoice>()
-                .Where(ti => ids.Contains(ti.InvoiceId) && ti.TransportId != transportId)
+                .Where(ti => ids.Contains(ti.InvoiceId) && ti.TransportStopId != transportStopId)
                 .Select(ti => ti.InvoiceId)
                 .ToList();
-            if (conflict.Any()) throw new InvalidOperationException($"Invoice đã gán transport khác: {string.Join(",", conflict)}");
+
+            if (conflict.Any())
+                throw new InvalidOperationException($"Invoice đã gán stop khác: {string.Join(",", conflict)}");
 
             var db = _context.Set<TransportInvoice>();
-            var current = db.Where(ti => ti.TransportId == transportId).ToList();
+            var current = db.Where(ti => ti.TransportStopId == transportStopId).ToList();
             var keep = ids.ToHashSet();
 
             var toRemove = current.Where(ti => !keep.Contains(ti.InvoiceId)).ToList();
@@ -112,10 +96,13 @@ namespace Infrastructure.Implementations
             var existing = current.Select(ti => ti.InvoiceId).ToHashSet();
             foreach (var id in ids)
                 if (!existing.Contains(id))
-                    db.Add(new TransportInvoice { TransportId = transportId, InvoiceId = id });
+                    db.Add(new TransportInvoice { TransportStopId = transportStopId, InvoiceId = id });
 
             _context.SaveChanges();
         }
+
+        public bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId, int transportStopId) =>
+            _context.Set<TransportInvoice>().Any(ti => invoiceIds.Contains(ti.InvoiceId) && ti.TransportStopId != transportStopId);
 
         public void UpdateStatus(int transportId, TransportStatus status, DateTimeOffset? startActual, DateTimeOffset? endActual)
         {
@@ -137,8 +124,17 @@ namespace Infrastructure.Implementations
         public void UpdateStopDeparture(int transportId, int transportStopId, DateTimeOffset at)
         {
             var s = _context.TransportStops.First(x => x.TransportId == transportId && x.TransportStopId == transportStopId);
+            if (string.IsNullOrEmpty(s.ProofImageBase64))
+                throw new InvalidOperationException("Chưa có ảnh chứng từ cho điểm dừng này.");
             s.ATD = at;
             s.Status = TransportStopStatus.Done;
+            _context.SaveChanges();
+        }
+
+        public void UpdateStopProofImage(int transportId, int transportStopId, string proofImageBase64)
+        {
+            var s = _context.TransportStops.First(x => x.TransportId == transportId && x.TransportStopId == transportStopId);
+            s.ProofImageBase64 = proofImageBase64;
             _context.SaveChanges();
         }
 
@@ -300,7 +296,18 @@ namespace Infrastructure.Implementations
             _context.SaveChanges();
         }
 
-        public bool InvoiceAssignedElsewhere(IEnumerable<int> invoiceIds, int transportId) =>
-            _context.Set<TransportInvoice>().Any(ti => invoiceIds.Contains(ti.InvoiceId) && ti.TransportId != transportId);
+        public List<Transport> GetByInvoiceId(int invoiceId)
+        {
+            return _context.Transports
+                .Include(t => t.ProviderPartner)
+                .Include(t => t.Depot)
+                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
+                .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
+                .Include(t => t.Vehicle)
+                .Include(t => t.Driver)
+                .Where(t => t.Stops.Any(s => s.TransportInvoices.Any(ti => ti.InvoiceId == invoiceId)))
+                .ToList();
+        }
     }
 }

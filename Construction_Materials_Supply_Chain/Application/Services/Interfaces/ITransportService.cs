@@ -9,8 +9,7 @@ namespace Application.Interfaces
         List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId = null);
         void Assign(int transportId, TransportAssignRequestDto dto);
         void AddStops(int transportId, TransportAddStopsRequestDto dto);
-        void AddInvoices(int transportId, TransportAddInvoicesRequestDto dto);
-        void ReplaceInvoices(int transportId, List<int> invoiceIds); // 👈 thêm dòng này
+        void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds);
         void Start(int transportId, DateTimeOffset at);
         void ArriveStop(int transportId, TransportStopArriveRequestDto dto);
         void CompleteStop(int transportId, TransportStopDoneRequestDto dto);
@@ -18,5 +17,8 @@ namespace Application.Interfaces
         void Cancel(int transportId, string reason);
         void DeleteStop(int transportId, int transportStopId);
         void ClearStops(int transportId, bool keepDepot);
+        void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto);
+        List<TransportResponseDto> GetByInvoice(int invoiceId);
+        List<CustomerOrderStatusDto> GetHistory(int customerPartnerId);
     }
 }

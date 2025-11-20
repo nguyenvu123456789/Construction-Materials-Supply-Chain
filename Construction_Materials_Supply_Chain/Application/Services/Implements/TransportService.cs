@@ -172,29 +172,27 @@ namespace Application.Services.Implements
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.StopsUpdated", CreatedAt = DateTime.UtcNow });
         }
 
-        public void AddInvoices(int transportId, TransportAddInvoicesRequestDto dto)
+        public void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds)
         {
-            foreach (var id in dto.InvoiceIds)
-                if (_invoiceRepo.GetById(id) == null) throw new InvalidOperationException($"Invoice {id} not found");
-
-            if (_transportRepo.InvoiceAssignedElsewhere(dto.InvoiceIds, transportId))
-                throw new InvalidOperationException("Có invoice đã gán transport khác");
-
-            _transportRepo.AddInvoices(transportId, dto.InvoiceIds);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.InvoicesUpdated", CreatedAt = DateTime.UtcNow });
-        }
-
-        public void ReplaceInvoices(int transportId, List<int> invoiceIds)
-        {
-            var list = invoiceIds ?? new List<int>();
+            var list = invoiceIds?.Distinct().ToList() ?? new List<int>();
             foreach (var id in list)
-                if (_invoiceRepo.GetById(id) == null) throw new InvalidOperationException($"Invoice {id} not found");
+            {
+                var inv = _invoiceRepo.GetById(id) ?? throw new InvalidOperationException($"Invoice {id} not found");
+                if (!string.Equals(inv.InvoiceType, "Export", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException($"Invoice {id} không phải Export");
+            }
 
-            if (_transportRepo.InvoiceAssignedElsewhere(list, transportId))
-                throw new InvalidOperationException("Có invoice đã gán transport khác");
+            if (_transportRepo.InvoiceAssignedElsewhere(list, transportId, transportStopId))
+                throw new InvalidOperationException("Có invoice đã gán stop khác");
 
-            _transportRepo.ReplaceInvoices(transportId, list);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.InvoicesUpdated", CreatedAt = DateTime.UtcNow });
+            _transportRepo.SetStopInvoices(transportId, transportStopId, list);
+            _logRepo.Add(new ShippingLog
+            {
+                TransportId = transportId,
+                TransportStopId = transportStopId,
+                Status = "Stop.InvoicesUpdated",
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         public void Start(int transportId, DateTimeOffset at)
@@ -265,6 +263,96 @@ namespace Application.Services.Implements
         {
             _transportRepo.ClearStops(transportId, keepDepot);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = keepDepot ? "Stops.ClearedKeepDepot" : "Stops.ClearedAll", CreatedAt = DateTime.UtcNow });
+        }
+
+        public void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Base64))
+                throw new InvalidOperationException("Base64 is required");
+
+            _transportRepo.UpdateStopProofImage(transportId, dto.TransportStopId, dto.Base64);
+            _logRepo.Add(new ShippingLog
+            {
+                TransportId = transportId,
+                TransportStopId = dto.TransportStopId,
+                Status = "Stop.ProofUploaded",
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        public List<TransportResponseDto> GetByInvoice(int invoiceId)
+        {
+            var list = _transportRepo.GetByInvoiceId(invoiceId);
+            return list.Select(_mapper.Map<TransportResponseDto>).ToList();
+        }
+
+        public List<CustomerOrderStatusDto> GetHistory(int customerPartnerId)
+        {
+            var imports = _invoiceRepo.GetCustomerImportInvoices(customerPartnerId);
+            var orderIds = imports.Select(i => i.OrderId).Where(o => o.HasValue).Select(o => o!.Value).Distinct().ToList();
+            var exportInvoices = _invoiceRepo.GetExportInvoicesByOrderIds(orderIds);
+            var exportByOrder = exportInvoices
+                .Where(e => e.OrderId.HasValue)
+                .GroupBy(e => e.OrderId!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var result = new List<CustomerOrderStatusDto>();
+
+            foreach (var inv in imports)
+            {
+                var exportList = new List<Invoice>();
+                if (inv.OrderId.HasValue && exportByOrder.TryGetValue(inv.OrderId.Value, out var exps))
+                    exportList = exps;
+
+                var transportList = new List<Transport>();
+                foreach (var exp in exportList)
+                {
+                    var ts = _transportRepo.GetByInvoiceId(exp.InvoiceId);
+                    if (ts.Count > 0)
+                        transportList.AddRange(ts);
+                }
+
+                string deliveryStatus;
+
+                if (!exportList.Any())
+                {
+                    deliveryStatus = "Chưa xuất kho";
+                }
+                else if (!transportList.Any())
+                {
+                    deliveryStatus = "Chưa xếp chuyến";
+                }
+                else
+                {
+                    var allStops = transportList
+                        .SelectMany(t => t.Stops)
+                        .Where(s => s.TransportInvoices.Any(ti => exportList.Select(e => e.InvoiceId).Contains(ti.InvoiceId)))
+                        .ToList();
+
+                    var allDone = allStops.Any() && allStops.All(s => s.Status == TransportStopStatus.Done);
+                    var anyEnRoute = transportList.Any(t => t.Status == TransportStatus.EnRoute || t.Status == TransportStatus.Assigned);
+
+                    if (allDone)
+                        deliveryStatus = "Đã giao xong";
+                    else if (anyEnRoute)
+                        deliveryStatus = "Đang giao";
+                    else
+                        deliveryStatus = "Đang xử lý";
+                }
+
+                result.Add(new CustomerOrderStatusDto
+                {
+                    InvoiceId = inv.InvoiceId,
+                    InvoiceCode = inv.InvoiceCode,
+                    IssueDate = inv.IssueDate,
+                    TotalAmount = inv.TotalAmount ?? 0,
+                    InvoiceType = inv.InvoiceType,
+                    ExportStatus = exportList.FirstOrDefault()?.ExportStatus ?? "N/A",
+                    DeliveryStatus = deliveryStatus
+                });
+            }
+
+            return result;
         }
     }
 }

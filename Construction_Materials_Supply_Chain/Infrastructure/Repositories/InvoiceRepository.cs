@@ -58,5 +58,24 @@ namespace Infrastructure.Implementations
                               .FirstOrDefault(x => x.InvoiceCode == code);
 
         public Invoice GetWithDetails(int id) => _dbSet.Include(i => i.InvoiceDetails).First(x => x.InvoiceId == id);
+
+        public List<Invoice> GetCustomerImportInvoices(int customerPartnerId)
+        {
+            return _context.Invoices
+                .Where(i => i.InvoiceType == "Import" && i.PartnerId == customerPartnerId)
+                .OrderByDescending(i => i.IssueDate)
+                .ToList();
+        }
+
+        public List<Invoice> GetExportInvoicesByOrderIds(List<int> orderIds)
+        {
+            if (orderIds == null || orderIds.Count == 0) return new List<Invoice>();
+
+            return _context.Invoices
+                .Where(i => i.InvoiceType == "Export"
+                         && i.OrderId.HasValue
+                         && orderIds.Contains(i.OrderId.Value))
+                .ToList();
+        }
     }
 }

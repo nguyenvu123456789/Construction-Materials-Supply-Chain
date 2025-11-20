@@ -23,7 +23,6 @@
         public virtual Vehicle Vehicle { get; set; } = default!;
         public virtual Driver Driver { get; set; } = default!;
         public virtual ICollection<TransportStop> Stops { get; set; } = new List<TransportStop>();
-        public virtual ICollection<TransportInvoice> TransportInvoices { get; set; } = new List<TransportInvoice>();
         public virtual ICollection<TransportPorter> TransportPorters { get; set; } = new List<TransportPorter>();
     }
 
@@ -50,16 +49,19 @@
         public DateTimeOffset? ETD { get; set; }
         public DateTimeOffset? ATA { get; set; }
         public DateTimeOffset? ATD { get; set; }
+        public string? ProofImageBase64 { get; set; }
 
         public virtual Transport Transport { get; set; } = null!;
         public virtual Address Address { get; set; } = null!;
+        public virtual ICollection<TransportInvoice> TransportInvoices { get; set; } = new List<TransportInvoice>();
     }
 
     public class TransportInvoice
     {
-        public int TransportId { get; set; }
+        public int TransportStopId { get; set; }
         public int InvoiceId { get; set; }
-        public Transport Transport { get; set; } = default!;
+
+        public TransportStop TransportStop { get; set; } = default!;
         public Invoice Invoice { get; set; } = default!;
     }
 }

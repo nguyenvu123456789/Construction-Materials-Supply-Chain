@@ -263,7 +263,7 @@ namespace Infrastructure.Persistence
                 {
                     foreach (var material in materials)
                     {
-                        var buyPrice = rnd.Next(50, 200) * 1000;      // 50.000 – 200.000
+                        var buyPrice = rnd.Next(50, 200) * 1000;      
                         var sellPrice = buyPrice + rnd.Next(10, 50) * 1000;  // Lời thêm 10k–50k
 
                         list.Add(new PriceMaterialPartner

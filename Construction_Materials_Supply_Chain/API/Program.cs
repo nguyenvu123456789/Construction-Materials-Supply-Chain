@@ -22,6 +22,7 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -79,6 +80,7 @@ builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEven
 builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowStockRuleRepository>();
 
 // Services
+builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();

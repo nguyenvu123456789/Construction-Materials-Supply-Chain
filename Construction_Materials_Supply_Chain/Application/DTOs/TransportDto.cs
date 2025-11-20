@@ -106,7 +106,6 @@
         public DateTimeOffset? StartTimeActual { get; set; }
         public DateTimeOffset? EndTimeActual { get; set; }
         public List<TransportStopDto> Stops { get; set; } = new();
-        public List<SimpleInvoiceDto> Invoices { get; set; } = new();
         public List<TransportPorterDto> Porters { get; set; } = new();
         public string? Notes { get; set; }
     }

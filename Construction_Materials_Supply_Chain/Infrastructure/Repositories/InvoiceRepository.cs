@@ -69,12 +69,12 @@ namespace Infrastructure.Implementations
 
         public List<Invoice> GetExportInvoicesByOrderIds(List<int> orderIds)
         {
-            if (orderIds == null || orderIds.Count == 0) return new List<Invoice>();
+            if (orderIds == null || orderIds.Count == 0)
+                return new List<Invoice>();
 
             return _context.Invoices
                 .Where(i => i.InvoiceType == "Export"
-                         && i.OrderId.HasValue
-                         && orderIds.Contains(i.OrderId.Value))
+                         && orderIds.Contains(i.OrderId))
                 .ToList();
         }
     }

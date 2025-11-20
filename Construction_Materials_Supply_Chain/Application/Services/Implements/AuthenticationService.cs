@@ -118,21 +118,24 @@ namespace Application.Services.Implements
                 throw new InvalidOperationException("Email already exists");
 
             var userName = email;
-
             var rawPassword = GenerateRandomPassword();
             var passwordHash = HashBase64(rawPassword);
+
+            var status = string.IsNullOrWhiteSpace(request.Status)
+                ? "Active"
+                : request.Status.Trim();
 
             var user = new User
             {
                 UserName = userName,
                 Email = email,
                 PasswordHash = passwordHash,
-                Status = "Active",
+                Status = status,
                 CreatedAt = DateTime.UtcNow,
                 MustChangePassword = true,
-                FullName = null,
-                Phone = null,
-                PartnerId = null,
+                FullName = string.IsNullOrWhiteSpace(request.FullName) ? null : request.FullName.Trim(),
+                Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
+                PartnerId = request.PartnerId,
                 AvatarBase64 = null,
                 ZaloUserId = null
             };
@@ -145,11 +148,11 @@ namespace Application.Services.Implements
                        $"Mật khẩu tạm: {rawPassword}\n\n" +
                        $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
 
-            _emailChannel.SendAsync(0, new[] { email }, subject, body);
+            _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body);
 
             var dto = _mapper.Map<AuthResponseDto>(user);
             dto.MustChangePassword = true;
-            dto.Roles = Array.Empty<string>();
+            dto.Roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
             dto.Token = _jwt.GenerateToken(user, dto.Roles);
 
             return dto;

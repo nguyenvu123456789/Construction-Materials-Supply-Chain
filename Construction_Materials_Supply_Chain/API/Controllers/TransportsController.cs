@@ -119,5 +119,12 @@ namespace Api.Controllers
             var data = _service.GetByInvoice(invoiceId);
             return Ok(data);
         }
+
+        [HttpGet("history")]
+        public ActionResult<List<CustomerOrderStatusDto>> GetHistory([FromQuery] int partnerId)
+        {
+            var data = _service.GetHistory(partnerId);
+            return Ok(data);
+        }
     }
 }

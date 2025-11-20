@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 
 namespace API.Controllers
 {
@@ -56,25 +57,53 @@ namespace API.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("File is required");
 
-            var emails = new List<string>();
+            var results = new List<AuthResponseDto>();
 
-            using (var stream = file.OpenReadStream())
-            using (var package = new OfficeOpenXml.ExcelPackage(stream))
+            using (var stream = new MemoryStream())
             {
-                var sheet = package.Workbook.Worksheets[0];
+                await file.CopyToAsync(stream);
+                using var package = new ExcelPackage(stream);
+                var ws = package.Workbook.Worksheets[0];
+
                 var row = 2;
                 while (true)
                 {
-                    var value = sheet.Cells[row, 1].Text;
-                    if (string.IsNullOrWhiteSpace(value)) break;
-                    emails.Add(value);
+                    var email = ws.Cells[row, 1].Text?.Trim();
+                    if (string.IsNullOrWhiteSpace(email))
+                        break;
+
+                    var fullName = ws.Cells[row, 2].Text?.Trim();
+                    var phone = ws.Cells[row, 3].Text?.Trim();
+                    var status = ws.Cells[row, 4].Text?.Trim();
+                    var partnerText = ws.Cells[row, 5].Text?.Trim();
+
+                    int? partnerId = null;
+                    if (int.TryParse(partnerText, out var p))
+                        partnerId = p;
+
+                    var dto = new AdminCreateUserRequestDto
+                    {
+                        Email = email,
+                        FullName = fullName,
+                        Phone = phone,
+                        Status = status,
+                        PartnerId = partnerId
+                    };
+
+                    try
+                    {
+                        var created = _auth.AdminCreateUser(dto);
+                        results.Add(created);
+                    }
+                    catch
+                    {
+                    }
+
                     row++;
                 }
             }
 
-            var dto = new BulkCreateUsersByEmailRequestDto { Emails = emails };
-            var result = await _auth.BulkCreateUsersByEmailAsync(dto);
-            return Ok(result);
+            return Ok(results);
         }
     }
 }

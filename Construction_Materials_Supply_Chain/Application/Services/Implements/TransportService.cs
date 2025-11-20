@@ -289,11 +289,16 @@ namespace Application.Services.Implements
         public List<CustomerOrderStatusDto> GetHistory(int customerPartnerId)
         {
             var imports = _invoiceRepo.GetCustomerImportInvoices(customerPartnerId);
-            var orderIds = imports.Select(i => i.OrderId).Where(o => o.HasValue).Select(o => o!.Value).Distinct().ToList();
+
+            var orderIds = imports
+                .Select(i => i.OrderId)
+                .Distinct()
+                .ToList();
+
             var exportInvoices = _invoiceRepo.GetExportInvoicesByOrderIds(orderIds);
+
             var exportByOrder = exportInvoices
-                .Where(e => e.OrderId.HasValue)
-                .GroupBy(e => e.OrderId!.Value)
+                .GroupBy(e => e.OrderId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var result = new List<CustomerOrderStatusDto>();
@@ -301,7 +306,7 @@ namespace Application.Services.Implements
             foreach (var inv in imports)
             {
                 var exportList = new List<Invoice>();
-                if (inv.OrderId.HasValue && exportByOrder.TryGetValue(inv.OrderId.Value, out var exps))
+                if (exportByOrder.TryGetValue(inv.OrderId, out var exps))
                     exportList = exps;
 
                 var transportList = new List<Transport>();
@@ -324,13 +329,17 @@ namespace Application.Services.Implements
                 }
                 else
                 {
+                    var exportIds = exportList.Select(e => e.InvoiceId).ToHashSet();
+
                     var allStops = transportList
                         .SelectMany(t => t.Stops)
-                        .Where(s => s.TransportInvoices.Any(ti => exportList.Select(e => e.InvoiceId).Contains(ti.InvoiceId)))
+                        .Where(s => s.TransportInvoices.Any(ti => exportIds.Contains(ti.InvoiceId)))
                         .ToList();
 
                     var allDone = allStops.Any() && allStops.All(s => s.Status == TransportStopStatus.Done);
-                    var anyEnRoute = transportList.Any(t => t.Status == TransportStatus.EnRoute || t.Status == TransportStatus.Assigned);
+                    var anyEnRoute = transportList.Any(t =>
+                        t.Status == TransportStatus.EnRoute ||
+                        t.Status == TransportStatus.Assigned);
 
                     if (allDone)
                         deliveryStatus = "Đã giao xong";
@@ -345,7 +354,7 @@ namespace Application.Services.Implements
                     InvoiceId = inv.InvoiceId,
                     InvoiceCode = inv.InvoiceCode,
                     IssueDate = inv.IssueDate,
-                    TotalAmount = inv.TotalAmount ?? 0,
+                    TotalAmount = inv.TotalAmount,
                     InvoiceType = inv.InvoiceType,
                     ExportStatus = exportList.FirstOrDefault()?.ExportStatus ?? "N/A",
                     DeliveryStatus = deliveryStatus

@@ -177,8 +177,6 @@ namespace Application.MappingProfile
                  .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
                  .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
                  .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
-                 .ForMember(d => d.Invoices, o => o.MapFrom(s =>
-                     s.Stops.SelectMany(st => st.TransportInvoices.Select(ti => ti.Invoice))))
                  .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
 
             CreateMap<ShippingLog, ShippingLogDto>().ReverseMap();

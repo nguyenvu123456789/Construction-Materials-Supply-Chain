@@ -250,6 +250,38 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            // SEED PRICE MATERIAL PARTNER
+            if (!context.PriceMaterialPartners.Any())
+            {
+                var partners = context.Partners.ToList();
+                var materials = context.Materials.ToList();
+
+                var rnd = new Random();
+                var list = new List<PriceMaterialPartner>();
+
+                foreach (var partner in partners)
+                {
+                    foreach (var material in materials)
+                    {
+                        var buyPrice = rnd.Next(50, 200) * 1000;      // 50.000 – 200.000
+                        var sellPrice = buyPrice + rnd.Next(10, 50) * 1000;  // Lời thêm 10k–50k
+
+                        list.Add(new PriceMaterialPartner
+                        {
+                            PartnerId = partner.PartnerId,
+                            MaterialId = material.MaterialId,
+                            BuyPrice = buyPrice,
+                            SellPrice = sellPrice,
+                            Status = "Active"
+                        });
+                    }
+                }
+
+                context.PriceMaterialPartners.AddRange(list);
+                context.SaveChanges();
+            }
+
+
             if (!context.Orders.Any())
             {
                 var customer = context.Users.First(u => u.UserName == "customer1");

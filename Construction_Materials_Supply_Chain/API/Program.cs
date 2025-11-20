@@ -27,10 +27,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OfficeOpenXml;
 using Services.Implementations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
+ExcelPackage.License.SetNonCommercialPersonal("Dong Loi");
 
 var builder = WebApplication.CreateBuilder(args);
 

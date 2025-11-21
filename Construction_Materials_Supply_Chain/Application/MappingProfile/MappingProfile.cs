@@ -100,21 +100,24 @@ namespace Application.MappingProfile
 
             CreateMap<Category, CategoryDto>().ReverseMap();
 
-            CreateMap<Partner, PartnerDto>()
-                .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : null))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
+            //CreateMap<Partner, PartnerDto>()
+            //    .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : null))
+            //    .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
-            CreateMap<PartnerCreateDto, Partner>()
-                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
-                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
+            //CreateMap<PartnerCreateDto, Partner>()
+            //    .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
+            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
-            CreateMap<PartnerUpdateDto, Partner>()
-                .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
-                .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
+            //CreateMap<PartnerUpdateDto, Partner>()
+            //    .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
+            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
 
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
+            CreateMap<Partner, PartnerDto>()
+    .ForMember(dest => dest.RegionIds, opt => opt.MapFrom(src => src.PartnerRegions.Select(pr => pr.RegionId)))
+    .ForMember(dest => dest.RegionNames, opt => opt.MapFrom(src => src.PartnerRegions.Select(pr => pr.Region.RegionName)));
 
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
 

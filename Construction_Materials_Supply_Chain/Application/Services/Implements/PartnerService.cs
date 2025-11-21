@@ -51,10 +51,27 @@ namespace Application.Services.Implements
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
             var entity = _mapper.Map<Partner>(dto);
+
+            // Handle Regions if any
+            if (dto.RegionIds != null && dto.RegionIds.Any())
+            {
+                foreach (var regionId in dto.RegionIds)
+                {
+                    entity.PartnerRegions.Add(new PartnerRegion
+                    {
+                        RegionId = regionId
+                    });
+                }
+            }
+
             _partners.Add(entity);
-            var created = _partners.QueryWithTypeIncludeDeleted().FirstOrDefault(x => x.PartnerId == entity.PartnerId) ?? entity;
+
+            var created = _partners.QueryWithTypeIncludeDeleted()
+                .FirstOrDefault(x => x.PartnerId == entity.PartnerId) ?? entity;
+
             return _mapper.Map<PartnerDto>(created);
         }
+
 
         public void Update(int id, PartnerUpdateDto dto)
         {
@@ -76,8 +93,21 @@ namespace Application.Services.Implements
                 entity.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
             }
 
+            if (dto.RegionIds != null)
+            {
+                entity.PartnerRegions.Clear();
+                foreach (var regionId in dto.RegionIds)
+                {
+                    entity.PartnerRegions.Add(new PartnerRegion
+                    {
+                        RegionId = regionId
+                    });
+                }
+            }
+
             _partners.Update(entity);
         }
+
 
         public void Delete(int id)
         {

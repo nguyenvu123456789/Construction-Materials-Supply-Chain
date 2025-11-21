@@ -34,6 +34,9 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
     public virtual DbSet<Partner> Partners { get; set; }
     public virtual DbSet<PartnerType> PartnerTypes { get; set; }
+    public DbSet<Region> Regions { get; set; }
+    public DbSet<PartnerRegion> PartnerRegions { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<Warehouse> Warehouses { get; set; }
@@ -592,9 +595,21 @@ public partial class ScmVlxdContext : DbContext
                 .HasMaxLength(20)
                 .HasDefaultValue("Active");
 
-            entity.Property(x => x.Region)
-                .HasMaxLength(200);
         });
+
+        modelBuilder.Entity<Region>()
+        .HasIndex(r => r.RegionName)
+        .IsUnique();
+
+        modelBuilder.Entity<PartnerRegion>()
+            .HasOne(pr => pr.Partner)
+            .WithMany(p => p.PartnerRegions)
+            .HasForeignKey(pr => pr.PartnerId);
+
+        modelBuilder.Entity<PartnerRegion>()
+            .HasOne(pr => pr.Region)
+            .WithMany(r => r.PartnerRegions)
+            .HasForeignKey(pr => pr.RegionId);
 
         modelBuilder.Entity<User>(entity =>
         {

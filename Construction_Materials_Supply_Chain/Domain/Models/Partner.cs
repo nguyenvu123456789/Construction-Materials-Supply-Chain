@@ -11,8 +11,9 @@ namespace Domain.Models
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; } = "Active";
-        public string? Region { get; set; } 
         public virtual PartnerType PartnerType { get; set; } = null!;
+        public virtual ICollection<PartnerRegion> PartnerRegions { get; set; } = new List<PartnerRegion>();
+
         public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
         public virtual ICollection<User> Users { get; set; } = new List<User>();
         public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();

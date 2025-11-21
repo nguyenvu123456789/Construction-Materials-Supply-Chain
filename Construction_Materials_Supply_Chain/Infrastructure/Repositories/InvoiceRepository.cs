@@ -33,6 +33,8 @@ namespace Infrastructure.Implementations
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .Include(i => i.Partner)
+                    .ThenInclude(p => p.PartnerRegions)
+                        .ThenInclude(pr => pr.Region)
                 .Include(i => i.CreatedByNavigation)
                 .AsNoTracking()
                 .ToList();

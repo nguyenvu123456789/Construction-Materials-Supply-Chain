@@ -231,6 +231,14 @@ namespace Application.MappingProfile
                 .ForMember(d => d.DeletedAt, o => o.Ignore());
 
             CreateMap<Partner, LocationSummaryDto>()
+                .ForMember(d => d.PartnerId, o => o.MapFrom(s => s.PartnerId))
+                .ForMember(d => d.PartnerName, o => o.MapFrom(s => s.PartnerName))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.Region, o => o.MapFrom(s =>
+                    s.PartnerRegions
+                     .Where(pr => pr.Region != null)
+                     .Select(pr => pr.Region.RegionName)
+                     .FirstOrDefault()))
                 .ForMember(d => d.TotalQuantity, o => o.Ignore())
                 .ForMember(d => d.TotalRevenue, o => o.Ignore())
                 .ForMember(d => d.GrowthRatePercent, o => o.Ignore());

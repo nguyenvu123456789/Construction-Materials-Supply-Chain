@@ -46,6 +46,7 @@ namespace Infrastructure.Implementations
                 .Include(m => m.Category)
                 .Include(m => m.Inventories)
                     .ThenInclude(i => i.Warehouse)
+                .Include(m => m.MaterialPartners)
                 .ToList();
         }
         public List<Material> GetByWarehouse(int warehouseId)
@@ -54,6 +55,7 @@ namespace Infrastructure.Implementations
                 .Include(m => m.Category)
                 .Include(m => m.Inventories)
                     .ThenInclude(i => i.Warehouse)
+                .Include(m => m.MaterialPartners)
                 .Where(m => m.Inventories.Any(i => i.WarehouseId == warehouseId))
                 .ToList();
         }

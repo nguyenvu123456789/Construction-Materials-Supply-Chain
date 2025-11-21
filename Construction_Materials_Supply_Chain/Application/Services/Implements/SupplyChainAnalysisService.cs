@@ -169,17 +169,19 @@ namespace Application.Services.Implements
                          && i.IssueDate <= to)
                 .ToList();
 
-            //if (!string.IsNullOrEmpty(region))
-            //    invoicesCurrent = invoicesCurrent
-            //        .Where(i => i.Partner != null
-            //                 && !string.IsNullOrEmpty(i.Partner.Region)
-            //                 && string.Equals(i.Partner.Region, region, StringComparison.OrdinalIgnoreCase))
-            //        .ToList();
-            //else
-            //    invoicesCurrent = invoicesCurrent
-            //        .Where(i => i.Partner != null
-            //                 && !string.IsNullOrEmpty(i.Partner.Region))
-            //        .ToList();
+            if (!string.IsNullOrEmpty(region))
+                invoicesCurrent = invoicesCurrent
+                    .Where(i => i.Partner != null
+                             && i.Partner.PartnerRegions.Any(pr =>
+                                    pr.Region != null &&
+                                    string.Equals(pr.Region.RegionName, region, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+            else
+                invoicesCurrent = invoicesCurrent
+                    .Where(i => i.Partner != null
+                             && i.Partner.PartnerRegions.Any(pr => pr.Region != null &&
+                                                                   !string.IsNullOrEmpty(pr.Region.RegionName)))
+                    .ToList();
 
             var groupedCurrent = invoicesCurrent
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
@@ -214,17 +216,19 @@ namespace Application.Services.Implements
                          && i.IssueDate <= previousRange.to)
                 .ToList();
 
-            //if (!string.IsNullOrEmpty(region))
-            //    invoicesPrevious = invoicesPrevious
-            //        .Where(i => i.Partner != null
-            //                 && !string.IsNullOrEmpty(i.Partner.Region)
-            //                 && string.Equals(i.Partner.Region, region, StringComparison.OrdinalIgnoreCase))
-            //        .ToList();
-            //else
-            //    invoicesPrevious = invoicesPrevious
-            //        .Where(i => i.Partner != null
-            //                 && !string.IsNullOrEmpty(i.Partner.Region))
-            //        .ToList();
+            if (!string.IsNullOrEmpty(region))
+                invoicesPrevious = invoicesPrevious
+                    .Where(i => i.Partner != null
+                             && i.Partner.PartnerRegions.Any(pr =>
+                                    pr.Region != null &&
+                                    string.Equals(pr.Region.RegionName, region, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+            else
+                invoicesPrevious = invoicesPrevious
+                    .Where(i => i.Partner != null
+                             && i.Partner.PartnerRegions.Any(pr => pr.Region != null &&
+                                                                   !string.IsNullOrEmpty(pr.Region.RegionName)))
+                    .ToList();
 
             var previousRevenueByPartner = invoicesPrevious
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new

@@ -227,4 +227,23 @@ public class UserService : IUserService
         var user = _users.GetByIdWithPartner(id);
         return user == null ? null : _mapper.Map<UserDto>(user);
     }
+
+    public void UpdateProfile(int id, UserProfileUpdateDto dto)
+    {
+        var existing = _users.GetById(id);
+        if (existing == null) throw new KeyNotFoundException("User not found");
+        if (existing.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted user");
+
+        if (dto.FullName != null)
+            existing.FullName = dto.FullName;
+
+        if (dto.Phone != null)
+            existing.Phone = dto.Phone;
+
+        if (dto.AvatarBase64 != null)
+            existing.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+
+        existing.UpdatedAt = DateTime.UtcNow;
+        _users.Update(existing);
+    }
 }

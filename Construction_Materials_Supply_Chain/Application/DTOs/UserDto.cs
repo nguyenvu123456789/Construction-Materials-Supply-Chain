@@ -38,4 +38,11 @@
         public int? PartnerId { get; set; }
         public string? ZaloUserId { get; set; }
     }
+
+    public class UserProfileUpdateDto
+    {
+        public string? FullName { get; set; }
+        public string? Phone { get; set; }
+        public string? AvatarBase64 { get; set; }
+    }
 }

@@ -14,5 +14,6 @@ namespace Application.Interfaces
         PagedResultDto<UserDto> GetUsersFilteredIncludeDeleted(UserPagedQueryDto query, List<string>? statuses = null);
         void Restore(int id, string status);
         UserDto? GetByIdWithPartner(int id);
+        void UpdateProfile(int id, UserProfileUpdateDto dto);
     }
 }

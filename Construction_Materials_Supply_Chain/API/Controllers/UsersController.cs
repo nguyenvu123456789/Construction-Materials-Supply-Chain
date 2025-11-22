@@ -72,5 +72,12 @@ namespace API.Controllers
             var page = _users.GetUsersFilteredIncludeDeleted(query, statuses);
             return Ok(page);
         }
+
+        [HttpPut("{id:int}/profile")]
+        public IActionResult UpdateProfile(int id, [FromBody] UserProfileUpdateDto dto)
+        {
+            _users.UpdateProfile(id, dto);
+            return NoContent();
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public IActionResult UpdateUser(int id, [FromBody] UserUpdateDto dto)
+        public IActionResult UpdateUser(int id, [FromForm] UserUpdateDto dto)
         {
             _users.Update(id, dto);
             return NoContent();
@@ -74,7 +74,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id:int}/profile")]
-        public IActionResult UpdateProfile(int id, [FromBody] UserProfileUpdateDto dto)
+        public IActionResult UpdateProfile(int id, [FromForm] UserProfileUploadDto dto)
         {
             _users.UpdateProfile(id, dto);
             return NoContent();

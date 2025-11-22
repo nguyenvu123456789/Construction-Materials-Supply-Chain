@@ -1,4 +1,6 @@
-﻿namespace Application.DTOs
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Application.DTOs
 {
     public class UserDto
     {
@@ -34,15 +36,15 @@
         public string? Phone { get; set; }
         public List<int> RoleIds { get; set; } = new();
         public string? Status { get; set; }
-        public string? AvatarBase64 { get; set; }
+        public IFormFile? AvatarFile { get; set; }
         public int? PartnerId { get; set; }
         public string? ZaloUserId { get; set; }
     }
 
-    public class UserProfileUpdateDto
+    public class UserProfileUploadDto
     {
-        public string? FullName { get; set; }
+        public IFormFile? AvatarFile { get; set; }
         public string? Phone { get; set; }
-        public string? AvatarBase64 { get; set; }
+        public string? FullName { get; set; }
     }
 }

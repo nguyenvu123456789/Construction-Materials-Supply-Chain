@@ -71,8 +71,13 @@ public class UserService : IUserService
 
         _mapper.Map(dto, existing);
 
-        if (dto.AvatarBase64 != null)
-            existing.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+        if (dto.AvatarFile != null)
+        {
+            using var ms = new MemoryStream();
+            dto.AvatarFile.CopyTo(ms);
+            var bytes = ms.ToArray();
+            existing.AvatarBase64 = Convert.ToBase64String(bytes);
+        }
 
         existing.UpdatedAt = DateTime.UtcNow;
         _users.Update(existing);
@@ -228,7 +233,7 @@ public class UserService : IUserService
         return user == null ? null : _mapper.Map<UserDto>(user);
     }
 
-    public void UpdateProfile(int id, UserProfileUpdateDto dto)
+    public void UpdateProfile(int id, UserProfileUploadDto dto)
     {
         var existing = _users.GetById(id);
         if (existing == null) throw new KeyNotFoundException("User not found");
@@ -240,8 +245,13 @@ public class UserService : IUserService
         if (dto.Phone != null)
             existing.Phone = dto.Phone;
 
-        if (dto.AvatarBase64 != null)
-            existing.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+        if (dto.AvatarFile != null)
+        {
+            using var ms = new MemoryStream();
+            dto.AvatarFile.CopyTo(ms);
+            var bytes = ms.ToArray();
+            existing.AvatarBase64 = Convert.ToBase64String(bytes);
+        }
 
         existing.UpdatedAt = DateTime.UtcNow;
         _users.Update(existing);

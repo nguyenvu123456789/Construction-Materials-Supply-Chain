@@ -17,19 +17,16 @@ namespace Application.MappingProfile
             CreateMap<User, UserDto>()
                 .ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles != null ? s.UserRoles.Select(ur => ur.Role.RoleName).ToList() : new List<string>()))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                .ForMember(d => d.AvatarBase64,
-                    o => o.MapFrom(s =>
-                        string.IsNullOrEmpty(s.AvatarBase64)
-                            ? null
-                            : s.AvatarBase64.Length > 100
-                                ? s.AvatarBase64.Substring(0, 100) + "..."
-                                : s.AvatarBase64))
+                .ForMember(d => d.HasAvatar, o => o.MapFrom(s => !string.IsNullOrEmpty(s.AvatarBase64)))
+                .ForMember(d => d.AvatarUrl, o => o.MapFrom(s =>
+                    string.IsNullOrEmpty(s.AvatarBase64)
+                        ? null
+                        : $"/api/users/{s.UserId}/avatar"))
                 .ForMember(d => d.ZaloUserId, o => o.MapFrom(s => s.ZaloUserId));
 
             CreateMap<UserCreateDto, User>()
                 .ForMember(d => d.UserId, o => o.Ignore())
                 .ForMember(d => d.UserRoles, o => o.Ignore())
-                .ForMember(d => d.AvatarBase64, o => o.MapFrom(s => s.AvatarBase64))
                 .ForMember(d => d.ZaloUserId, o => o.MapFrom(s => s.ZaloUserId));
 
             CreateMap<UserUpdateDto, User>()

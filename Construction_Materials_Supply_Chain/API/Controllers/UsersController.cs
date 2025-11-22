@@ -79,5 +79,25 @@ namespace API.Controllers
             _users.UpdateProfile(id, dto);
             return NoContent();
         }
+
+        [HttpGet("{id:int}/avatar")]
+        public IActionResult GetAvatar(int id)
+        {
+            var base64 = _users.GetAvatarBase64(id);
+            if (string.IsNullOrEmpty(base64))
+                return NotFound();
+
+            byte[] bytes;
+            try
+            {
+                bytes = Convert.FromBase64String(base64);
+            }
+            catch
+            {
+                return BadRequest("Avatar data is invalid");
+            }
+
+            return File(bytes, "image/png");
+        }
     }
 }

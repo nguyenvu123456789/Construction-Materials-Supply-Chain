@@ -11,7 +11,8 @@ namespace Application.DTOs
         public string Phone { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string? AvatarBase64 { get; set; }
+        public bool HasAvatar { get; set; }
+        public string? AvatarUrl { get; set; }
         public int? PartnerId { get; set; }
         public string? ZaloUserId { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
@@ -23,7 +24,7 @@ namespace Application.DTOs
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string? Phone { get; set; }
-        public string? AvatarBase64 { get; set; }
+        public IFormFile? AvatarFile { get; set; }
         public int? PartnerId { get; set; }
         public string? ZaloUserId { get; set; }
         public List<int> RoleIds { get; set; } = new();

@@ -52,7 +52,13 @@ public class UserService : IUserService
         entity.CreatedAt = DateTime.UtcNow;
         entity.Status = "Active";
 
-        entity.AvatarBase64 = NormalizeBase64(dto.AvatarBase64);
+        if (dto.AvatarFile != null)
+        {
+            using var ms = new MemoryStream();
+            dto.AvatarFile.CopyTo(ms);
+            var bytes = ms.ToArray();
+            entity.AvatarBase64 = Convert.ToBase64String(bytes);
+        }
 
         _users.Add(entity);
 
@@ -255,5 +261,11 @@ public class UserService : IUserService
 
         existing.UpdatedAt = DateTime.UtcNow;
         _users.Update(existing);
+    }
+
+    public string? GetAvatarBase64(int id)
+    {
+        var u = _users.GetById(id);
+        return u?.AvatarBase64;
     }
 }

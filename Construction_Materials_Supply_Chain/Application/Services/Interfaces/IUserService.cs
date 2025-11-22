@@ -15,5 +15,6 @@ namespace Application.Interfaces
         void Restore(int id, string status);
         UserDto? GetByIdWithPartner(int id);
         void UpdateProfile(int id, UserProfileUploadDto dto);
+        string? GetAvatarBase64(int id);
     }
 }

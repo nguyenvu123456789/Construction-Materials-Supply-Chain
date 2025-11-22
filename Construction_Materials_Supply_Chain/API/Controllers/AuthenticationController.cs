@@ -105,5 +105,33 @@ namespace API.Controllers
 
             return Ok(results);
         }
+
+        [HttpPost("otp/request")]
+        public async Task<IActionResult> RequestOtp([FromBody] OtpRequestDto request)
+        {
+            await _auth.RequestOtpAsync(request);
+            return Ok();
+        }
+
+        [HttpPost("otp/verify")]
+        public async Task<ActionResult<bool>> VerifyOtp([FromBody] OtpVerifyDto request)
+        {
+            var result = await _auth.VerifyOtpAsync(request);
+            return Ok(result);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+        {
+            await _auth.ForgotPasswordRequestAsync(request);
+            return Ok();
+        }
+
+        [HttpPost("forgot-password/reset")]
+        public async Task<IActionResult> ResetPasswordWithOtp([FromBody] ResetPasswordWithOtpDto request)
+        {
+            await _auth.ResetPasswordWithOtpAsync(request);
+            return Ok();
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace Application.Interfaces
         void DeleteStop(int transportId, int transportStopId);
         void ClearStops(int transportId, bool keepDepot);
         void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto);
-        List<TransportResponseDto> GetByInvoice(int invoiceId);
+        TransportInvoiceTrackingDto? TrackInvoice(int invoiceId);
         List<CustomerOrderStatusDto> GetHistory(int customerPartnerId);
     }
 }

@@ -82,6 +82,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<InventoryAlertRuleUser> InventoryAlertRuleUsers { get; set; } = null!;
     public virtual DbSet<EventNotificationSetting> EventNotificationSettings { get; set; } = null!;
     public virtual DbSet<EventNotificationSettingRole> EventNotificationSettingRoles { get; set; } = null!;
+    public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -982,12 +983,30 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.SendEmail).HasDefaultValue(true);
             e.Property(x => x.IsActive).HasDefaultValue(true);
         });
+
         modelBuilder.Entity<EventNotificationSettingRole>(e =>
         {
             e.HasKey(x => x.EventNotificationSettingRoleId);
             e.HasOne(x => x.Setting).WithMany(s => s.Roles).HasForeignKey(x => x.EventNotificationSettingId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.EventNotificationSettingId, x.RoleId }).IsUnique();
+        });
+
+        modelBuilder.Entity<UserOtp>(entity =>
+        {
+            entity.HasKey(e => e.UserOtpId);
+            entity.ToTable("UserOtp");
+
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Purpose).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt);
+            entity.Property(e => e.ExpiresAt);
+            entity.Property(e => e.IsUsed).HasDefaultValue(false);
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

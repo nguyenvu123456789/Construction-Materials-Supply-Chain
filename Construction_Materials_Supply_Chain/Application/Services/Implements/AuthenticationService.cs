@@ -1,9 +1,11 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.Auth;
 using Application.Services.Interfaces;
 using AutoMapper;
 using Domain.Interface;
+using Domain.Interfaces;
 using Domain.Models;
 using FluentValidation;
 using System.Security.Cryptography;
@@ -19,6 +21,7 @@ namespace Application.Services.Implements
         private readonly IValidator<LoginRequestDto> _loginValidator;
         private readonly IJwtTokenGenerator _jwt;
         private readonly IEmailChannel _emailChannel;
+        private readonly IUserOtpRepository _userOtps;
 
         public AuthenticationService(
             IUserRepository users,
@@ -26,7 +29,8 @@ namespace Application.Services.Implements
             IMapper mapper,
             IValidator<LoginRequestDto> loginValidator,
             IJwtTokenGenerator jwt,
-            IEmailChannel emailChannel
+            IEmailChannel emailChannel,
+            IUserOtpRepository userOtps
         )
         {
             _users = users;
@@ -35,6 +39,7 @@ namespace Application.Services.Implements
             _loginValidator = loginValidator;
             _jwt = jwt;
             _emailChannel = emailChannel;
+            _userOtps = userOtps;
         }
 
         public AuthResponseDto? Login(LoginRequestDto request)
@@ -227,6 +232,108 @@ namespace Application.Services.Implements
             }
 
             return results;
+        }
+
+        private static string GenerateOtpCode(int length = 6)
+        {
+            const string digits = "0123456789";
+            var bytes = new byte[length];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+            var sb = new StringBuilder(length);
+            for (int i = 0; i < length; i++)
+            {
+                sb.Append(digits[bytes[i] % digits.Length]);
+            }
+            return sb.ToString();
+        }
+        public async Task RequestOtpAsync(OtpRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new ValidationException("Email is required");
+            if (string.IsNullOrWhiteSpace(request.Purpose))
+                throw new ValidationException("Purpose is required");
+
+            var email = request.Email.Trim();
+            var user = _users.GetByEmail(email);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
+            _userOtps.InvalidateAll(user.UserId, request.Purpose);
+
+            var code = GenerateOtpCode();
+            var now = DateTime.UtcNow;
+
+            var otp = new UserOtp
+            {
+                UserId = user.UserId,
+                Code = code,
+                Purpose = request.Purpose,
+                CreatedAt = now,
+                ExpiresAt = now.AddMinutes(10),
+                IsUsed = false
+            };
+
+            _userOtps.Add(otp);
+
+            var subject = "Mã OTP xác thực";
+            var body = $"Mã OTP của bạn là: {code}. Mã có hiệu lực trong 10 phút.";
+            await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body);
+        }
+
+        public Task<bool> VerifyOtpAsync(OtpVerifyDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new ValidationException("Email is required");
+            if (string.IsNullOrWhiteSpace(request.Purpose))
+                throw new ValidationException("Purpose is required");
+            if (string.IsNullOrWhiteSpace(request.Code))
+                throw new ValidationException("Code is required");
+
+            var email = request.Email.Trim();
+            var user = _users.GetByEmail(email);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
+            var otp = _userOtps.GetActive(user.UserId, request.Purpose, request.Code.Trim());
+            if (otp == null)
+                return Task.FromResult(false);
+
+            otp.IsUsed = true;
+            _userOtps.Update(otp);
+
+            return Task.FromResult(true);
+        }
+
+        public async Task ForgotPasswordRequestAsync(ForgotPasswordRequestDto request)
+        {
+            var dto = new OtpRequestDto
+            {
+                Email = request.Email,
+                Purpose = OtpPurposeEnum.ForgotPassword.ToString()
+            };
+            await RequestOtpAsync(dto);
+        }
+
+        public async Task ResetPasswordWithOtpAsync(ResetPasswordWithOtpDto request)
+        {
+            var email = request.Email.Trim();
+            var user = _users.GetByEmail(email);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
+            var otp = _userOtps.GetActive(user.UserId, OtpPurposeEnum.ForgotPassword.ToString(), request.OtpCode.Trim());
+            if (otp == null)
+                throw new InvalidOperationException("Invalid or expired OTP");
+
+            otp.IsUsed = true;
+            _userOtps.Update(otp);
+
+            user.PasswordHash = HashBase64(request.NewPassword);
+            user.MustChangePassword = false;
+            _users.Update(user);
+
+            _activityLogs.LogAction(user.UserId, "User reset password via OTP", "User", user.UserId);
         }
     }
 }

@@ -81,6 +81,7 @@ builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartner
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEventSettingRepository>();
 builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowStockRuleRepository>();
+builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 
 // Services
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();

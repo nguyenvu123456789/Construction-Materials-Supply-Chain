@@ -120,4 +120,30 @@
         public string ExportStatus { get; set; } = default!;
         public string DeliveryStatus { get; set; } = default!;
     }
+
+    public class TransportInvoiceTrackingDto
+    {
+        public int TransportId { get; set; }
+        public string TransportCode { get; set; }
+        public string Status { get; set; }
+
+        public string DriverName { get; set; }
+        public string VehicleCode { get; set; }
+
+        public TrackingStopDto Stop { get; set; }
+    }
+
+    public class TrackingStopDto
+    {
+        public int StopId { get; set; }
+        public string StopType { get; set; }
+        public string AddressName { get; set; }
+        public string City { get; set; }
+
+        public DateTimeOffset? ETA { get; set; }
+        public DateTimeOffset? ATA { get; set; }
+        public DateTimeOffset? ATD { get; set; }
+
+        public string? DeliveryPhotoBase64 { get; set; }
+    }
 }

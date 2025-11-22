@@ -114,10 +114,10 @@ namespace Api.Controllers
         }
 
         [HttpGet("by-invoice/{invoiceId:int}")]
-        public ActionResult<List<TransportResponseDto>> GetByInvoice(int invoiceId)
+        public ActionResult<TransportInvoiceTrackingDto> TrackByInvoice(int invoiceId)
         {
-            var data = _service.GetByInvoice(invoiceId);
-            return Ok(data);
+            var dto = _service.TrackInvoice(invoiceId);
+            return dto == null ? NotFound() : Ok(dto);
         }
 
         [HttpGet("history")]

@@ -280,10 +280,33 @@ namespace Application.Services.Implements
             });
         }
 
-        public List<TransportResponseDto> GetByInvoice(int invoiceId)
+        public TransportInvoiceTrackingDto? TrackInvoice(int invoiceId)
         {
-            var list = _transportRepo.GetByInvoiceId(invoiceId);
-            return list.Select(_mapper.Map<TransportResponseDto>).ToList();
+            var stop = _transportRepo.GetStopByInvoice(invoiceId);
+            if (stop == null) return null;
+
+            var t = stop.Transport;
+
+            var dto = new TransportInvoiceTrackingDto
+            {
+                TransportId = t.TransportId,
+                TransportCode = t.TransportCode,
+                Status = t.Status.ToString(),
+                DriverName = t.Driver != null ? t.Driver.FullName : null,
+                VehicleCode = t.Vehicle != null ? t.Vehicle.Code : null,
+                Stop = new TrackingStopDto
+                {
+                    StopId = stop.TransportStopId,
+                    StopType = stop.StopType.ToString(),
+                    AddressName = stop.Address.Name,
+                    City = stop.Address.City,
+                    ETA = stop.ETA,
+                    ATA = stop.ATA,
+                    ATD = stop.ATD
+                }
+            };
+
+            return dto;
         }
 
         public List<CustomerOrderStatusDto> GetHistory(int customerPartnerId)

@@ -31,5 +31,6 @@ namespace Domain.Interface
         DateTimeOffset? PorterBusyUntil(int porterId, DateTimeOffset s, DateTimeOffset e);
         void ReplacePorters(int transportId, List<int> porterIds);
         List<Transport> GetByInvoiceId(int invoiceId);
+        TransportStop? GetStopByInvoice(int invoiceId);
     }
 }

@@ -309,5 +309,17 @@ namespace Infrastructure.Implementations
                 .Where(t => t.Stops.Any(s => s.TransportInvoices.Any(ti => ti.InvoiceId == invoiceId)))
                 .ToList();
         }
+
+        public TransportStop? GetStopByInvoice(int invoiceId)
+        {
+            return _context.TransportStops
+                .Include(s => s.Transport)
+                    .ThenInclude(t => t.Vehicle)
+                .Include(s => s.Transport)
+                    .ThenInclude(t => t.Driver)
+                .Include(s => s.Address)
+                .Include(s => s.TransportInvoices)
+                .FirstOrDefault(s => s.TransportInvoices.Any(ti => ti.InvoiceId == invoiceId));
+        }
     }
 }

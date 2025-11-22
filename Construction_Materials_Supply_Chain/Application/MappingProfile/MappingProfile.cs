@@ -96,24 +96,47 @@ namespace Application.MappingProfile
 
             CreateMap<Category, CategoryDto>().ReverseMap();
 
-            //CreateMap<Partner, PartnerDto>()
-            //    .ForMember(d => d.PartnerTypeName, o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : null))
-            //    .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
-
-            //CreateMap<PartnerCreateDto, Partner>()
-            //    .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
-            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
-
-            //CreateMap<PartnerUpdateDto, Partner>()
-            //    .ForMember(d => d.Status, o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status))
-            //    .ForMember(d => d.Region, o => o.MapFrom(s => s.Region));
-
             CreateMap<PartnerType, PartnerTypeDto>()
                 .ForMember(d => d.Partners, o => o.Ignore());
+
             CreateMap<Partner, PartnerDto>()
-    .ForMember(dest => dest.RegionIds, opt => opt.MapFrom(src => src.PartnerRegions.Select(pr => pr.RegionId)))
-    .ForMember(dest => dest.RegionNames, opt => opt.MapFrom(src => src.PartnerRegions.Select(pr => pr.Region.RegionName)));
+                .ForMember(d => d.PartnerTypeName,
+                    o => o.MapFrom(s => s.PartnerType != null ? s.PartnerType.TypeName : string.Empty))
+                .ForMember(d => d.Status,
+                    o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.RegionIds,
+                    o => o.MapFrom(s =>
+                        s.PartnerRegions != null
+                            ? s.PartnerRegions.Select(pr => pr.RegionId).ToList()
+                            : new List<int>()))
+                .ForMember(d => d.RegionNames,
+                    o => o.MapFrom(s =>
+                        s.PartnerRegions != null
+                            ? s.PartnerRegions
+                                .Where(pr => pr.Region != null)
+                                .Select(pr => pr.Region.RegionName)
+                                .ToList()
+                            : new List<string>()))
+                .ForMember(d => d.Region,
+                    o => o.MapFrom(s =>
+                        s.PartnerRegions != null
+                            ? string.Join(", ",
+                                s.PartnerRegions
+                                    .Where(pr => pr.Region != null)
+                                    .Select(pr => pr.Region.RegionName))
+                            : null));
+
+            CreateMap<PartnerCreateDto, Partner>()
+              .ForMember(d => d.PartnerId, o => o.Ignore())
+              .ForMember(d => d.PartnerRegions, o => o.Ignore())
+              .ForMember(d => d.Status,
+                  o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status.Trim()));
+
+            CreateMap<PartnerUpdateDto, Partner>()
+                .ForMember(d => d.PartnerId, o => o.Ignore())
+                .ForMember(d => d.PartnerRegions, o => o.Ignore())
+                .ForMember(d => d.Status,
+                    o => o.MapFrom(s => string.IsNullOrEmpty(s.Status) ? "Active" : s.Status.Trim()));
 
             CreateMap<MaterialCheck, MaterialCheckDto>().ReverseMap();
 

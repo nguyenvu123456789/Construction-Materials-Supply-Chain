@@ -13,11 +13,15 @@ namespace Infrastructure.Implementations
         public IQueryable<Partner> QueryWithType()
             => _dbSet.AsNoTracking()
                      .Include(p => p.PartnerType)
+                     .Include(p => p.PartnerRegions)
+                         .ThenInclude(pr => pr.Region)
                      .Where(p => p.Status != "Deleted");
 
         public IQueryable<Partner> QueryWithTypeIncludeDeleted()
-            => _dbSet.AsNoTracking()
-                     .Include(p => p.PartnerType);
+            => _dbSet
+                     .Include(p => p.PartnerType)
+                     .Include(p => p.PartnerRegions)
+                         .ThenInclude(pr => pr.Region);
 
         public List<Partner> GetAllNotDeleted()
             => _dbSet.AsNoTracking()

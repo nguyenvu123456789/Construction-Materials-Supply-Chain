@@ -44,5 +44,4 @@
 
         public List<int>? RegionIds { get; set; }
     }
-
 }

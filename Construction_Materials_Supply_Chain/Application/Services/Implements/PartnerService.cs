@@ -50,12 +50,33 @@ namespace Application.Services.Implements
             var vr = _createValidator.Validate(dto);
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
+            string name = dto.PartnerName.Trim().ToLower();
+            string code = dto.PartnerCode.Trim().ToLower();
+            string? email = dto.ContactEmail?.Trim().ToLower();
+            string? phone = dto.ContactPhone?.Trim().ToLower();
+
+            var duplicate = _partners.QueryWithTypeIncludeDeleted()
+                .FirstOrDefault(p =>
+                    (!string.IsNullOrEmpty(p.PartnerName) &&
+                     p.PartnerName.Trim().ToLower() == name)
+                    || (!string.IsNullOrEmpty(p.PartnerCode) &&
+                        p.PartnerCode.Trim().ToLower() == code)
+                    || (!string.IsNullOrEmpty(email) &&
+                        !string.IsNullOrEmpty(p.ContactEmail) &&
+                        p.ContactEmail.Trim().ToLower() == email)
+                    || (!string.IsNullOrEmpty(phone) &&
+                        !string.IsNullOrEmpty(p.ContactPhone) &&
+                        p.ContactPhone.Trim().ToLower() == phone)
+                );
+
+            if (duplicate != null)
+                throw new Exception("Partner bị trùng dữ liệu (Tên / Code / Email / Phone). Không thể tạo mới.");
+
             var entity = _mapper.Map<Partner>(dto);
 
-            // Handle Regions if any
             if (dto.RegionIds != null && dto.RegionIds.Any())
             {
-                foreach (var regionId in dto.RegionIds)
+                foreach (var regionId in dto.RegionIds.Distinct())
                 {
                     entity.PartnerRegions.Add(new PartnerRegion
                     {
@@ -72,13 +93,33 @@ namespace Application.Services.Implements
             return _mapper.Map<PartnerDto>(created);
         }
 
-
         public void Update(int id, PartnerUpdateDto dto)
         {
             var vr = _updateValidator.Validate(dto);
             if (!vr.IsValid) throw new ValidationException(vr.Errors);
 
-            var entity = _partners.QueryWithTypeIncludeDeleted().FirstOrDefault(x => x.PartnerId == id);
+            string name = dto.PartnerName.Trim().ToLower();
+            string? email = dto.ContactEmail?.Trim().ToLower();
+            string? phone = dto.ContactPhone?.Trim().ToLower();
+
+            var duplicate = _partners.QueryWithTypeIncludeDeleted()
+                .FirstOrDefault(p =>
+                    p.PartnerId != id && (
+                        (!string.IsNullOrEmpty(p.PartnerName) &&
+                         p.PartnerName.Trim().ToLower() == name)
+                        || (!string.IsNullOrEmpty(email) &&
+                            !string.IsNullOrEmpty(p.ContactEmail) &&
+                            p.ContactEmail.Trim().ToLower() == email)
+                        || (!string.IsNullOrEmpty(phone) &&
+                            !string.IsNullOrEmpty(p.ContactPhone) &&
+                            p.ContactPhone.Trim().ToLower() == phone)
+                    ));
+
+            if (duplicate != null)
+                throw new Exception("Partner bị trùng dữ liệu (Tên / Email / Phone). Không thể cập nhật.");
+
+            var entity = _partners.QueryWithTypeIncludeDeleted()
+                                  .FirstOrDefault(x => x.PartnerId == id);
             if (entity == null) throw new KeyNotFoundException("Partner not found");
             if (entity.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted partner");
 
@@ -87,7 +128,8 @@ namespace Application.Services.Implements
             entity.ContactPhone = dto.ContactPhone;
             entity.PartnerTypeId = dto.PartnerTypeId;
 
-            if (!string.IsNullOrWhiteSpace(dto.Status) && !string.Equals(dto.Status, "Deleted", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(dto.Status) &&
+                !string.Equals(dto.Status, "Deleted", StringComparison.OrdinalIgnoreCase))
             {
                 var s = dto.Status.Trim();
                 entity.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
@@ -96,10 +138,12 @@ namespace Application.Services.Implements
             if (dto.RegionIds != null)
             {
                 entity.PartnerRegions.Clear();
-                foreach (var regionId in dto.RegionIds)
+
+                foreach (var regionId in dto.RegionIds.Distinct())
                 {
                     entity.PartnerRegions.Add(new PartnerRegion
                     {
+                        PartnerId = entity.PartnerId,
                         RegionId = regionId
                     });
                 }
@@ -107,7 +151,6 @@ namespace Application.Services.Implements
 
             _partners.Update(entity);
         }
-
 
         public void Delete(int id)
         {
@@ -149,7 +192,8 @@ namespace Application.Services.Implements
                 {
                     PartnerTypeId = t.PartnerTypeId,
                     TypeName = t.TypeName,
-                    Partners = _mapper.Map<List<PartnerDto>>(map.TryGetValue(t.PartnerTypeId, out var list) ? list : new List<Partner>())
+                    Partners = _mapper.Map<List<PartnerDto>>(
+                        map.TryGetValue(t.PartnerTypeId, out var list) ? list : new List<Partner>())
                 };
                 result.Add(dto);
             }
@@ -243,8 +287,7 @@ namespace Application.Services.Implements
                 Data = items,
                 TotalCount = total,
                 PageNumber = query.PageNumber,
-                PageSize = query.PageSize,
-                TotalPages = (int)Math.Ceiling(total / (double)query.PageSize)
+                PageSize = query.PageSize
             };
         }
 

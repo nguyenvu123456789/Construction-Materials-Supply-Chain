@@ -20,5 +20,6 @@ namespace Application.Interfaces
         void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto);
         TransportInvoiceTrackingDto? TrackInvoice(int invoiceId);
         List<CustomerOrderStatusDto> GetHistory(int customerPartnerId);
+        List<ResourceStatusDto> GetResourcesStatus(DateTimeOffset start, DateTimeOffset? end, int providerPartnerId);
     }
 }

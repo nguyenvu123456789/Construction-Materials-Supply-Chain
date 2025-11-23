@@ -146,4 +146,13 @@
 
         public string? DeliveryPhotoBase64 { get; set; }
     }
+
+    public class ResourceStatusDto
+    {
+        public string ResourceType { get; set; } = default!;
+        public int Id { get; set; }
+        public string Name { get; set; } = default!;
+        public string Status { get; set; } = default!;
+        public DateTimeOffset? BusyUntil { get; set; }
+    }
 }

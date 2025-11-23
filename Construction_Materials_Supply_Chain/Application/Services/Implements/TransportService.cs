@@ -386,5 +386,60 @@ namespace Application.Services.Implements
 
             return result;
         }
+
+        public List<ResourceStatusDto> GetResourcesStatus(DateTimeOffset start, DateTimeOffset? end, int providerPartnerId)
+        {
+            var result = new List<ResourceStatusDto>();
+            var endTime = end ?? DateTimeOffset.MaxValue;
+
+            var drivers = _driverRepo.Search(null, true, null, providerPartnerId);
+            var vehicles = _vehicleRepo.Search(null, true, null, providerPartnerId);
+            var porters = _porterRepo.Search(null, true, null, providerPartnerId);
+
+            foreach (var dr in drivers)
+            {
+                var busyUntil = _transportRepo.DriverBusyUntil(dr.DriverId, start, endTime);
+                result.Add(new ResourceStatusDto
+                {
+                    ResourceType = "Driver",
+                    Id = dr.DriverId,
+                    Name = dr.FullName,
+                    Status = busyUntil == null ? "Free" : "Busy",
+                    BusyUntil = busyUntil
+                });
+            }
+
+            foreach (var v in vehicles)
+            {
+                var busyUntil = _transportRepo.VehicleBusyUntil(v.VehicleId, start, endTime);
+                result.Add(new ResourceStatusDto
+                {
+                    ResourceType = "Vehicle",
+                    Id = v.VehicleId,
+                    Name = v.Code,
+                    Status = busyUntil == null ? "Free" : "Busy",
+                    BusyUntil = busyUntil
+                });
+            }
+
+            foreach (var p in porters)
+            {
+                var busyUntil = _transportRepo.PorterBusyUntil(p.PorterId, start, endTime);
+                result.Add(new ResourceStatusDto
+                {
+                    ResourceType = "Porter",
+                    Id = p.PorterId,
+                    Name = p.FullName,
+                    Status = busyUntil == null ? "Free" : "Busy",
+                    BusyUntil = busyUntil
+                });
+            }
+
+            return result
+                    .OrderByDescending(x => x.Status == "Free")
+                    .ThenBy(x => x.ResourceType)       
+                    .ThenBy(x => x.Name)          
+                    .ToList();
+        }
     }
 }

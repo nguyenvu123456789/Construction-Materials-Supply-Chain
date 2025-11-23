@@ -126,5 +126,14 @@ namespace Api.Controllers
             var data = _service.GetHistory(partnerId);
             return Ok(data);
         }
+
+        [HttpGet("resources-status")]
+        public ActionResult<List<ResourceStatusDto>> GetResourcesStatus(
+        [FromQuery] DateTimeOffset start,
+        [FromQuery] DateTimeOffset? end,
+        [FromQuery] int providerPartnerId)
+        {
+            return Ok(_service.GetResourcesStatus(start, end, providerPartnerId));
+        }
     }
 }

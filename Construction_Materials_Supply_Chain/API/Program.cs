@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Common;
+﻿using Application.DTOs;
+using Application.DTOs.Common;
 using Application.Interfaces;
 using Application.MappingProfile;
 using Application.Services;
@@ -9,6 +10,7 @@ using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Notifications;
 using Application.Validation.Partners;
+using Application.Validation.Region;
 using Application.Validation.Stock;
 using Application.Validation.Users;
 using Domain.Interface;
@@ -82,6 +84,7 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEventSettingRepository>();
 builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowStockRuleRepository>();
 builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
+builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 
 // Services
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();
@@ -116,6 +119,7 @@ builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerSer
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
+builder.Services.AddScoped<IRegionService, RegionService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -143,6 +147,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<PartnerCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateConversationRequestDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegionCreateDtoValidator>();
 
 // Controllers
 builder.Services.AddControllers()

@@ -30,7 +30,7 @@
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; }
         public List<int> RegionIds { get; set; } = new List<int>();
-        public List<string> RegionNames { get; set; } = new List<string>();
+        //public List<string> RegionNames { get; set; } = new List<string>();
     }
 
     public class PartnerCreateDto
@@ -41,7 +41,6 @@
         public string? ContactPhone { get; set; }
         public int PartnerTypeId { get; set; }
         public string? Status { get; set; }
-
         public List<int>? RegionIds { get; set; }
     }
 }

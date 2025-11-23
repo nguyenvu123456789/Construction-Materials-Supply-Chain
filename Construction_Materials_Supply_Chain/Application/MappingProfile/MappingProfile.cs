@@ -280,6 +280,10 @@ namespace Application.MappingProfile
                 .ForMember(d => d.IsFastMoving, o => o.Ignore())
                 .ForMember(d => d.IsSlowMoving, o => o.Ignore())
                 .ForMember(d => d.QuantityOnHand, o => o.MapFrom(s => s.Quantity ?? 0m));
+
+            CreateMap<Region, RegionDto>().ReverseMap();
+            CreateMap<RegionCreateDto, Region>();
+            CreateMap<RegionUpdateDto, Region>();
         }
     }
 }

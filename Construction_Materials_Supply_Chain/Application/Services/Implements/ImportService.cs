@@ -281,21 +281,36 @@ namespace Services.Implementations
             return import;
         }
 
-        public List<Import> GetByPartnerId(int partnerId)
+        public List<Import> GetImports(int? partnerId = null, int? managerId = null)
         {
+            // Lấy tất cả import kèm warehouse và manager
             var imports = _imports.GetAllWithWarehouse();
-            var filtered = imports
-                .Where(i => i.Warehouse != null
-                         && i.Warehouse.Manager != null
-                         && i.Warehouse.Manager.PartnerId == partnerId)
-                .ToList();
 
-            foreach (var import in filtered)
+            // Filter theo partnerId nếu có
+            if (partnerId.HasValue)
+            {
+                imports = imports
+                    .Where(i => i.Warehouse?.Manager != null &&
+                                i.Warehouse.Manager.PartnerId == partnerId.Value)
+                    .ToList();
+            }
+
+            // Filter theo managerId nếu có
+            if (managerId.HasValue)
+            {
+                imports = imports
+                    .Where(i => i.Warehouse?.ManagerId == managerId.Value)
+                    .ToList();
+            }
+
+            // Load chi tiết import
+            foreach (var import in imports)
             {
                 import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
             }
 
-            return filtered;
+            return imports;
         }
+
     }
 }

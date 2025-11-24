@@ -4,8 +4,9 @@ namespace Application.Interfaces
 {
     public interface IInventoryService
     {
-        List<InventoryInfoDto> GetInventoryByPartnerFiltered(
-            int partnerId,
+        List<InventoryInfoDto> GetInventoryFiltered(
+            int? partnerId,
+            int? managerId,
             string? searchTerm,
             int pageNumber,
             int pageSize,

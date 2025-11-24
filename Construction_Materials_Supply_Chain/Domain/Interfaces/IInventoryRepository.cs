@@ -7,5 +7,6 @@ public interface IInventoryRepository : IGenericRepository<Inventory>
     Inventory? GetByMaterial(int materialId);
     Inventory? GetByWarehouseAndMaterial(int warehouseId, int materialId);
     List<Inventory> GetAllByMaterialId(int materialId);
-    List<Inventory> GetAllByPartnerId(int partnerId);
+    IQueryable<Inventory> GetAllWithIncludes();
+
 }

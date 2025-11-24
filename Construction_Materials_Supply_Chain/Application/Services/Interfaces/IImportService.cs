@@ -12,7 +12,7 @@ namespace Application.Interfaces
         Import CreatePendingImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials);
         Import? GetByIdWithDetails(int id);
         Import? RejectImport(int id);
-        List<Import> GetByPartnerId(int partnerId);
+        List<Import> GetImports(int? partnerId = null, int? managerId = null);
 
     }
 }

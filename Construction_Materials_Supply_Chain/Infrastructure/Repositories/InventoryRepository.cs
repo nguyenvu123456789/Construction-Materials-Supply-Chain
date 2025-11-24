@@ -30,18 +30,14 @@ namespace Infrastructure.Implementations
                            .Where(i => i.MaterialId == materialId)
                            .ToList();
         }
-        public List<Inventory> GetAllByPartnerId(int partnerId)
+        public IQueryable<Inventory> GetAllWithIncludes()
         {
             return _context.Inventories
                 .Include(i => i.Material)
                     .ThenInclude(m => m.Category)
                 .Include(i => i.Warehouse)
-                    .ThenInclude(w => w.Manager)
-                .Where(i => i.Warehouse.Manager != null && i.Warehouse.Manager.PartnerId == partnerId)
-                .ToList();
+                    .ThenInclude(w => w.Manager);
         }
-
-
 
     }
 }

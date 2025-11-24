@@ -1,29 +1,46 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
-using AutoMapper;
 
 namespace Application.Services.Implements
 {
     public class InventoryService : IInventoryService
     {
         private readonly IInventoryRepository _inventoryRepository;
-        private readonly IMapper _mapper;
 
-        public InventoryService(IInventoryRepository inventoryRepository, IMapper mapper)
+    public InventoryService(IInventoryRepository inventoryRepository)
         {
             _inventoryRepository = inventoryRepository;
-            _mapper = mapper;
         }
 
-        public List<InventoryInfoDto> GetInventoryByPartnerFiltered(
-            int partnerId,
+        public List<InventoryInfoDto> GetInventoryFiltered(
+            int? partnerId,
+            int? managerId,
             string? searchTerm,
             int pageNumber,
             int pageSize,
             out int totalCount)
         {
-            var inventories = _inventoryRepository.GetAllByPartnerId(partnerId).AsQueryable();
+            // Lấy toàn bộ inventory có includes  
+            var inventories = _inventoryRepository.GetAllWithIncludes().AsQueryable();
 
+            // Filter theo partner (nếu có)  
+            if (partnerId.HasValue)
+            {
+                inventories = inventories.Where(i =>
+                    i.Warehouse.Manager != null &&
+                    i.Warehouse.Manager.PartnerId == partnerId.Value
+                );
+            }
+
+            // Filter theo manager (nếu có)  
+            if (managerId.HasValue)
+            {
+                inventories = inventories.Where(i =>
+                    i.Warehouse.ManagerId == managerId.Value
+                );
+            }
+
+            // Search theo term  
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 inventories = inventories.Where(i =>
@@ -33,12 +50,15 @@ namespace Application.Services.Implements
                 );
             }
 
+            // Tính tổng count  
             totalCount = inventories.Count();
 
+            // Paging  
             if (pageNumber > 0 && pageSize > 0)
                 inventories = inventories.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-            var result = inventories
+            // Map sang DTO  
+            return inventories
                 .ToList()
                 .Select(i => new InventoryInfoDto
                 {
@@ -54,9 +74,7 @@ namespace Application.Services.Implements
                     ExpiryDate = i.ExpiryDate
                 })
                 .ToList();
-
-            return result;
         }
+    }  
 
-    }
 }

@@ -110,12 +110,12 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("partner/{partnerId:int}")]
-        public IActionResult GetImportsByPartner(int partnerId)
+        [HttpGet]
+        public IActionResult GetImports([FromQuery] int? partnerId = null, [FromQuery] int? managerId = null)
         {
             try
             {
-                var imports = _importService.GetByPartnerId(partnerId);
+                var imports = _importService.GetImports(partnerId, managerId);
                 var result = _mapper.Map<IEnumerable<ImportResponseDto>>(imports);
                 return Ok(result);
             }

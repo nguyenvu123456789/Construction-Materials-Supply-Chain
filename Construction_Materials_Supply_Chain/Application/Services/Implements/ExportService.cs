@@ -225,16 +225,33 @@ namespace Services.Implementations
         }
 
         // Lấy phiếu xuất theo Partner
-        public List<Export> GetByPartnerId(int partnerId)
+        public List<Export> GetByPartnerOrManager(int? partnerId = null, int? managerId = null)
         {
-            var exports = _exports.GetAllWithWarehouse();
+            // Lấy toàn bộ exports kèm warehouse
+            var exports = _exports.GetAllWithWarehouse().AsQueryable();
 
-            var filtered = exports
-                .Where(e => e.Warehouse != null
-                         && e.Warehouse.Manager != null
-                         && e.Warehouse.Manager.PartnerId == partnerId)
-                .ToList();
+            // Filter theo partner nếu có
+            if (partnerId.HasValue)
+            {
+                exports = exports.Where(e =>
+                    e.Warehouse != null &&
+                    e.Warehouse.Manager != null &&
+                    e.Warehouse.Manager.PartnerId == partnerId.Value
+                );
+            }
 
+            // Filter theo manager nếu có
+            if (managerId.HasValue)
+            {
+                exports = exports.Where(e =>
+                    e.Warehouse != null &&
+                    e.Warehouse.ManagerId == managerId.Value
+                );
+            }
+
+            var filtered = exports.ToList();
+
+            // Gán chi tiết
             foreach (var export in filtered)
             {
                 export.ExportDetails = _exportDetails.GetByExportId(export.ExportId);

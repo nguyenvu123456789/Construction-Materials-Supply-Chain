@@ -447,7 +447,7 @@ namespace Application.Services.Implements
             }
 
             return inventoryRepository
-                .GetAllByPartnerId(partnerId)
+                .GetAllWithIncludes()
                 .Where(x => x.MaterialId == rule.MaterialId)
                 .ToList();
         }

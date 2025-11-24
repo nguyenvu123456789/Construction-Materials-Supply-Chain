@@ -263,15 +263,20 @@ namespace Application.Services.Implements
             var warehouses = _warehouses.GetAll();
             var warehouseDict = warehouses.ToDictionary(w => w.WarehouseId, w => w);
 
-            List<Inventory> inventories;
+            // Lấy toàn bộ inventory có includes
+            var inventories = _inventories.GetAllWithIncludes().AsQueryable();
+
+            // Filter theo partner nếu có
             if (partnerId.HasValue)
             {
-                inventories = _inventories.GetAllByPartnerId(partnerId.Value);
+                inventories = inventories.Where(i =>
+                    i.Warehouse.Manager != null &&
+                    i.Warehouse.Manager.PartnerId == partnerId.Value
+                );
             }
-            else
-            {
-                inventories = _inventories.GetAll();
-            }
+
+            // Chuyển sang List<Inventory>
+            var inventoryList = inventories.ToList();
 
             var invoices = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
@@ -295,7 +300,7 @@ namespace Application.Services.Implements
 
             var result = new List<InventorySummaryDto>();
 
-            var groupedInventories = inventories
+            var groupedInventories = inventoryList
                 .GroupBy(inv => new { inv.MaterialId, inv.WarehouseId })
                 .ToList();
 
@@ -341,6 +346,7 @@ namespace Application.Services.Implements
                 .OrderByDescending(x => x.TurnoverRate)
                 .ToList();
         }
+
 
         public List<RecommendationDto> GetRecommendations(DateTime from, DateTime to, int? partnerId = null)
         {
@@ -409,15 +415,18 @@ namespace Application.Services.Implements
 
         public List<StockForecastDto> GetDemandForecast(DateTime from, DateTime to, TimeGranularity granularity, int? materialId = null, int? partnerId = null)
         {
+            // Lấy toàn bộ invoices thỏa điều kiện
             var invoices = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
                 .ToList();
 
+            // Filter theo partner nếu có
             if (partnerId.HasValue)
             {
                 invoices = invoices.Where(i => i.PartnerId == partnerId.Value).ToList();
             }
 
+            // Chuyển invoices thành series theo material và period
             var series = invoices
                 .SelectMany(i => i.InvoiceDetails, (i, d) =>
                 {
@@ -446,11 +455,20 @@ namespace Application.Services.Implements
                     g => g.Key,
                     g => g.OrderBy(x => x.Start).ToList());
 
-            var inventories = partnerId.HasValue
-                ? _inventories.GetAllByPartnerId(partnerId.Value)
-                : _inventories.GetAll();
+            // Lấy toàn bộ inventory với includes
+            var inventoriesQuery = _inventories.GetAllWithIncludes().AsQueryable();
 
-            inventories = GroupInventory(inventories);
+            // Filter theo partner nếu có
+            if (partnerId.HasValue)
+            {
+                inventoriesQuery = inventoriesQuery.Where(i =>
+                    i.Warehouse.Manager != null &&
+                    i.Warehouse.Manager.PartnerId == partnerId.Value
+                );
+            }
+
+            // Chuyển sang List<Inventory> và gom nhóm
+            var inventories = GroupInventory(inventoriesQuery.ToList());
 
             var result = new List<StockForecastDto>();
 

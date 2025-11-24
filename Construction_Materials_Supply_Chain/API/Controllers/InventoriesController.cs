@@ -17,15 +17,17 @@ namespace API.Controllers
             _inventoryService = inventoryService;
         }
 
-        [HttpGet("partner/{partnerId:int}")]
-        public IActionResult GetInventoryByPartner(
-            int partnerId,
-            [FromQuery] PagedQueryDto queryParams)
+        [HttpGet]
+        public IActionResult GetInventories(
+    [FromQuery] int? partnerId,
+    [FromQuery] int? managerId,
+    [FromQuery] PagedQueryDto queryParams)
         {
             try
             {
-                var inventories = _inventoryService.GetInventoryByPartnerFiltered(
+                var inventories = _inventoryService.GetInventoryFiltered(
                     partnerId,
+                    managerId,
                     queryParams.SearchTerm,
                     queryParams.PageNumber,
                     queryParams.PageSize,
@@ -48,5 +50,6 @@ namespace API.Controllers
                 return BadRequest(ApiResponse<string>.ErrorResponse(ex.Message));
             }
         }
+
     }
 }

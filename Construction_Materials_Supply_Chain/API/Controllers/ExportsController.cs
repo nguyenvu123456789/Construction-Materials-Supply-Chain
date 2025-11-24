@@ -29,12 +29,12 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllExports([FromQuery] int? partnerId = null)
+        public IActionResult GetAllExports([FromQuery] int? partnerId = null, [FromQuery] int? managerId = null)
         {
             try
             {
-                var exports = partnerId.HasValue
-                    ? _exportService.GetByPartnerId(partnerId.Value)
+                var exports = (partnerId.HasValue || managerId.HasValue)
+                    ? _exportService.GetByPartnerOrManager(partnerId, managerId)
                     : _exportService.GetAll();
 
                 var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);

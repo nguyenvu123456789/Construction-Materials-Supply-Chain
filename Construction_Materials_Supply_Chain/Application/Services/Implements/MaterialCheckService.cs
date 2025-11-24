@@ -129,14 +129,12 @@ namespace Application.Services.Implements
                     .ToList();
             }
 
-            // Lấy tất cả MaterialCheck trong khoảng thời gian
             var checksInRange = _checks.GetAllWithDetails()
                 .Where(c => (!q.From.HasValue || c.CheckDate >= q.From.Value)
                     && (!q.To.HasValue || c.CheckDate <= q.To.Value))
                 .ToList();
 
 
-            // Flatten details và lấy bản ghi mới nhất cho mỗi material
             var detailEntries = checksInRange
                 .SelectMany(c => c.Details.Select(d => new
                 {

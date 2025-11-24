@@ -524,23 +524,23 @@ context.Partners.AddRange(
                 );
                 context.SaveChanges();
 
+                //material check
+
                 if (!context.MaterialChecks.Any())
                 {
                     var invUser = context.Users.First(u => u.UserName == "inventory1");
-
                     var mats = context.Materials.ToList();
+                    var wh = context.Warehouses.First();
 
                     context.MaterialChecks.AddRange(
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "W001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddHours(-6), QuantityChecked = 115, Result = "OK", Notes = "Mất 5 tấm do hư hỏng" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "M001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddHours(-20), QuantityChecked = 80, Result = "OK" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "P001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-1), QuantityChecked = 210, Result = "OK", Notes = "Nhập bù chưa hạch toán" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "C001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-2), QuantityChecked = 140, Result = "OK", Notes = "Hao hụt/đổ vỡ" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "B001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-3), QuantityChecked = 5200, Result = "OK", Notes = "Nhập thừa so với kế hoạch" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "S001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-4), QuantityChecked = 49, Result = "OK", Notes = "Rò rỉ 1 thùng" },
-                        new MaterialCheck { MaterialId = mats.First(m => m.MaterialCode == "G001").MaterialId, UserId = invUser.UserId, CheckDate = DateTime.Now.AddDays(-5), QuantityChecked = 100, Result = "OK" }
+                        new MaterialCheck { UserId = invUser.UserId, WarehouseId = wh.WarehouseId, CheckDate = DateTime.Now.AddHours(-6), Notes = "Đợt kiểm kê đột xuất", Status = "Approved", Details = { new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "W001").MaterialId, SystemQty = 120, ActualQty = 115, Reason = "Mất 5 tấm" }, new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "M001").MaterialId, SystemQty = 80, ActualQty = 80, Reason = "Khớp số liệu" } } },
+                        new MaterialCheck { UserId = invUser.UserId, WarehouseId = wh.WarehouseId, CheckDate = DateTime.Now.AddHours(-20), Notes = "Kiểm kê theo lịch", Status = "Pending", Details = { new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "P001").MaterialId, SystemQty = 210, ActualQty = 210, Reason = "Nhập bù chưa hạch toán" }, new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "C001").MaterialId, SystemQty = 150, ActualQty = 140, Reason = "Hao hụt / đổ vỡ" } } }
                     );
+
                     context.SaveChanges();
                 }
+
+
 
                 var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01")
                     ?? throw new InvalidOperationException("User staff01 not found.");

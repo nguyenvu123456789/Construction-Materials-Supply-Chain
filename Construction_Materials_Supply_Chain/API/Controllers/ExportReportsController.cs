@@ -59,14 +59,14 @@ namespace API.Controllers
             return Ok(_mapper.Map<ExportReportResponseDto>(report));
         }
 
-        // 🔹 GET: /api/ExportReports/partner/{partnerId}
-        [HttpGet("partner/{partnerId:int}")]
-        public IActionResult GetReportsByPartner(int partnerId)
+        [HttpGet("reports")]
+        public IActionResult GetReports([FromQuery] int? partnerId = null, [FromQuery] int? createdByUserId = null)
         {
             try
             {
-                var reports = _reportService.GetAllByPartner(partnerId);
+                var reports = _reportService.GetAllReports(partnerId, createdByUserId);
                 var reportDtos = _mapper.Map<List<ExportReportResponseDto>>(reports);
+
                 return Ok(reportDtos);
             }
             catch (Exception ex)
@@ -74,6 +74,7 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         // 🔹 PUT: /api/ExportReports/{reportId}/view
         [HttpPut("{reportId:int}/view")]

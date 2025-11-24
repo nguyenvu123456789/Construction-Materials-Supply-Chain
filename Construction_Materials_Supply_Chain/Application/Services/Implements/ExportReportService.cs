@@ -177,23 +177,34 @@ namespace Application.Services.Implements
 
 
         // 🔹 Lấy tất cả báo cáo theo PartnerId
-        public List<ExportReportResponseDto> GetAllByPartner(int partnerId)
+        public List<ExportReportResponseDto> GetAllReports(int? partnerId = null, int? createdByUserId = null)
         {
             var reports = _reportRepo.GetAllWithDetails()
                 .OrderByDescending(r => r.ReportDate)
                 .ToList();
 
-            // Lọc theo partnerId của người tạo báo cáo
-            var filteredReports = reports
-                .Where(r =>
-                {
-                    var reporter = _userRepo.GetById(r.ReportedBy);
-                    return reporter != null && reporter.PartnerId == partnerId;
-                })
-                .ToList();
+            // Filter theo partnerId nếu có
+            if (partnerId.HasValue)
+            {
+                reports = reports
+                    .Where(r =>
+                    {
+                        var reporter = _userRepo.GetById(r.ReportedBy);
+                        return reporter != null && reporter.PartnerId == partnerId.Value;
+                    })
+                    .ToList();
+            }
+
+            // Filter theo userId nếu có
+            if (createdByUserId.HasValue)
+            {
+                reports = reports
+                    .Where(r => r.ReportedBy == createdByUserId.Value)
+                    .ToList();
+            }
 
             // Lấy bản ghi mới nhất cho mỗi ExportId
-            var latestReports = filteredReports
+            var latestReports = reports
                 .GroupBy(r => r.ExportId)
                 .Select(g => g.First())
                 .ToList();
@@ -211,7 +222,6 @@ namespace Application.Services.Implements
                     Keep = d.Keep ?? false
                 }).ToList();
 
-                // Lấy bản ghi xử lý cuối cùng
                 var lastHandle = _handleRequests.GetByRequest("ExportReport", report.ExportReportId)
                     .OrderByDescending(h => h.HandledAt)
                     .FirstOrDefault();
@@ -246,6 +256,7 @@ namespace Application.Services.Implements
 
             return result;
         }
+
 
         // 🔹 Đánh dấu báo cáo là "Đã xem"
         public void MarkAsViewed(int reportId)

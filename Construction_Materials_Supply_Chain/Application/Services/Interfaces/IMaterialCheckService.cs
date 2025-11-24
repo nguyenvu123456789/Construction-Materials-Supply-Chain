@@ -11,10 +11,13 @@ namespace Application.Interfaces
     {
         ApiResponse<MaterialCheckResponseDto> CreateMaterialCheck(MaterialCheckCreateDto dto);
         ApiResponse<MaterialCheckHandleResponseDto> HandleMaterialCheck(MaterialCheckHandleDto dto);
-        ApiResponse<List<MaterialCheckResponseDto>> GetAllMaterialChecks(int? partnerId = null);
+        ApiResponse<PagedResultDto<MaterialCheckResponseDto>> GetAllMaterialChecks(
+            int? partnerId = null,
+            int? userId = null,
+            string? searchTerm = null,
+            int pageNumber = 1,
+            int pageSize = 10
+        );
         ApiResponse<MaterialCheckResponseWithHandleDto> GetMaterialCheckById(int checkId);
-        StockCheckSummaryDto GetSummary(StockCheckQueryDto q);
-        PagedResultDto<StockCheckListItemDto> GetChecks(StockCheckQueryDto q);
-        PagedResultDto<SkuDiffDto> GetSkuDiffs(StockCheckQueryDto q);
     }
 }

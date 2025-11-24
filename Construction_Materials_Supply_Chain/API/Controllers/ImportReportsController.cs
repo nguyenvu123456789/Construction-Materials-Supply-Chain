@@ -34,11 +34,11 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] int partnerId)
+        public IActionResult GetAll([FromQuery] int? partnerId = null, [FromQuery] int? createdByUserId = null)
         {
             try
             {
-                var reports = _service.GetAllByPartner(partnerId);
+                var reports = _service.GetAllByPartner(partnerId, createdByUserId);
                 return Ok(reports);
             }
             catch (Exception ex)
@@ -46,6 +46,8 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
 
         [HttpGet("{id:int}")]
         public IActionResult GetById(int id)

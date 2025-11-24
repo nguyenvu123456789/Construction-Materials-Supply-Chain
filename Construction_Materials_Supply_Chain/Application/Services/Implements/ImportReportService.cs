@@ -293,23 +293,26 @@ namespace Services.Implementations
 
 
         // 🔹 Lấy tất cả theo Partner
-        public List<ImportReportResponseDto> GetAllByPartner(int partnerId)
+        public List<ImportReportResponseDto> GetAllByPartner(int? partnerId = null, int? createdByUserId = null)
         {
             var reports = _reports.GetAllWithDetails()
-                .OrderByDescending(r => r.CreatedAt)
-                .ToList();
+                                  .OrderByDescending(r => r.CreatedAt)
+                                  .ToList();
 
             var result = new List<ImportReportResponseDto>();
 
             foreach (var report in reports)
             {
-                // Lấy HandleRequest mới nhất
                 var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
                                                 .OrderByDescending(h => h.HandledAt)
                                                 .FirstOrDefault();
 
-                // Nếu creator không phải partner thì bỏ qua
-                if (lastHandle?.HandledByNavigation?.PartnerId != partnerId)
+                // Filter theo partner nếu có
+                if (partnerId.HasValue && lastHandle?.HandledByNavigation?.PartnerId != partnerId.Value)
+                    continue;
+
+                // Filter theo người tạo nếu có
+                if (createdByUserId.HasValue && report.CreatedBy != createdByUserId.Value)
                     continue;
 
                 var handleHistory = lastHandle != null
@@ -356,7 +359,6 @@ namespace Services.Implementations
 
             return result;
         }
-
 
 
 

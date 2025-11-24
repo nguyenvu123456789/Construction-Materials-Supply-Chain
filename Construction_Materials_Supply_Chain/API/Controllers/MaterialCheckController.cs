@@ -16,18 +16,6 @@ namespace API.Controllers
         private readonly IMaterialCheckService _service;
         public MaterialCheckController(IMaterialCheckService service) { _service = service; }
 
-        [HttpGet("summary")]
-        public ActionResult<StockCheckSummaryDto> GetSummary([FromQuery] StockCheckQueryDto q)
-            => Ok(_service.GetSummary(q));
-
-        [HttpGet("checks")]
-        public ActionResult<PagedResultDto<StockCheckListItemDto>> GetChecks([FromQuery] StockCheckQueryDto q)
-            => Ok(_service.GetChecks(q));
-
-        [HttpGet("sku-diffs")]
-        public ActionResult<PagedResultDto<SkuDiffDto>> GetSkuDiffs([FromQuery] StockCheckQueryDto q)
-            => Ok(_service.GetSkuDiffs(q));
-
         [HttpPost]
         public ActionResult<ApiResponse<MaterialCheck>> Create([FromBody] MaterialCheckCreateDto dto)
         {
@@ -43,12 +31,26 @@ namespace API.Controllers
             var result = _service.HandleMaterialCheck(dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
         [HttpGet]
-        public IActionResult GetAll([FromQuery] int? partnerId)
+        public IActionResult GetAll(
+    [FromQuery] int? partnerId = null,
+    [FromQuery] int? userId = null,
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
         {
-            var result = _service.GetAllMaterialChecks(partnerId);
-            return Ok(result);
+            try
+            {
+                var result = _service.GetAllMaterialChecks(partnerId, userId, searchTerm, pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
         [HttpGet("{checkId:int}")]
         public IActionResult GetMaterialCheckById(int checkId)

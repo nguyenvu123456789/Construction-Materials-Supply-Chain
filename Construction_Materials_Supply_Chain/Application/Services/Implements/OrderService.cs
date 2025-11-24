@@ -24,7 +24,7 @@ namespace Application.Services.Implements
             _partnerRepository = partnerRepository;
         }
 
-        // ✅ Tạo đơn mua hàng
+        //  Tạo đơn mua hàng
         public OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto)
         {
             if (dto == null)
@@ -42,14 +42,23 @@ namespace Application.Services.Implements
             if (buyerPartner == null)
                 throw new Exception("Người mua chưa thuộc đối tác nào");
 
+            // Check PartnerType
             if (buyerPartner.PartnerTypeId <= supplier.PartnerTypeId)
                 throw new Exception("Không thể mua từ đối tác có cùng hoặc cấp cao hơn");
+
+            // ===== Kiểm tra region =====
+            var buyerRegionIds = buyerPartner.PartnerRegions.Select(r => r.RegionId).ToList();
+            var supplierRegionIds = supplier.PartnerRegions.Select(r => r.RegionId).ToList();
+
+            bool hasCommonRegion = buyerRegionIds.Intersect(supplierRegionIds).Any();
+            if (!hasCommonRegion)
+                throw new Exception("Người mua và nhà cung cấp không cùng vùng, không thể tạo đơn hàng");
 
             // Sinh mã đơn hàng (PO-001, PO-002, ...)
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";
 
-            // ✅ Tạo đơn hàng
+            // Tạo đơn hàng
             var order = new Order
             {
                 OrderCode = orderCode,
@@ -72,7 +81,6 @@ namespace Application.Services.Implements
 
             _orderRepository.Add(order);
 
-
             return new OrderResponseDto
             {
                 OrderId = order.OrderId,
@@ -89,9 +97,9 @@ namespace Application.Services.Implements
                     Quantity = d.Quantity,
                     Status = d.Status
                 }).ToList()
-
             };
         }
+
 
         public Order HandleOrder(HandleOrderRequestDto dto)
         {

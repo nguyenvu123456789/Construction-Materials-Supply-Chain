@@ -29,6 +29,8 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Permission> Permissions { get; set; }
     public virtual DbSet<Material> Materials { get; set; }
     public virtual DbSet<MaterialCheck> MaterialChecks { get; set; }
+    public virtual DbSet<MaterialCheckDetail> MaterialCheckDetails { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
@@ -523,16 +525,54 @@ public partial class ScmVlxdContext : DbContext
             entity.ToTable("MaterialCheck");
 
             entity.Property(e => e.CheckId).HasColumnName("CheckID");
-            entity.Property(e => e.MaterialId).HasColumnName("MaterialID");
             entity.Property(e => e.CheckDate).HasColumnType("datetime");
-            entity.Property(e => e.Result).HasMaxLength(50);
             entity.Property(e => e.Notes).HasMaxLength(255);
 
-            entity.HasOne(d => d.Material)
+            // Quan hệ User (người kiểm kê)
+            entity.HasOne(d => d.User)
                 .WithMany(p => p.MaterialChecks)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MaterialCheck_User");
+
+            // Quan hệ Warehouse (kiểm kho nào)
+            entity.HasOne(d => d.Warehouse)
+                .WithMany(p => p.MaterialChecks)
+                .HasForeignKey(d => d.WarehouseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MaterialCheck_Warehouse");
+
+            // Quan hệ 1 - nhiều sang Details
+            entity.HasMany(d => d.Details)
+                .WithOne(p => p.Check)
+                .HasForeignKey(p => p.CheckId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_MaterialCheckDetail_MaterialCheck");
+        });
+
+        modelBuilder.Entity<MaterialCheckDetail>(entity =>
+        {
+            entity.HasKey(e => e.DetailId);
+            entity.ToTable("MaterialCheckDetail");
+
+            entity.Property(e => e.DetailId).HasColumnName("DetailID");
+            entity.Property(e => e.SystemQty).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ActualQty).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Reason).HasMaxLength(255);
+
+            // Quan hệ tới Material
+            entity.HasOne(d => d.Material)
+                .WithMany(p => p.MaterialCheckDetails)
                 .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__MaterialCheck__MaterialID");
+                .HasConstraintName("FK_MaterialCheckDetail_Material");
+
+            // Quan hệ tới MaterialCheck (đơn kiểm kê)
+            entity.HasOne(d => d.Check)
+                .WithMany(p => p.Details)
+                .HasForeignKey(d => d.CheckId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_MaterialCheckDetail_Check");
         });
 
 

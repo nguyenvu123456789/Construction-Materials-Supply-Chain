@@ -10,4 +10,6 @@ public partial class Warehouse
     public virtual ICollection<Import> Imports { get; set; } = new List<Import>();
     public virtual ICollection<Export> Exports { get; set; } = new List<Export>();
     public virtual User? Manager { get; set; }
+    public virtual ICollection<MaterialCheck> MaterialChecks { get; set; }
+        = new List<MaterialCheck>();
 }

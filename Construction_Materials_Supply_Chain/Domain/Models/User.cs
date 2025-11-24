@@ -30,6 +30,7 @@ public partial class User
     public virtual ICollection<Export> Exports { get; set; } = new List<Export>();
     public virtual ICollection<ExportReport> ExportReportsReported { get; set; } = new List<ExportReport>();
     public virtual ICollection<ExportReport> ExportReportsDecided { get; set; } = new List<ExportReport>();
-
+    public virtual ICollection<MaterialCheck> MaterialChecks { get; set; }
+        = new List<MaterialCheck>();
     public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }

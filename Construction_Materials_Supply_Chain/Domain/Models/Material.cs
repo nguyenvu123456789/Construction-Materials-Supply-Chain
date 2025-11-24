@@ -49,6 +49,7 @@ namespace Domain.Models
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
         [JsonIgnore]
-        public virtual ICollection<MaterialCheck> MaterialChecks { get; set; } = new List<MaterialCheck>();
+        public virtual ICollection<MaterialCheckDetail> MaterialCheckDetails { get; set; }
+        = new List<MaterialCheckDetail>();
     }
 }

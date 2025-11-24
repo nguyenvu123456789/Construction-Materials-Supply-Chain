@@ -3,8 +3,11 @@ using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
+using Domain.Interfaces;
 using Domain.Models;
 using FluentValidation;
+using System.Globalization;
+using System.Text;
 
 namespace Application.Services.Implements
 {
@@ -16,10 +19,12 @@ namespace Application.Services.Implements
         private readonly IValidator<PartnerCreateDto> _createValidator;
         private readonly IValidator<PartnerUpdateDto> _updateValidator;
         private readonly IValidator<PartnerPagedQueryDto> _filterValidator;
+        private readonly IRegionRepository _regions;
 
         public PartnerService(
             IPartnerRepository partners,
             IPartnerTypeRepository types,
+            IRegionRepository regions,
             IMapper mapper,
             IValidator<PartnerCreateDto> createValidator,
             IValidator<PartnerUpdateDto> updateValidator,
@@ -27,6 +32,7 @@ namespace Application.Services.Implements
         {
             _partners = partners;
             _types = types;
+            _regions = regions;
             _mapper = mapper;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
@@ -74,9 +80,11 @@ namespace Application.Services.Implements
 
             var entity = _mapper.Map<Partner>(dto);
 
-            if (dto.RegionIds != null && dto.RegionIds.Any())
+            if (dto.RegionNames != null && dto.RegionNames.Any())
             {
-                foreach (var regionId in dto.RegionIds.Distinct())
+                var regionIds = ResolveRegionIdsFromNames(dto.RegionNames);
+
+                foreach (var regionId in regionIds.Distinct())
                 {
                     entity.PartnerRegions.Add(new PartnerRegion
                     {
@@ -135,11 +143,13 @@ namespace Application.Services.Implements
                 entity.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
             }
 
-            if (dto.RegionIds != null)
+            if (dto.RegionNames != null && dto.RegionNames.Any())
             {
+                var regionIds = ResolveRegionIdsFromNames(dto.RegionNames);
+
                 entity.PartnerRegions.Clear();
 
-                foreach (var regionId in dto.RegionIds.Distinct())
+                foreach (var regionId in regionIds.Distinct())
                 {
                     entity.PartnerRegions.Add(new PartnerRegion
                     {
@@ -296,5 +306,103 @@ namespace Application.Services.Implements
             var types = _types.GetAll();
             return _mapper.Map<IEnumerable<PartnerTypeDto>>(types);
         }
+
+        private static string NormalizeRegionKey(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return string.Empty;
+
+            name = name.Trim().ToLowerInvariant();
+
+            var normalized = name.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder(normalized.Length);
+
+            foreach (var c in normalized)
+            {
+                var cat = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (cat != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            }
+
+            var noDiacritics = sb.ToString().Normalize(NormalizationForm.FormC);
+
+            var filteredChars = noDiacritics
+                .Select(ch => char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch) ? ch : ' ')
+                .ToArray();
+            var filtered = new string(filteredChars);
+
+            var parts = filtered.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(" ", parts);
+        }
+
+        private List<int> ResolveRegionIdsFromNames(IEnumerable<string>? regionNames)
+        {
+            var result = new List<int>();
+            if (regionNames == null) return result;
+
+            var allRegions = _regions.GetAll().ToList();
+
+            foreach (var rawGroup in regionNames)
+            {
+                if (string.IsNullOrWhiteSpace(rawGroup)) continue;
+
+                var pieces = rawGroup
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim())
+                    .Where(p => !string.IsNullOrWhiteSpace(p));
+
+                foreach (var raw in pieces)
+                {
+                    var key = NormalizeRegionKey(raw);
+                    if (string.IsNullOrEmpty(key)) continue;
+
+                    var existing = allRegions.FirstOrDefault(r =>
+                        NormalizeRegionKey(r.RegionName) == key
+                    );
+
+                    if (existing == null)
+                    {
+                        existing = new Region
+                        {
+                            RegionName = raw
+                        };
+
+                        _regions.Add(existing);
+                        allRegions.Add(existing);
+                    }
+
+                    if (!result.Contains(existing.RegionId))
+                        result.Add(existing.RegionId);
+                }
+            }
+
+            return result;
+        }
+
+        //private static string NormalizeRegionKey(string name)
+        //{
+        //    if (string.IsNullOrWhiteSpace(name))
+        //        return string.Empty;
+
+        //    name = name.Trim().ToLowerInvariant();
+
+        //    string[] toneMarks = { "́", "̀", "̉", "̃", "̣" };
+
+        //    foreach (var tm in toneMarks)
+        //        name = name.Replace(tm, "");
+
+        //    var parts = name
+        //        .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        //    name = string.Join(" ", parts);
+
+        //    name = new string(name.Select(ch =>
+        //        char.IsLetterOrDigit(ch) || char.IsWhiteSpace(ch) ? ch : ' '
+        //    ).ToArray());
+
+        //    name = string.Join(" ", name.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+        //    return name;
+        //}
     }
 }

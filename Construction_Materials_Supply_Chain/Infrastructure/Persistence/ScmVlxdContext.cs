@@ -84,6 +84,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<InventoryAlertRuleUser> InventoryAlertRuleUsers { get; set; } = null!;
     public virtual DbSet<EventNotificationSetting> EventNotificationSettings { get; set; } = null!;
     public virtual DbSet<EventNotificationSettingRole> EventNotificationSettingRoles { get; set; } = null!;
+    public virtual DbSet<InventoryAlertRuleMaterial> InventoryAlertRuleMaterials { get; set; } = null!;
     public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -992,9 +993,25 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.CriticalMinQuantity).HasPrecision(18, 2);
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.SendEmail).HasDefaultValue(true);
             e.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<InventoryAlertRuleMaterial>(e =>
+        {
+            e.HasKey(x => x.InventoryAlertRuleMaterialId);
+
+            e.HasOne(x => x.Rule)
+                .WithMany(r => r.RuleMaterials)
+                .HasForeignKey(x => x.InventoryAlertRuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.Material)
+                .WithMany()
+                .HasForeignKey(x => x.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => new { x.InventoryAlertRuleId, x.MaterialId }).IsUnique();
         });
 
         modelBuilder.Entity<InventoryAlertRuleRole>(e =>

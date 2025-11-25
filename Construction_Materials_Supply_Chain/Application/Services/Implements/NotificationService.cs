@@ -318,6 +318,14 @@ namespace Application.Services.Implements
 
         public int CreateLowStockRule(AlertRuleCreateDto request)
         {
+            var materialIds = request.MaterialIds?
+                .Where(x => x > 0)
+                .Distinct()
+                .ToArray() ?? Array.Empty<int>();
+
+            if (materialIds.Length == 0)
+                throw new ArgumentException("Rule phải có ít nhất 1 material.", nameof(request.MaterialIds));
+
             var rule = mapper.Map<InventoryAlertRule>(request);
             lowStockRuleRepository.Add(rule);
 
@@ -326,6 +334,8 @@ namespace Application.Services.Implements
 
             if (request.UserIds.Any())
                 lowStockRuleRepository.ReplaceUsers(rule.InventoryAlertRuleId, request.PartnerId, request.UserIds);
+
+            lowStockRuleRepository.ReplaceMaterials(rule.InventoryAlertRuleId, request.PartnerId, materialIds);
 
             return rule.InventoryAlertRuleId;
         }
@@ -336,7 +346,6 @@ namespace Application.Services.Implements
             if (rule == null) return;
 
             rule.WarehouseId = request.WarehouseId;
-            rule.MaterialId = request.MaterialId;
             rule.MinQuantity = request.MinQuantity;
             rule.CriticalMinQuantity = request.CriticalMinQuantity;
             rule.SendEmail = request.SendEmail;
@@ -344,8 +353,26 @@ namespace Application.Services.Implements
             rule.RecipientMode = (AlertRecipientMode)request.RecipientMode;
 
             lowStockRuleRepository.Update(rule);
-            lowStockRuleRepository.ReplaceRoles(rule.InventoryAlertRuleId, request.PartnerId, request.RoleIds ?? Array.Empty<int>());
-            lowStockRuleRepository.ReplaceUsers(rule.InventoryAlertRuleId, request.PartnerId, request.UserIds ?? Array.Empty<int>());
+
+            lowStockRuleRepository.ReplaceRoles(
+                rule.InventoryAlertRuleId,
+                request.PartnerId,
+                request.RoleIds ?? Array.Empty<int>());
+
+            lowStockRuleRepository.ReplaceUsers(
+                rule.InventoryAlertRuleId,
+                request.PartnerId,
+                request.UserIds ?? Array.Empty<int>());
+
+            var materialIds = request.MaterialIds?
+                .Where(x => x > 0)
+                .Distinct()
+                .ToArray() ?? Array.Empty<int>();
+
+            lowStockRuleRepository.ReplaceMaterials(
+                rule.InventoryAlertRuleId,
+                request.PartnerId,
+                materialIds);
         }
 
         public void ToggleLowStockRule(int ruleId, int partnerId, bool isActive)
@@ -440,16 +467,25 @@ namespace Application.Services.Implements
 
         private List<Inventory> GetInventoriesForRule(InventoryAlertRule rule, int partnerId)
         {
+            var materialIds = rule.RuleMaterials?
+                .Select(rm => rm.MaterialId)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToArray() ?? Array.Empty<int>();
+
+            if (materialIds.Length == 0)
+                return new List<Inventory>();
+
+            var query = inventoryRepository
+                .GetAllWithIncludes()
+                .Where(x => materialIds.Contains(x.MaterialId));
+
             if (rule.WarehouseId.HasValue)
             {
-                var inv = inventoryRepository.GetByMaterialId(rule.MaterialId, rule.WarehouseId.Value);
-                return inv == null ? new List<Inventory>() : new List<Inventory> { inv };
+                query = query.Where(x => x.WarehouseId == rule.WarehouseId.Value);
             }
 
-            return inventoryRepository
-                .GetAllWithIncludes()
-                .Where(x => x.MaterialId == rule.MaterialId)
-                .ToList();
+            return query.ToList();
         }
 
         private IEnumerable<int> ResolveRecipientsForLowStockRule(InventoryAlertRule rule, int partnerId, Inventory inventory)

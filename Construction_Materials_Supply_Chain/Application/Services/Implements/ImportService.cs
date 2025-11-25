@@ -35,31 +35,23 @@ namespace Services.Implementations
             _orderDetailRepository = orderDetailRepository;
         }
 
-        public Import CreateImportFromInvoice(
-    string? importCode,
-    string? invoiceCode,
-    int warehouseId,
-    int createdBy,
-    string? notes)
+        public Import CreateImportFromInvoice(string? importCode, string? invoiceCode, int warehouseId, int createdBy, string? notes)
         {
-            // Kiểm tra input
             if (string.IsNullOrEmpty(invoiceCode) && string.IsNullOrEmpty(importCode))
                 throw new Exception(ImportMessages.MSG_MISSING_INVOICE_OR_IMPORT);
 
-            // Nếu có invoiceCode → nhập từ hóa đơn
-            if (!string.IsNullOrEmpty(invoiceCode))
+                if (!string.IsNullOrEmpty(invoiceCode))
             {
-                var invoice = _invoices.GetByCode(invoiceCode);
+                var invoice = _invoices.GetByCodeNoTracking(invoiceCode);
                 if (invoice == null)
                     throw new Exception(ImportMessages.MSG_INVOICE_NOT_FOUND);
 
                 if (invoice.ExportStatus == ImportStatus.Success.ToString())
                     throw new Exception(ImportMessages.MSG_INVOICE_ALREADY_IMPORTED);
 
-                // Tạo import mới
                 var import = new Import
                 {
-                    ImportCode = importCode ?? "IMP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                    ImportCode = importCode ?? $"IMP-{Guid.NewGuid():N}".Substring(0, 8),
                     ImportDate = DateTime.UtcNow,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
@@ -69,16 +61,22 @@ namespace Services.Implementations
                 };
                 _imports.Add(import);
 
+                var materialIds = invoice.InvoiceDetails.Select(d => d.MaterialId).ToList();
+                var materials = _materialRepository.GetByIds(materialIds)
+                                          .ToDictionary(m => m.MaterialId);
+
                 foreach (var detail in invoice.InvoiceDetails)
                 {
-                    // Thêm chi tiết import
+                    if (!materials.TryGetValue(detail.MaterialId, out var material))
+                        throw new Exception($"Material Id {detail.MaterialId} not found.");
+
                     var importDetail = new ImportDetail
                     {
                         ImportId = import.ImportId,
                         MaterialId = detail.MaterialId,
-                        MaterialCode = detail.Material.MaterialCode ?? "",
-                        MaterialName = detail.Material.MaterialName,
-                        Unit = detail.Material.Unit,
+                        MaterialCode = material.MaterialCode,
+                        MaterialName = material.MaterialName,
+                        Unit = material.Unit,
                         UnitPrice = detail.UnitPrice,
                         Quantity = detail.Quantity,
                         LineTotal = detail.UnitPrice * detail.Quantity
@@ -104,12 +102,11 @@ namespace Services.Implementations
                         _inventories.Update(inventory);
                     }
 
-                    // Ghi nhận mối quan hệ Buyer - Partner
-                    var existingRelation = _materialPartners
-                        .GetAll()
-                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId
-                                           && mp.BuyerId == invoice.CreatedBy
-                                           && mp.PartnerId == invoice.PartnerId);
+                    // Quan hệ Material-Buyer-Partner
+                    var existingRelation = _materialPartners.GetAll()
+                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
+                                              mp.BuyerId == invoice.CreatedBy &&
+                                              mp.PartnerId == invoice.PartnerId);
                     if (existingRelation == null)
                     {
                         _materialPartners.Add(new MaterialPartner
@@ -120,7 +117,7 @@ namespace Services.Implementations
                         });
                     }
 
-                    // Cập nhật trạng thái OrderDetail 
+                    // Cập nhật trạng thái OrderDetail
                     var orderDetail = _orderDetailRepository.GetByOrderAndMaterial(invoice.OrderId, detail.MaterialId);
                     if (orderDetail != null)
                     {
@@ -136,31 +133,30 @@ namespace Services.Implementations
 
                 return import;
             }
-            else
-            {
-                // Nếu chỉ có importCode → tạo mới hoặc cập nhật import đang Pending
-                var existingImport = _imports.GetAll().FirstOrDefault(i => i.ImportCode == importCode);
-                if (existingImport != null)
-                {
-                    existingImport.Notes = notes ?? existingImport.Notes;
-                    existingImport.UpdatedAt = DateTime.UtcNow;
-                    _imports.Update(existingImport);
-                    return existingImport;
-                }
 
-                var newImport = new Import
-                {
-                    ImportCode = importCode!,
-                    WarehouseId = warehouseId,
-                    CreatedBy = createdBy,
-                    Status = ImportStatus.Pending.ToString(),
-                    Notes = notes,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _imports.Add(newImport);
-                return newImport;
+            // Tạo import tự do
+            var existingImport = _imports.GetAll().FirstOrDefault(i => i.ImportCode == importCode);
+            if (existingImport != null)
+            {
+                existingImport.Notes = notes ?? existingImport.Notes;
+                existingImport.UpdatedAt = DateTime.UtcNow;
+                _imports.Update(existingImport);
+                return existingImport;
             }
-        }
+
+            var newImport = new Import
+            {
+                ImportCode = importCode!,
+                WarehouseId = warehouseId,
+                CreatedBy = createdBy,
+                Status = ImportStatus.Pending.ToString(),
+                Notes = notes,
+                CreatedAt = DateTime.UtcNow
+            };
+            _imports.Add(newImport);
+            return newImport;
+
+}
 
 
         public Import ConfirmPendingImport(string importCode, string? notes)

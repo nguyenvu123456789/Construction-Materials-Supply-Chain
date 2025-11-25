@@ -14,5 +14,6 @@ namespace Domain.Interface
         List<Material> GetAllWithInventory();
         Material? GetDetailById(int id);
         void AddInventory(Inventory inventory);
+        List<Material> GetByIds(List<int> materialIds);
     }
 }

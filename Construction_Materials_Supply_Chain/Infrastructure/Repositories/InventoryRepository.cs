@@ -11,7 +11,7 @@ namespace Infrastructure.Implementations
 
         public Inventory? GetByWarehouseAndMaterial(int warehouseId, int materialId)
         {
-            return _dbSet.FirstOrDefault(x => x.WarehouseId == warehouseId && x.MaterialId == materialId);
+            return _dbSet.AsNoTracking().FirstOrDefault(x => x.WarehouseId == warehouseId && x.MaterialId == materialId);
         }
         public Inventory? GetByMaterial(int materialId)
         {

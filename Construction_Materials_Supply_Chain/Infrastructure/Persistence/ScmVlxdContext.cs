@@ -127,7 +127,13 @@ public partial class ScmVlxdContext : DbContext
                   .WithMany(p => p.ImportDetails)
                   .HasForeignKey(d => d.ImportId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.Material)
+                  .WithMany() 
+                  .HasForeignKey(d => d.MaterialId)
+                  .OnDelete(DeleteBehavior.Restrict); 
         });
+
 
         modelBuilder.Entity<ImportReport>(entity =>
         {

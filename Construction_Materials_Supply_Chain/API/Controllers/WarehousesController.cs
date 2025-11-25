@@ -77,26 +77,20 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] int? partnerId)
+        public IActionResult GetAll([FromQuery] int? managerId, [FromQuery] int? partnerId)
         {
             try
             {
-                if (partnerId != null)
-                {
-                    var warehouses = _service.GetByPartnerId(partnerId.Value);
-                    var result = _mapper.Map<IEnumerable<WarehouseDto>>(warehouses);
-                    return Ok(result);
-                }
-
-                var allWarehouses = _service.GetAll();
-                var allResult = _mapper.Map<IEnumerable<WarehouseDto>>(allWarehouses);
-                return Ok(allResult);
+                var warehouses = _service.GetAll(managerId, partnerId);
+                var result = _mapper.Map<IEnumerable<WarehouseDto>>(warehouses);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
     }

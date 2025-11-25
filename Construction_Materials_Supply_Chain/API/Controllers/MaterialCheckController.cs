@@ -32,11 +32,11 @@ namespace API.Controllers
 
         [HttpGet]
         public IActionResult GetAll(
-    [FromQuery] int? partnerId = null,
-    [FromQuery] int? userId = null,
-    [FromQuery] string? searchTerm = null,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10)
+            [FromQuery] int? partnerId = null,
+            [FromQuery] int? userId = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {

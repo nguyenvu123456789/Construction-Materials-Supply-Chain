@@ -127,9 +127,9 @@ namespace Api.Controllers
 
         [HttpGet("resources-status")]
         public ActionResult<List<ResourceStatusDto>> GetResourcesStatus(
-        [FromQuery] DateTimeOffset start,
-        [FromQuery] DateTimeOffset? end,
-        [FromQuery] int providerPartnerId)
+            [FromQuery] DateTimeOffset start,
+            [FromQuery] DateTimeOffset? end,
+            [FromQuery] int providerPartnerId)
         {
             return Ok(_service.GetResourcesStatus(start, end, providerPartnerId));
         }

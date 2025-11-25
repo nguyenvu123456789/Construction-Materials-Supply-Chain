@@ -351,5 +351,20 @@ namespace Application.Services.Implements
             var types = _types.GetAll();
             return _mapper.Map<IEnumerable<PartnerTypeDto>>(types);
         }
+
+        public List<RegionDto> GetRegionsByPartner(int partnerId)
+        {
+            var partner = _partners.GetPartnerWithRegions(partnerId);
+            if (partner == null)
+                return new List<RegionDto>();
+
+            return partner.PartnerRegions
+                .Select(pr => new RegionDto
+                {
+                    RegionId = pr.RegionId,
+                    RegionName = pr.Region.RegionName
+                })
+                .ToList();
+        }
     }
 }

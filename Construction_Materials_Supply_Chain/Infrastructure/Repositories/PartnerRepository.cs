@@ -37,5 +37,14 @@ namespace Infrastructure.Implementations
             _dbSet.Update(entity);
             _context.SaveChanges();
         }
+
+        public Partner? GetPartnerWithRegions(int partnerId)
+        {
+            return _context.Partners
+                .Include(x => x.PartnerRegions)
+                    .ThenInclude(pr => pr.Region)
+                .FirstOrDefault(x => x.PartnerId == partnerId);
+        }
+
     }
 }

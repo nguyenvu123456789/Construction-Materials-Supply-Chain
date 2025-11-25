@@ -7,7 +7,7 @@ namespace Application.Services.Implements
     {
         private readonly IInventoryRepository _inventoryRepository;
 
-    public InventoryService(IInventoryRepository inventoryRepository)
+        public InventoryService(IInventoryRepository inventoryRepository)
         {
             _inventoryRepository = inventoryRepository;
         }
@@ -75,6 +75,6 @@ namespace Application.Services.Implements
                 })
                 .ToList();
         }
-    }  
+    }
 
 }

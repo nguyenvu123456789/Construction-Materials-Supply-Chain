@@ -46,26 +46,26 @@ namespace Infrastructure.Persistence
                 var contractorType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà thầu");
                 var collaboratorType = context.PartnerTypes.First(pt => pt.TypeName == "Cộng tác viên");
 
-context.Partners.AddRange(
-    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
-    new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
-    new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
-    new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
-    new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
-    new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
-    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" },
-    new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
-    new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
-    new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
-    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
-    new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
-    new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
-    new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } }
-);
+                context.Partners.AddRange(
+                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" },
+                    new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } }
+                );
 
                 context.SaveChanges();
 
-}
+            }
 
 
             if (!context.Roles.Any())
@@ -280,7 +280,7 @@ context.Partners.AddRange(
                 {
                     foreach (var material in materials)
                     {
-                        var buyPrice = rnd.Next(50, 200) * 1000;      
+                        var buyPrice = rnd.Next(50, 200) * 1000;
                         var sellPrice = buyPrice + rnd.Next(10, 50) * 1000;  // Lời thêm 10k–50k
 
                         list.Add(new PriceMaterialPartner

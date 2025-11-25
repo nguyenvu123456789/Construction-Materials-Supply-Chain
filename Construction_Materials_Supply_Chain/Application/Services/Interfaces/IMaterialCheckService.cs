@@ -1,9 +1,7 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs;
 using Application.DTOs.Application.DTOs;
-using Application.DTOs.Common.Pagination;
 using Application.Responses;
-using Domain.Models;
 
 namespace Application.Interfaces
 {

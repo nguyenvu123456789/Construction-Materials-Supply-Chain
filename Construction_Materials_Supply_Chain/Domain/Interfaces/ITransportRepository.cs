@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Domain.Interface.Base;
+﻿using Domain.Interface.Base;
 using Domain.Models;
 
 namespace Domain.Interface

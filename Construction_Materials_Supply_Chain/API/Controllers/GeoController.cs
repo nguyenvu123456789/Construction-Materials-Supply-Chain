@@ -9,7 +9,7 @@ namespace WebAPI.Controllers
     {
         private readonly IVietnamGeoService _geo;
 
-    public VietnamGeoController(IVietnamGeoService geo)
+        public VietnamGeoController(IVietnamGeoService geo)
         {
             _geo = geo;
         }

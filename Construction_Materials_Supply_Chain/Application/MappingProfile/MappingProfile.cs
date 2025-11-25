@@ -229,7 +229,12 @@ namespace Application.MappingProfile
                 .ForMember(d => d.RuleId, o => o.MapFrom(s => s.InventoryAlertRuleId))
                 .ForMember(d => d.RecipientMode, o => o.MapFrom(s => (int)s.RecipientMode))
                 .ForMember(d => d.RoleIds, o => o.MapFrom(s => s.Roles.Select(r => r.RoleId)))
-                .ForMember(d => d.UserIds, o => o.MapFrom(s => s.Users.Select(u => u.UserId)));
+                .ForMember(d => d.UserIds, o => o.MapFrom(s => s.Users.Select(u => u.UserId)))
+                .ForMember(d => d.MaterialIds,
+                    o => o.MapFrom(s =>
+                        s.RuleMaterials != null
+                            ? s.RuleMaterials.Select(m => m.MaterialId)
+                            : Array.Empty<int>()));
 
             CreateMap<AlertRuleCreateDto, InventoryAlertRule>()
                 .ForMember(d => d.InventoryAlertRuleId, o => o.Ignore())

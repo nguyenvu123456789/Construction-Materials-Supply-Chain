@@ -437,8 +437,8 @@ namespace Application.Services.Implements
 
             return result
                     .OrderByDescending(x => x.Status == "Free")
-                    .ThenBy(x => x.ResourceType)       
-                    .ThenBy(x => x.Name)          
+                    .ThenBy(x => x.ResourceType)
+                    .ThenBy(x => x.Name)
                     .ToList();
         }
     }

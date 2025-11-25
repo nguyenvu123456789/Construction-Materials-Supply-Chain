@@ -8,9 +8,9 @@ namespace Infrastructure.Services
 {
     public class VietnamGeoService : IVietnamGeoService
     {
-        private readonly Dictionary<string, List<string>> _map = new(); 
-        private readonly Dictionary<string, List<string>> _originalMap = new(); 
-        private readonly Dictionary<string, string> _provinceNames = new(); 
+        private readonly Dictionary<string, List<string>> _map = new();
+        private readonly Dictionary<string, List<string>> _originalMap = new();
+        private readonly Dictionary<string, string> _provinceNames = new();
 
         public VietnamGeoService()
         {
@@ -25,7 +25,7 @@ namespace Infrastructure.Services
                     continue;
 
                 var normalizedProvince = Normalize(item.Name);
-                _provinceNames[normalizedProvince] = item.Name; 
+                _provinceNames[normalizedProvince] = item.Name;
 
                 var districtsNormalized = (item.Wards ?? new List<WardDto>())
                     .Select(w => Normalize(w.Name))
@@ -94,8 +94,8 @@ namespace Infrastructure.Services
             return sb.ToString().Normalize(NormalizationForm.FormC);
         }
 
-        
 
-        
+
+
     }
 }

@@ -17,7 +17,7 @@ public class MaterialCheckRepository : GenericRepository<MaterialCheck>, IMateri
     {
         return _context.MaterialChecks
             .Include(c => c.Details)
-                .ThenInclude(d => d.Material)  
+                .ThenInclude(d => d.Material)
             .Include(c => c.Warehouse)
             .Include(c => c.User);
     }

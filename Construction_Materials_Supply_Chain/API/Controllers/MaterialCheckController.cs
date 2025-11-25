@@ -1,7 +1,5 @@
-﻿using Application.Common.Pagination;
-using Application.DTOs;
+﻿using Application.DTOs;
 using Application.DTOs.Application.DTOs;
-using Application.DTOs.Common.Pagination;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Models;

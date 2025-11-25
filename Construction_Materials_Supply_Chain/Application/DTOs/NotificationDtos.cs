@@ -107,7 +107,7 @@
     {
         public int PartnerId { get; set; }
         public int? WarehouseId { get; set; }
-        public int MaterialId { get; set; }
+        public int[] MaterialIds { get; set; } = Array.Empty<int>();
         public decimal MinQuantity { get; set; }
         public decimal? CriticalMinQuantity { get; set; }
         public bool SendEmail { get; set; } = true;
@@ -121,7 +121,7 @@
         public int RuleId { get; set; }
         public int PartnerId { get; set; }
         public int? WarehouseId { get; set; }
-        public int MaterialId { get; set; }
+        public int[] MaterialIds { get; set; } = Array.Empty<int>();
         public decimal MinQuantity { get; set; }
         public decimal? CriticalMinQuantity { get; set; }
         public bool SendEmail { get; set; } = true;

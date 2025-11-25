@@ -343,6 +343,7 @@ namespace Infrastructure.Repositories
             return _context.InventoryAlertRules
                 .Include(x => x.Roles)
                 .Include(x => x.Users)
+                .Include(x => x.RuleMaterials).ThenInclude(rm => rm.Material)
                 .FirstOrDefault(x => x.InventoryAlertRuleId == id && x.PartnerId == partnerId);
         }
 
@@ -351,6 +352,7 @@ namespace Infrastructure.Repositories
             return _context.InventoryAlertRules
                 .Include(x => x.Roles)
                 .Include(x => x.Users)
+                .Include(x => x.RuleMaterials).ThenInclude(rm => rm.Material)
                 .Where(x => x.PartnerId == partnerId)
                 .ToList();
         }
@@ -360,6 +362,7 @@ namespace Infrastructure.Repositories
             return _context.InventoryAlertRules
                 .Include(x => x.Roles)
                 .Include(x => x.Users)
+                .Include(x => x.RuleMaterials).ThenInclude(rm => rm.Material)
                 .Where(x => x.PartnerId == partnerId && x.IsActive)
                 .ToList();
         }
@@ -380,12 +383,14 @@ namespace Infrastructure.Repositories
             var rule = _context.InventoryAlertRules
                 .Include(x => x.Roles)
                 .Include(x => x.Users)
+                .Include(x => x.RuleMaterials)
                 .FirstOrDefault(x => x.InventoryAlertRuleId == id && x.PartnerId == partnerId);
 
             if (rule == null) return;
 
             _context.InventoryAlertRuleRoles.RemoveRange(rule.Roles);
             _context.InventoryAlertRuleUsers.RemoveRange(rule.Users);
+            _context.InventoryAlertRuleMaterials.RemoveRange(rule.RuleMaterials);
             _context.InventoryAlertRules.Remove(rule);
             _context.SaveChanges();
         }
@@ -426,6 +431,48 @@ namespace Infrastructure.Repositories
             });
 
             _context.InventoryAlertRuleUsers.AddRange(insert);
+            _context.SaveChanges();
+        }
+
+        public void ReplaceMaterials(int id, int partnerId, IEnumerable<int> materialIds)
+        {
+            var rule = _context.InventoryAlertRules
+                .Include(x => x.RuleMaterials)
+                .FirstOrDefault(x => x.InventoryAlertRuleId == id && x.PartnerId == partnerId);
+
+            if (rule == null) return;
+
+            _context.InventoryAlertRuleMaterials.RemoveRange(rule.RuleMaterials);
+
+            var idList = materialIds?
+                .Where(m => m > 0)
+                .Distinct()
+                .ToList() ?? new List<int>();
+
+            if (idList.Count == 0)
+            {
+                _context.SaveChanges();
+                return;
+            }
+
+            var validMaterialIds = _context.Materials
+                .Where(m => idList.Contains(m.MaterialId))
+                .Select(m => m.MaterialId)
+                .ToList();
+
+            if (validMaterialIds.Count == 0)
+            {
+                _context.SaveChanges();
+                return;
+            }
+
+            var inserts = validMaterialIds.Select(mid => new InventoryAlertRuleMaterial
+            {
+                InventoryAlertRuleId = id,
+                MaterialId = mid
+            });
+
+            _context.InventoryAlertRuleMaterials.AddRange(inserts);
             _context.SaveChanges();
         }
     }

@@ -47,5 +47,6 @@ namespace Domain.Interfaces
         void Delete(int id, int partnerId);
         void ReplaceRoles(int id, int partnerId, IEnumerable<int> roleIds);
         void ReplaceUsers(int id, int partnerId, IEnumerable<int> userIds);
+        void ReplaceMaterials(int id, int partnerId, IEnumerable<int> materialIds);
     }
 }

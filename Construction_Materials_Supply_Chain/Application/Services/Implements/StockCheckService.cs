@@ -35,7 +35,6 @@ namespace Application.Services.Implements
                          && (!q.To.HasValue || c.CheckDate <= q.To.Value))
                 .ToList();
 
-            // Lấy latest detail cho từng Material
             var latestDetail = checksInRange
                 .SelectMany(c => c.Details)
                 .GroupBy(d => d.MaterialId)

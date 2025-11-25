@@ -1,7 +1,6 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs;
 using Application.DTOs.Application.DTOs;
-using Application.DTOs.Common.Pagination;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Interface;
@@ -22,13 +21,13 @@ namespace Application.Services.Implements
     IMaterialCheckRepository checks,
     IUserRepository users,
     IWarehouseRepository warehouses,
-    IHandleRequestRepository handleRequests)  
+    IHandleRequestRepository handleRequests)
         {
             _materials = materials;
             _checks = checks;
             _users = users;
             _warehouses = warehouses;
-            _handleRequests = handleRequests;       
+            _handleRequests = handleRequests;
         }
 
         public ApiResponse<PagedResultDto<MaterialCheckResponseDto>> GetAllMaterialChecks(

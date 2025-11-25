@@ -6,8 +6,6 @@ using Domain.Interface;
 using Domain.Interfaces;
 using Domain.Models;
 using FluentValidation;
-using System.Globalization;
-using System.Text;
 
 namespace Application.Services.Implements
 {

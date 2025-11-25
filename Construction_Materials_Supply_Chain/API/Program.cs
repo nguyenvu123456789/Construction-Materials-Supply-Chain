@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.DTOs.Common;
+﻿using Application.DTOs.Common;
 using Application.Interfaces;
 using Application.MappingProfile;
 using Application.Services;

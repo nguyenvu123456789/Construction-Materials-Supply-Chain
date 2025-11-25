@@ -1,8 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 
 namespace Api.Controllers
 {

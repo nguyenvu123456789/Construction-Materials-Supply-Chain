@@ -16,5 +16,7 @@ namespace Application.Interfaces
         PagedResultDto<PartnerDto> GetPartnersFiltered(PartnerPagedQueryDto query, List<string>? statuses = null);
         PagedResultDto<PartnerDto> GetPartnersFilteredIncludeDeleted(PartnerPagedQueryDto query, List<string>? statuses = null);
         IEnumerable<PartnerTypeDto> GetPartnerTypesDto();
+        List<RegionDto> GetRegionsByPartner(int partnerId);
+
     }
 }

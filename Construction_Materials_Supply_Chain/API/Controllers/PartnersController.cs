@@ -66,5 +66,14 @@ namespace API.Controllers
 
         [HttpGet("types")]
         public ActionResult<IEnumerable<PartnerTypeDto>> Types() => Ok(_service.GetPartnerTypesDto());
+
+
+        [HttpGet("{partnerId:int}/regions")]
+        public ActionResult<IEnumerable<RegionDto>> GetRegionsByPartner(int partnerId)
+        {
+            var regions = _service.GetRegionsByPartner(partnerId);
+            return Ok(regions);
+        }
+
     }
 }

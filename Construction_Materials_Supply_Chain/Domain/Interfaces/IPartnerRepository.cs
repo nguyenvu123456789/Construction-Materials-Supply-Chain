@@ -10,5 +10,7 @@ namespace Domain.Interface
         List<Partner> GetAllNotDeleted();
         Partner? GetByIdNotDeleted(int id);
         void SoftDelete(Partner entity);
+        Partner? GetPartnerWithRegions(int partnerId);
+
     }
 }

@@ -5,7 +5,7 @@ namespace Application.Interfaces
 {
     public interface IWarehouseService
     {
-        List<Warehouse> GetAll();
+        List<Warehouse> GetAll(int? managerId = null, int? partnerId = null);
         Warehouse? GetById(int id);
         List<Warehouse> GetByPartnerId(int partnerId);
         Warehouse Create(WarehouseCreateDto dto);

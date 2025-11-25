@@ -15,4 +15,5 @@ public partial class ImportDetail
     public decimal LineTotal { get; set; }
 
     public virtual Import Import { get; set; } = null!;
+    public virtual Material Material { get; set; } = null!;
 }

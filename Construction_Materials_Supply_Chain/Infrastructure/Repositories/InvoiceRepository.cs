@@ -18,7 +18,13 @@ namespace Infrastructure.Implementations
                     .ThenInclude(d => d.Material)
                 .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
         }
-
+        public Invoice? GetByCodeNoTracking(string invoiceCode)
+        {
+            return _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.InvoiceDetails)
+                .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
+        }
 
         public Invoice? GetByIdWithDetails(int id)
         {
@@ -52,6 +58,7 @@ namespace Infrastructure.Implementations
             return _context.Set<InvoiceDetail>()
                 .Where(d => d.InvoiceId == invoiceId)
                 .Include(d => d.Material)
+                .AsNoTracking()
                 .ToList();
         }
 
@@ -78,6 +85,15 @@ namespace Infrastructure.Implementations
                 .Where(i => i.InvoiceType == "Export"
                          && orderIds.Contains(i.OrderId))
                 .ToList();
+        }
+
+        public Invoice? GetByIdNoTracking(int id)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Include(i => i.InvoiceDetails)
+                    .ThenInclude(d => d.Material)
+                .FirstOrDefault(i => i.InvoiceId == id);
         }
     }
 }

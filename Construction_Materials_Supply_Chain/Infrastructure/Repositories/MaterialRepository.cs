@@ -14,6 +14,16 @@ namespace Infrastructure.Implementations
         {
             return _dbSet.FirstOrDefault(m => m.MaterialName == name);
         }
+        public List<Material> GetByIds(List<int> materialIds)
+        {
+            if (materialIds == null || materialIds.Count == 0)
+                return new List<Material>();
+
+            return _context.Materials
+                           .Where(m => materialIds.Contains(m.MaterialId))
+                           .AsNoTracking()   // ph?i ?? tr??c ToList()
+                           .ToList();
+        }
 
         public bool ExistsByName(string name)
         {

@@ -65,7 +65,10 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(u => u.Partner)
-                .ThenInclude(p => p.PartnerType)
+                    .ThenInclude(p => p.PartnerRegions)
+                        .ThenInclude(pr => pr.Region)
+                .Include(u => u.Partner)
+                    .ThenInclude(p => p.PartnerType)
                 .FirstOrDefault(u => u.UserId == id && u.Status != "Deleted");
         }
 

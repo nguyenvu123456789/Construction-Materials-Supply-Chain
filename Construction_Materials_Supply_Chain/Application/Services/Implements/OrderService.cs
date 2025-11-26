@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Services.Interfaces;
 using Domain.Interface;
 using Domain.Models;
 
@@ -11,17 +12,20 @@ namespace Application.Services.Implements
         private readonly IUserRepository _userRepository;
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly IPartnerRepository _partnerRepository;
+        private readonly IVietnamGeoService _vietnamGeoService;
 
         public OrderService(
             IOrderRepository orderRepository,
             IUserRepository userRepository,
             IHandleRequestRepository handleRequestRepository,
-            IPartnerRepository partnerRepository)
+            IPartnerRepository partnerRepository,
+            IVietnamGeoService vietnamGeoService)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
             _handleRequestRepository = handleRequestRepository;
             _partnerRepository = partnerRepository;
+            _vietnamGeoService = vietnamGeoService;
         }
 
         //  Tạo đơn mua hàng
@@ -34,7 +38,7 @@ namespace Application.Services.Implements
             if (buyer == null)
                 throw new Exception("Người mua không tồn tại");
 
-            var supplier = _partnerRepository.GetById(dto.SupplierId);
+            var supplier = _partnerRepository.GetPartnerWithRegions(dto.SupplierId);
             if (supplier == null)
                 throw new Exception("Nhà cung cấp không tồn tại");
 
@@ -53,7 +57,7 @@ namespace Application.Services.Implements
             bool hasCommonRegion = buyerRegionIds.Intersect(supplierRegionIds).Any();
             if (!hasCommonRegion)
                 throw new Exception("Người mua và nhà cung cấp không cùng vùng, không thể tạo đơn hàng");
-
+            
             // Sinh mã đơn hàng (PO-001, PO-002, ...)
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";

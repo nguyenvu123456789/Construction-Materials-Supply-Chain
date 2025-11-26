@@ -74,7 +74,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            }
+            
 
 
             if (!context.Roles.Any())

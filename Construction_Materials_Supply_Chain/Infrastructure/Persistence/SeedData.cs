@@ -29,10 +29,27 @@ namespace Infrastructure.Persistence
                     new Region { RegionName = "Tây Hồ" },
                     new Region { RegionName = "Ba Đình" },
                     new Region { RegionName = "Thanh Xuân" },
-                    new Region { RegionName = "Cầu Giấy" }
+                    new Region { RegionName = "Cầu Giấy" },
+                    new Region { RegionName = "Hà Nội" },
+                    new Region { RegionName = "Hồ Chí Minh" },
+                    new Region { RegionName = "Đà Nẵng" },
+                    new Region { RegionName = "Hải Phòng" },
+                    new Region { RegionName = "Cần Thơ" },
+                    new Region { RegionName = "Bình Dương" },
+                    new Region { RegionName = "Đồng Nai" },
+                    new Region { RegionName = "Quảng Ninh" },
+                    new Region { RegionName = "Thừa Thiên Huế" },
+                    new Region { RegionName = "Khánh Hòa" },
+                    new Region { RegionName = "Lâm Đồng" },
+                    new Region { RegionName = "An Giang" },
+                    new Region { RegionName = "Kiên Giang" },
+                    new Region { RegionName = "Nghệ An" },
+                    new Region { RegionName = "Thanh Hóa" }
                 );
+
                 context.SaveChanges();
             }
+
 
             var tayHo = context.Regions.First(r => r.RegionName == "Tây Hồ");
             var baDinh = context.Regions.First(r => r.RegionName == "Ba Đình");
@@ -74,8 +91,41 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            
+            // Seed thêm 10 partner thuộc các tỉnh
+            if (!context.Partners.Any(p => p.PartnerCode.StartsWith("PX")))
+            {
+                var allRegions = context.Regions.ToList();
+                var rnd = new Random();
 
+                var supplierType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà cung cấp");
+                var agentType = context.PartnerTypes.First(pt => pt.TypeName == "Đại lý");
+
+                var newPartners = new List<Partner>();
+
+                for (int i = 1; i <= 10; i++)
+                {
+                    // Chọn 1–3 tỉnh ngẫu nhiên
+                    var randomRegions = allRegions
+                        .OrderBy(_ => rnd.Next())
+                        .Take(rnd.Next(1, 4))
+                        .Select(r => new PartnerRegion { Region = r })
+                        .ToList();
+
+                    newPartners.Add(new Partner
+                    {
+                        PartnerCode = $"PX{i:000}",
+                        PartnerName = $"Đối tác Tỉnh Số {i}",
+                        PartnerTypeId = supplierType.PartnerTypeId,
+                        ContactEmail = $"province{i}@partner.vn",
+                        ContactPhone = $"090{i:000000}",
+                        Status = "Active",
+                        PartnerRegions = randomRegions
+                    });
+                }
+
+                context.Partners.AddRange(newPartners);
+                context.SaveChanges();
+            }
 
             if (!context.Roles.Any())
             {

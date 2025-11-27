@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Application.Responses;
 using Domain.Interface;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Implements
 {
@@ -34,58 +35,79 @@ namespace Application.Services.Implements
     int? partnerId = null,
     int? userId = null,
     string? searchTerm = null,
+    DateTime? fromDate = null,
+    DateTime? toDate = null,
     int pageNumber = 1,
     int pageSize = 10)
         {
-            // Lấy toàn bộ check
+            // Base query
             var query = _checks.GetAllWithDetails().AsQueryable();
 
-            // Filter theo partner nếu có
+            // Filter: partner
             if (partnerId.HasValue)
+            {
                 query = query.Where(c => c.User != null && c.User.PartnerId == partnerId.Value);
+            }
 
-            // Filter theo user nếu có
+            // Filter: user
             if (userId.HasValue)
+            {
                 query = query.Where(c => c.UserId == userId.Value);
+            }
 
-            // Search theo term (username, fullname hoặc warehouse)
+            // Filter: search text
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                var keyword = $"%{searchTerm}%";
+
                 query = query.Where(c =>
-                    (c.User != null && c.User.UserName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (c.User != null && c.User.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (c.Warehouse != null && c.Warehouse.WarehouseName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    (c.User != null && EF.Functions.Like(c.User.UserName, keyword)) ||
+                    (c.User != null && EF.Functions.Like(c.User.FullName, keyword)) ||
+                    (c.Warehouse != null && EF.Functions.Like(c.Warehouse.WarehouseName, keyword))
                 );
             }
 
-            // Sắp xếp theo CheckDate giảm dần
+            // Filter: CheckDate from - to
+            if (fromDate.HasValue)
+            {
+                query = query.Where(c => c.CheckDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                // Thêm 1 ngày để lấy đủ ngày cuối (nếu bạn muốn từ-to cả ngày)
+                var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(c => c.CheckDate <= endOfDay);
+            }
+
+            // Sort: newest first
             query = query.OrderByDescending(c => c.CheckDate);
 
-            // Paging
+            // Pagination
             var totalCount = query.Count();
-            var paged = query.Skip((pageNumber - 1) * pageSize)
+
+            var items = query.Skip((pageNumber - 1) * pageSize)
                              .Take(pageSize)
                              .ToList();
 
-            // Mapping giữ nguyên
-            var checks = paged
-                .Select(c => new MaterialCheckResponseDto
-                {
-                    CheckId = c.CheckId,
-                    WarehouseId = c.WarehouseId,
-                    WarehouseName = c.Warehouse != null ? c.Warehouse.WarehouseName : "—",
-                    UserId = c.UserId,
-                    UserName = c.User != null ? c.User.UserName : "—",
-                    FullName = c.User != null ? c.User.FullName : "—",
-                    CheckDate = c.CheckDate,
-                    Notes = c.Notes,
-                    Status = c.Status
-                })
-                .ToList();
+            // Mapping
+            var data = items.Select(c => new MaterialCheckResponseDto
+            {
+                CheckId = c.CheckId,
+                WarehouseId = c.WarehouseId,
+                WarehouseName = c.Warehouse?.WarehouseName ?? "—",
+                UserId = c.UserId,
+                UserName = c.User?.UserName ?? "—",
+                FullName = c.User?.FullName ?? "—",
+                CheckDate = c.CheckDate,
+                Notes = c.Notes,
+                Status = c.Status
+            }).ToList();
 
+            // Result
             var result = new PagedResultDto<MaterialCheckResponseDto>
             {
-                Data = checks,
+                Data = data,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
@@ -94,6 +116,7 @@ namespace Application.Services.Implements
 
             return ApiResponse<PagedResultDto<MaterialCheckResponseDto>>.SuccessResponse(result);
         }
+
 
 
 

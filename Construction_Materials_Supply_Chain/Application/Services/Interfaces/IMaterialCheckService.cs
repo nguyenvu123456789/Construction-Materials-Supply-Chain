@@ -13,6 +13,8 @@ namespace Application.Interfaces
             int? partnerId = null,
             int? userId = null,
             string? searchTerm = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
             int pageNumber = 1,
             int pageSize = 10
         );

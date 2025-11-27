@@ -32,15 +32,28 @@ namespace API.Controllers
 
         [HttpGet]
         public IActionResult GetAll(
-            [FromQuery] int? partnerId = null,
-            [FromQuery] int? userId = null,
-            [FromQuery] string? searchTerm = null,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
+    [FromQuery] int? partnerId = null,
+    [FromQuery] int? userId = null,
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] DateTime? fromDate = null,
+    [FromQuery] DateTime? toDate = null,
+    [FromQuery] string? status = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = _service.GetAllMaterialChecks(partnerId, userId, searchTerm, pageNumber, pageSize);
+                var result = _service.GetAllMaterialChecks(
+                    partnerId,
+                    userId,
+                    searchTerm,
+                    fromDate,
+                    toDate,
+                    status,
+                    pageNumber,
+                    pageSize
+                );
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -48,6 +61,8 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+
 
 
         [HttpGet("{checkId:int}")]

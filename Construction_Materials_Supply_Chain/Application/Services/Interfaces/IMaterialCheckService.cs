@@ -15,6 +15,7 @@ namespace Application.Interfaces
             string? searchTerm = null,
             DateTime? fromDate = null,
             DateTime? toDate = null,
+            string? status = null,
             int pageNumber = 1,
             int pageSize = 10
         );

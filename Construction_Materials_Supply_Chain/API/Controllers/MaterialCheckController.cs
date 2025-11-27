@@ -37,6 +37,7 @@ namespace API.Controllers
     [FromQuery] string? searchTerm = null,
     [FromQuery] DateTime? fromDate = null,
     [FromQuery] DateTime? toDate = null,
+    [FromQuery] string? status = null,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
         {
@@ -48,6 +49,7 @@ namespace API.Controllers
                     searchTerm,
                     fromDate,
                     toDate,
+                    status,
                     pageNumber,
                     pageSize
                 );
@@ -59,6 +61,7 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
 

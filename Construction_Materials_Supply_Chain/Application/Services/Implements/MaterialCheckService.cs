@@ -37,6 +37,7 @@ namespace Application.Services.Implements
     string? searchTerm = null,
     DateTime? fromDate = null,
     DateTime? toDate = null,
+    string? status = null,
     int pageNumber = 1,
     int pageSize = 10)
         {
@@ -67,15 +68,23 @@ namespace Application.Services.Implements
                 );
             }
 
-            // Filter: CheckDate from - to
+            // Filter: status
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var st = status.Trim().ToLower();
+                query = query.Where(c => c.Status.ToLower() == st);
+            }
+
+            // Filter: CheckDate from
             if (fromDate.HasValue)
             {
                 query = query.Where(c => c.CheckDate >= fromDate.Value);
             }
 
+            // Filter: CheckDate to
             if (toDate.HasValue)
             {
-                // Thêm 1 ngày để lấy đủ ngày cuối (nếu bạn muốn từ-to cả ngày)
+                // Nếu bạn muốn bao trọn ngày cuối
                 var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
                 query = query.Where(c => c.CheckDate <= endOfDay);
             }
@@ -116,6 +125,7 @@ namespace Application.Services.Implements
 
             return ApiResponse<PagedResultDto<MaterialCheckResponseDto>>.SuccessResponse(result);
         }
+
 
 
 

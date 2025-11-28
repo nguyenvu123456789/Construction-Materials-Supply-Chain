@@ -263,13 +263,11 @@ namespace Application.Services.Implements
             if (user == null)
                 return ApiResponse<MaterialCheckHandleResponseDto>.ErrorResponse($"User {dto.HandledBy} không tồn tại.");
 
-            // Xác định trạng thái mới
             if (dto.Action != "Approved" && dto.Action != "Rejected")
                 return ApiResponse<MaterialCheckHandleResponseDto>.ErrorResponse("Action phải là 'Approved' hoặc 'Rejected'.");
 
-            check.Status = dto.Action == "Approve" ? "Approved" : "Rejected";
+            check.Status = dto.Action;   
 
-            // Lưu hành động vào HandleRequest
             var handle = new HandleRequest
             {
                 RequestType = "MaterialCheck",
@@ -279,7 +277,8 @@ namespace Application.Services.Implements
                 Note = dto.Note,
                 HandledAt = DateTime.UtcNow
             };
-            _handleRequests.Add(handle); // giả sử Add() lưu changes
+
+            _handleRequests.Add(handle);
 
             return ApiResponse<MaterialCheckHandleResponseDto>.SuccessResponse(new MaterialCheckHandleResponseDto
             {

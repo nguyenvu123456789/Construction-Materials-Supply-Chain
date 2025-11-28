@@ -4,6 +4,7 @@ using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
+using System.Reflection.Metadata;
 
 namespace Services.Implementations
 {
@@ -46,7 +47,7 @@ namespace Services.Implementations
                 if (invoice == null)
                     throw new Exception(ImportMessages.MSG_INVOICE_NOT_FOUND);
 
-                if (invoice.ExportStatus == ImportStatus.Success.ToString())
+                if (invoice.ImportStatus == ImportStatus.Success.ToString())
                     throw new Exception(ImportMessages.MSG_INVOICE_ALREADY_IMPORTED);
 
                 var import = new Import
@@ -127,7 +128,7 @@ namespace Services.Implementations
                 }
 
                 // Cập nhật trạng thái hóa đơn
-                invoice.ImportStatus = ImportStatus.Pending.ToString();
+                invoice.ImportStatus = ImportStatus.Success.ToString();
                 invoice.UpdatedAt = DateTime.UtcNow;
                 _invoices.Update(invoice);
 
@@ -149,7 +150,7 @@ namespace Services.Implementations
                 ImportCode = importCode!,
                 WarehouseId = warehouseId,
                 CreatedBy = createdBy,
-                Status = ImportStatus.Pending.ToString(),
+                Status = ImportStatus.Success.ToString(),
                 Notes = notes,
                 CreatedAt = DateTime.UtcNow
             };
@@ -229,7 +230,7 @@ namespace Services.Implementations
 
             var import = new Import
             {
-                ImportCode = "REQ-" + Guid.NewGuid().ToString("N").Substring(0, 8),
+                ImportCode = GenerateImportCode(),
                 WarehouseId = warehouseId,
                 CreatedBy = createdBy,
                 Status = ImportStatus.Pending.ToString(),
@@ -306,6 +307,28 @@ namespace Services.Implementations
             }
 
             return imports;
+        }
+        private string GenerateImportCode()
+        {
+            // Lấy import có code lớn nhất
+            var lastImport = _imports
+                .GetAll()
+                .OrderByDescending(i => i.ImportId)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (lastImport != null && !string.IsNullOrEmpty(lastImport.ImportCode))
+            {
+                // Tách phần số trong INV_00x
+                var parts = lastImport.ImportCode.Split('_');
+                if (parts.Length == 2 && int.TryParse(parts[1], out int currentNumber))
+                {
+                    nextNumber = currentNumber + 1;
+                }
+            }
+
+            return $"INV_{nextNumber:D3}";
         }
 
     }

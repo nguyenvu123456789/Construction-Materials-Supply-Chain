@@ -209,7 +209,7 @@ namespace Application.Services.Implements
             {
                 WarehouseId = dto.WarehouseId,
                 UserId = dto.UserId,
-                CheckDate = dto.CheckDate,
+                CheckDate = DateTime.Now,
                 Notes = dto.Notes,
                 Status = dto.Status,
                 Details = dto.Details.Select(d => new MaterialCheckDetail
@@ -275,7 +275,7 @@ namespace Application.Services.Implements
                 HandledBy = dto.HandledBy,
                 ActionType = check.Status,
                 Note = dto.Note,
-                HandledAt = DateTime.UtcNow
+                HandledAt = DateTime.Now
             };
 
             _handleRequests.Add(handle);

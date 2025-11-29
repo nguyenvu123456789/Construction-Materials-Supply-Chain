@@ -24,9 +24,8 @@ namespace Application.DTOs
     {
         public int WarehouseId { get; set; }
         public int UserId { get; set; }
-        public DateTime CheckDate { get; set; }
         public string? Notes { get; set; }
-        public string? Status { get; set; } // ví dụ "Pending", "Approved"
+        public string? Status { get; set; } 
 
         public List<MaterialCheckDetailDto> Details { get; set; } = new List<MaterialCheckDetailDto>();
     }

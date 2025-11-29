@@ -71,11 +71,7 @@ namespace Services.Implementations
             return invoice;
         }
 
-        // 🔹 Lấy 1 hóa đơn theo ID kèm chi tiết
-        public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
-
-        // 🔹 Lấy tất cả hóa đơn có chi tiết
-        public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
+        
 
         // 🔹 Tạo hóa đơn từ Order
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
@@ -159,6 +155,7 @@ namespace Services.Implementations
                     ExportStatus = "Pending",
                     ImportStatus = "Pending",
                     CreatedAt = DateTime.UtcNow,
+                    Address = order.DeliveryAddress,
                     TotalAmount = lineTotal,
                     DiscountAmount = lineDiscount,
                     PayableAmount = lineTotal - lineDiscount
@@ -262,6 +259,7 @@ namespace Services.Implementations
                     IssueDate = invoice.IssueDate,
                     DueDate = invoice.DueDate,
                     TotalAmount = invoice.TotalAmount,
+                    Address =  invoice.Address,
                     DiscountAmount = invoice.DiscountAmount,
                     PayableAmount = invoice.PayableAmount,
                     Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
@@ -284,6 +282,11 @@ namespace Services.Implementations
 
             return invoice;
         }
+        // 🔹 Lấy 1 hóa đơn theo ID kèm chi tiết
+        public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
+
+        // 🔹 Lấy tất cả hóa đơn có chi tiết
+        public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
 
     }
 }

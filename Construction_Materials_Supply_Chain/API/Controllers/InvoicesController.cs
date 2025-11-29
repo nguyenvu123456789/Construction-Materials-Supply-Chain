@@ -16,7 +16,6 @@ namespace API.Controllers
         }
 
 
-
         [HttpGet("{id:int}")]
         public IActionResult GetInvoice(int id)
         {

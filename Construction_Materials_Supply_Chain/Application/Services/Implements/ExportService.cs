@@ -113,7 +113,6 @@ namespace Services.Implementations
             return export;
         }
 
-        // Từ chối phiếu xuất Pending
         public Export? RejectExport(int id)
         {
             var export = _exports.GetExportById(id);
@@ -164,7 +163,6 @@ namespace Services.Implementations
                                         $"Available: {inventory.Quantity}, Required: {item.Quantity}");
             }
 
-            // Sinh mã xuất mới
             var exportCode = GenerateNextExportCode();
 
             var export = new Export

@@ -7,5 +7,8 @@ namespace Application.Services.Interfaces
     {
         Task<PagedResultDto<PriceMaterialPartnerDto>> GetAllAsync(PriceCatalogQueryDto query);
         Task UpdatePriceAsync(PriceMaterialPartnerUpdateDto dto);
+        Task<List<PriceMaterialPartnerDto>> GetPricesForPartnerAsync(int buyerPartnerId, int sellerPartnerId);
+
+
     }
 }

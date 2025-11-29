@@ -36,12 +36,12 @@ namespace Infrastructure.Implementations
         public List<Invoice> GetAllWithDetails()
         {
             return _dbSet
+                .Include(i => i.CreatedByNavigation)
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .Include(i => i.Partner)
                     .ThenInclude(p => p.PartnerRegions)
                         .ThenInclude(pr => pr.Region)
-                .Include(i => i.CreatedByNavigation)
                 .AsNoTracking()
                 .ToList();
         }

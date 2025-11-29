@@ -12,12 +12,15 @@ namespace Services.Implementations
         private readonly IInventoryRepository _inventories;
         private readonly IImportRepository _imports;
         private readonly IOrderRepository _orderRepository;
+        private readonly IPartnerRelationRepository _partnerRelationRepository;
+
 
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
             IInventoryRepository inventories,
             IImportRepository imports,
+            IPartnerRelationRepository partnerRelationRepository,
             IOrderRepository orderRepository)
         {
             _invoices = invoices;
@@ -25,6 +28,7 @@ namespace Services.Implementations
             _inventories = inventories;
             _imports = imports;
             _orderRepository = orderRepository;
+            _partnerRelationRepository = partnerRelationRepository;
         }
 
         // 🔹 Tạo hóa đơn thủ công
@@ -113,6 +117,17 @@ namespace Services.Implementations
                     nextNumber = lastNumber + 1;
             }
 
+            if (partnerId == null || order.CreatedByNavigation?.PartnerId == null)
+                throw new Exception("PartnerId (buyer or seller) not found for this order.");
+
+            var relation = _partnerRelationRepository.GetRelation(
+                buyerPartnerId: partnerId.Value,
+                sellerPartnerId: order.CreatedByNavigation.PartnerId.Value
+            );
+
+            decimal discountPercent = relation?.RelationType.DiscountPercent ?? 0;
+            decimal discountAmount = relation?.RelationType.DiscountAmount ?? 0;
+
             foreach (var od in selectedDetails)
             {
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
@@ -121,6 +136,14 @@ namespace Services.Implementations
 
                 var unitPrice = unitPriceDto.UnitPrice;
                 var lineTotal = od.Quantity * unitPrice;
+
+                // 🔹 Áp dụng giảm giá toàn bộ hóa đơn
+                decimal lineDiscount = lineTotal * discountPercent / 100 + discountAmount;
+
+                // Không được giảm vượt quá tổng line
+                if (lineDiscount > lineTotal)
+                    lineDiscount = lineTotal;
+
                 var newCode = $"INV-{nextNumber:D3}";
                 nextNumber++;
 
@@ -136,7 +159,9 @@ namespace Services.Implementations
                     ExportStatus = "Pending",
                     ImportStatus = "Pending",
                     CreatedAt = DateTime.UtcNow,
-                    TotalAmount = lineTotal
+                    TotalAmount = lineTotal,
+                    DiscountAmount = lineDiscount,
+                    PayableAmount = lineTotal - lineDiscount
                 };
 
                 invoice.InvoiceDetails.Add(new InvoiceDetail
@@ -144,11 +169,13 @@ namespace Services.Implementations
                     MaterialId = od.MaterialId,
                     Quantity = od.Quantity,
                     UnitPrice = unitPrice,
-                    LineTotal = lineTotal
+                    LineTotal = lineTotal,
+                    DiscountAmount = lineDiscount
                 });
 
                 _invoices.Add(invoice);
                 createdInvoices.Add(invoice);
+
                 od.Status = "Invoiced";
             }
 
@@ -158,6 +185,7 @@ namespace Services.Implementations
             _orderRepository.Update(order);
             return createdInvoices;
         }
+
 
         // 🔹 Cập nhật trạng thái của bên xuất
         public Invoice? UpdateExportStatus(int id, string newStatus)
@@ -192,7 +220,7 @@ namespace Services.Implementations
             if (invoice == null)
                 throw new Exception("Invoice not found");
 
-            bool isExporter = invoice.CreatedByNavigation.PartnerId == currentPartnerId;
+            bool isExporter = invoice.CreatedByNavigation?.PartnerId == currentPartnerId;
 
             var dto = new InvoiceDto
             {
@@ -234,6 +262,8 @@ namespace Services.Implementations
                     IssueDate = invoice.IssueDate,
                     DueDate = invoice.DueDate,
                     TotalAmount = invoice.TotalAmount,
+                    DiscountAmount = invoice.DiscountAmount,
+                    PayableAmount = invoice.PayableAmount,
                     Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                     CreatedAt = invoice.CreatedAt
                 });

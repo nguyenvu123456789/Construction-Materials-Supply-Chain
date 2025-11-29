@@ -1,7 +1,9 @@
 ﻿using Application.Common.Pagination;
 using Application.DTOs.Application.DTOs;
 using Application.Services.Interfaces;
+using Domain.Interface;
 using Domain.Interfaces;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,10 +13,13 @@ namespace Application.Services
     public class PriceMaterialPartnerService : IPriceMaterialPartnerService
     {
         private readonly IPriceMaterialPartnerRepository _repo;
+        private readonly IPartnerRelationRepository _partnerRelationRepo;
 
-        public PriceMaterialPartnerService(IPriceMaterialPartnerRepository repo)
+
+        public PriceMaterialPartnerService(IPriceMaterialPartnerRepository repo, IPartnerRelationRepository partnerRelationRepo)
         {
             _repo = repo;
+                _partnerRelationRepo = partnerRelationRepo;
         }
 
         public async Task<PagedResultDto<PriceMaterialPartnerDto>> GetAllAsync(PriceCatalogQueryDto query)
@@ -79,5 +84,38 @@ namespace Application.Services
 
             _repo.Update(entity); // repo SaveChanges synchronous
         }
+
+        public async Task<List<PriceMaterialPartnerDto>> GetPricesForPartnerAsync(int buyerPartnerId, int sellerPartnerId)
+        {
+            // Lấy quan hệ buyer-seller
+            var relation = await _partnerRelationRepo.GetRelationAsync(buyerPartnerId, sellerPartnerId);
+
+            decimal discountPercent = relation?.RelationType.DiscountPercent ?? 0;
+            decimal discountAmount = relation?.RelationType.DiscountAmount ?? 0;
+
+            // Lấy bảng giá seller
+            var prices = await _repo.QueryAll()
+                .Where(p => p.PartnerId == sellerPartnerId)
+                .Include(p => p.Material)
+                .Include(p => p.Partner)
+                .ToListAsync();
+
+            var result = prices.Select(p => new PriceMaterialPartnerDto
+            {
+                PriceMaterialPartnerId = p.PriceMaterialPartnerId,
+                PartnerId = p.PartnerId,
+                PartnerName = p.Partner.PartnerName,
+                MaterialId = p.MaterialId,
+                MaterialName = p.Material.MaterialName,
+                SellPrice = p.SellPrice,
+                DiscountPercent = discountPercent,
+                DiscountAmount = discountAmount,
+                PriceAfterDiscount = Math.Max(0, p.SellPrice * (1 - discountPercent / 100) - discountAmount),
+                Status = p.Status
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

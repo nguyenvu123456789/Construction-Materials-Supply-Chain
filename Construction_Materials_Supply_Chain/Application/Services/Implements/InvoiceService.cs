@@ -130,6 +130,7 @@ namespace Services.Implementations
                     InvoiceType = "Export",
                     PartnerId = partnerId.Value,
                     CreatedBy = dto.CreatedBy,
+                    OrderId = order.OrderId,
                     IssueDate = dto.IssueDate,
                     DueDate = dto.DueDate,
                     ExportStatus = "Pending",

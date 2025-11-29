@@ -13,6 +13,7 @@
             public decimal DiscountPercent { get; set; }
             public decimal DiscountAmount { get; set; }
             public string Status { get; set; } = "Active";
+            public decimal PriceAfterDiscount { get; set; }
         }
 
         public class PriceMaterialPartnerUpdateDto
@@ -37,5 +38,17 @@
             public decimal? MinPrice { get; set; }
             public decimal? MaxPrice { get; set; }
         }
+
+        public class MaterialPriceDto
+        {
+            public int MaterialId { get; set; }
+            public string MaterialCode { get; set; } = null!;
+            public string MaterialName { get; set; } = null!;
+            public decimal SellPrice { get; set; }         
+            public decimal DiscountPercent { get; set; }   
+            public decimal DiscountAmount { get; set; }    
+            public decimal PriceAfterDiscount { get; set; } 
+        }
+
     }
 }

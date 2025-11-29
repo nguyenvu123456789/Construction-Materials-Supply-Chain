@@ -50,6 +50,8 @@
         public decimal TotalAmount { get; set; }
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public decimal DiscountAmount { get; set; }   
+        public decimal PayableAmount { get; set; }
     }
 
 }

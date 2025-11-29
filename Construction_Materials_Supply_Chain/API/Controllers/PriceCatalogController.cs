@@ -22,6 +22,17 @@ namespace API.Controllers
             return Ok(res);
         }
 
+        [HttpGet("buyer/{buyerPartnerId}/seller/{sellerPartnerId}")]
+        public async Task<IActionResult> GetPricesForPartner(int buyerPartnerId, int sellerPartnerId)
+        {
+            if (buyerPartnerId <= 0 || sellerPartnerId <= 0)
+                return BadRequest("PartnerId không hợp lệ");
+
+            var prices = await _service.GetPricesForPartnerAsync(buyerPartnerId, sellerPartnerId);
+
+            return Ok(prices);
+        }
+
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] PriceMaterialPartnerUpdateDto dto)
         {

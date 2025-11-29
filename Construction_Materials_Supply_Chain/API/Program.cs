@@ -84,6 +84,7 @@ builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEven
 builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowStockRuleRepository>();
 builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
 
 // Services
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();

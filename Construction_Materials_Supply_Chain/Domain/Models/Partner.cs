@@ -22,5 +22,8 @@ namespace Domain.Models
         public virtual ICollection<Transport> TransportsProvided { get; set; } = new List<Transport>();
         [JsonIgnore]
         public virtual ICollection<MaterialPartner> MaterialPartners { get; set; } = new List<MaterialPartner>();
+        public virtual ICollection<PartnerRelation> RelationsAsBuyer { get; set; } = new List<PartnerRelation>();
+        public virtual ICollection<PartnerRelation> RelationsAsSeller { get; set; } = new List<PartnerRelation>();
+
     }
 }

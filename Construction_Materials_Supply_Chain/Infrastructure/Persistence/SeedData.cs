@@ -1,4 +1,5 @@
 ﻿using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
@@ -326,7 +327,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // SEED PRICE MATERIAL PARTNER
+            // ==================== SEED PRICE MATERIAL PARTNER ====================
             if (!context.PriceMaterialPartners.Any())
             {
                 var partners = context.Partners.ToList();
@@ -339,14 +340,12 @@ namespace Infrastructure.Persistence
                 {
                     foreach (var material in materials)
                     {
-                        var buyPrice = rnd.Next(50, 200) * 1000;
-                        var sellPrice = buyPrice + rnd.Next(10, 50) * 1000;  // Lời thêm 10k–50k
+                        var sellPrice = rnd.Next(50, 200) * 1000; // Giá bán random
 
                         list.Add(new PriceMaterialPartner
                         {
                             PartnerId = partner.PartnerId,
                             MaterialId = material.MaterialId,
-                            BuyPrice = buyPrice,
                             SellPrice = sellPrice,
                             Status = "Active"
                         });
@@ -357,6 +356,56 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            // ==================== SEED RELATION TYPE ====================
+            if (!context.RelationTypes.Any())
+            {
+                var relationTypes = new List<RelationType>
+    {
+        new RelationType { Name = "VIP", DiscountPercent = 10, DiscountAmount = 0, Status = "Active" },
+        new RelationType { Name = "Preferred", DiscountPercent = 5, DiscountAmount = 0, Status = "Active" },
+        new RelationType { Name = "Regular", DiscountPercent = 0, DiscountAmount = 0, Status = "Active" }
+    };
+
+                context.RelationTypes.AddRange(relationTypes);
+                context.SaveChanges();
+            }
+
+            // ==================== SEED PARTNER RELATION ====================
+            if (!context.PartnerRelations.Any())
+            {
+                var partners = context.Partners.ToList();
+                var relationTypes = context.RelationTypes.ToList();
+
+                var rnd = new Random();
+                var partnerRelations = new List<PartnerRelation>();
+
+                // Tạo ngẫu nhiên các quan hệ giữa các partner
+                for (int i = 0; i < partners.Count; i++)
+                {
+                    for (int j = 0; j < partners.Count; j++)
+                    {
+                        if (i == j) continue; // tránh cùng partner với chính nó
+
+                        var buyer = partners[i];
+                        var seller = partners[j];
+
+                        // Chọn ngẫu nhiên relation type
+                        var type = relationTypes[rnd.Next(relationTypes.Count)];
+
+                        partnerRelations.Add(new PartnerRelation
+                        {
+                            BuyerPartnerId = buyer.PartnerId,
+                            SellerPartnerId = seller.PartnerId,
+                            RelationTypeId = type.RelationTypeId,
+                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)), // Ngẫu nhiên trong 1 năm trước
+                            Status = "Active"
+                        });
+                    }
+                }
+
+                context.PartnerRelations.AddRange(partnerRelations);
+                context.SaveChanges();
+            }
 
             if (!context.Orders.Any())
             {
@@ -415,58 +464,78 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
             // 9️ Seed Invoices & InvoiceDetails
+
             if (!context.Invoices.Any())
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
-                var goviet = context.Partners.First(p => p.PartnerCode == "P001");
-                var hoaphat = context.Partners.First(p => p.PartnerCode == "P002");
-                var duytan = context.Partners.First(p => p.PartnerCode == "P003");
-                var minhtam = context.Partners.First(p => p.PartnerCode == "P004");
-                var saigonbuild = context.Partners.First(p => p.PartnerCode == "P006");
-                var levan = context.Partners.First(p => p.PartnerCode == "P005");
-                var nguyenb = context.Partners.First(p => p.PartnerCode == "P007");
 
-                var order1 = context.Orders.First(o => o.OrderCode == "ORD-001");
-                var order2 = context.Orders.First(o => o.OrderCode == "ORD-002");
-                var order3 = context.Orders.First(o => o.OrderCode == "ORD-003");
-                var order4 = context.Orders.First(o => o.OrderCode == "ORD-004");
-                var order5 = context.Orders.First(o => o.OrderCode == "ORD-005");
-                var order6 = context.Orders.First(o => o.OrderCode == "ORD-006");
-                var order7 = context.Orders.First(o => o.OrderCode == "ORD-007");
+                var partners = context.Partners.ToList();
+                var orders = context.Orders.ToList();
+                var materials = context.Materials.ToList();
 
-                context.Invoices.AddRange(
-                    new Invoice { InvoiceCode = "INV-001", InvoiceType = "Export", PartnerId = goviet.PartnerId, CreatedBy = manager.UserId, OrderId = order1.OrderId, IssueDate = DateTime.Now.AddDays(-10), ExportStatus = "Pending", TotalAmount = 50 * 250000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-002", InvoiceType = "Export", PartnerId = hoaphat.PartnerId, CreatedBy = manager.UserId, OrderId = order2.OrderId, IssueDate = DateTime.Now.AddDays(-15), ExportStatus = "Approved", TotalAmount = 20 * 320000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-003", InvoiceType = "Export", PartnerId = duytan.PartnerId, CreatedBy = manager.UserId, OrderId = order3.OrderId, IssueDate = DateTime.Now.AddDays(-20), ExportStatus = "Success", TotalAmount = 100 * 180000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-004", InvoiceType = "Export", PartnerId = minhtam.PartnerId, CreatedBy = manager.UserId, OrderId = order4.OrderId, IssueDate = DateTime.Now.AddDays(-5), ExportStatus = "Pending", TotalAmount = 80 * 90000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-005", InvoiceType = "Export", PartnerId = saigonbuild.PartnerId, CreatedBy = manager.UserId, OrderId = order5.OrderId, IssueDate = DateTime.Now.AddDays(-7), ExportStatus = "Approved", TotalAmount = 2000 * 1200, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-006", InvoiceType = "Export", PartnerId = levan.PartnerId, CreatedBy = manager.UserId, OrderId = order6.OrderId, IssueDate = DateTime.Now.AddDays(-3), ExportStatus = "Success", TotalAmount = 10 * 1500000, CreatedAt = DateTime.Now },
-                    new Invoice { InvoiceCode = "INV-007", InvoiceType = "Export", PartnerId = nguyenb.PartnerId, CreatedBy = manager.UserId, OrderId = order7.OrderId, IssueDate = DateTime.Now.AddDays(-2), ExportStatus = "Pending", TotalAmount = 50 * 200000, CreatedAt = DateTime.Now }
-                );
-                context.SaveChanges();
+                // Danh sách hóa đơn seed
+                var invoiceData = new[]
+                {
+        new { Code = "INV-001", OrderCode = "ORD-001", PartnerCode = "P001", MaterialCode = "W001", Quantity = 50, UnitPrice = 250000m },
+        new { Code = "INV-002", OrderCode = "ORD-002", PartnerCode = "P002", MaterialCode = "M001", Quantity = 20, UnitPrice = 320000m },
+        new { Code = "INV-003", OrderCode = "ORD-003", PartnerCode = "P003", MaterialCode = "P001", Quantity = 100, UnitPrice = 180000m },
+        new { Code = "INV-004", OrderCode = "ORD-004", PartnerCode = "P004", MaterialCode = "C001", Quantity = 80, UnitPrice = 90000m },
+        new { Code = "INV-005", OrderCode = "ORD-005", PartnerCode = "P006", MaterialCode = "B001", Quantity = 2000, UnitPrice = 1200m },
+        new { Code = "INV-006", OrderCode = "ORD-006", PartnerCode = "P005", MaterialCode = "S001", Quantity = 10, UnitPrice = 1500000m },
+        new { Code = "INV-007", OrderCode = "ORD-007", PartnerCode = "P007", MaterialCode = "G001", Quantity = 50, UnitPrice = 200000m }
+    };
 
-                // Lấy vật tư
-                var wood = context.Materials.First(m => m.MaterialCode == "W001");
-                var metal = context.Materials.First(m => m.MaterialCode == "M001");
-                var plastic = context.Materials.First(m => m.MaterialCode == "P001");
-                var cement = context.Materials.First(m => m.MaterialCode == "C001");
-                var brick = context.Materials.First(m => m.MaterialCode == "B001");
-                var paint = context.Materials.First(m => m.MaterialCode == "S001");
-                var glass = context.Materials.First(m => m.MaterialCode == "G001");
+                var invoices = new List<Invoice>();
 
-                // Seed InvoiceDetails
-                context.InvoiceDetails.AddRange(
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-001").InvoiceId, MaterialId = wood.MaterialId, Quantity = 50, UnitPrice = 250000, LineTotal = 50 * 250000 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-002").InvoiceId, MaterialId = metal.MaterialId, Quantity = 20, UnitPrice = 320000, LineTotal = 20 * 320000 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-003").InvoiceId, MaterialId = plastic.MaterialId, Quantity = 100, UnitPrice = 180000, LineTotal = 100 * 180000 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-004").InvoiceId, MaterialId = cement.MaterialId, Quantity = 80, UnitPrice = 90000, LineTotal = 80 * 90000 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-005").InvoiceId, MaterialId = brick.MaterialId, Quantity = 2000, UnitPrice = 1200, LineTotal = 2000 * 1200 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-006").InvoiceId, MaterialId = paint.MaterialId, Quantity = 10, UnitPrice = 1500000, LineTotal = 10 * 1500000 },
-                    new InvoiceDetail { InvoiceId = context.Invoices.First(i => i.InvoiceCode == "INV-007").InvoiceId, MaterialId = glass.MaterialId, Quantity = 50, UnitPrice = 200000, LineTotal = 50 * 200000 }
-                );
+                foreach (var data in invoiceData)
+                {
+                    var partner = partners.First(p => p.PartnerCode == data.PartnerCode);
+                    var order = orders.First(o => o.OrderCode == data.OrderCode);
+                    var material = materials.First(m => m.MaterialCode == data.MaterialCode);
+
+                    var relation = context.PartnerRelations
+                        .Include(pr => pr.RelationType)
+                        .FirstOrDefault(pr => pr.BuyerPartnerId == partner.PartnerId
+                                           && pr.SellerPartnerId == manager.PartnerId);
+
+                    decimal totalLine = data.Quantity * data.UnitPrice;
+                    decimal discount = relation != null
+                        ? totalLine * relation.RelationType.DiscountPercent / 100 + relation.RelationType.DiscountAmount
+                        : 0;
+
+                    if (discount > totalLine)
+                        discount = totalLine;
+
+                    var invoice = new Invoice
+                    {
+                        InvoiceCode = data.Code,
+                        InvoiceType = "Export",
+                        PartnerId = partner.PartnerId,
+                        CreatedBy = manager.UserId,
+                        OrderId = order.OrderId,
+                        IssueDate = DateTime.Now,
+                        ExportStatus = "Pending",
+                        TotalAmount = totalLine,
+                        DiscountAmount = discount,
+                        PayableAmount = totalLine - discount,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    invoice.InvoiceDetails.Add(new InvoiceDetail
+                    {
+                        MaterialId = material.MaterialId,
+                        Quantity = data.Quantity,
+                        UnitPrice = data.UnitPrice,
+                        LineTotal = totalLine,
+                        DiscountAmount = discount // áp dụng giảm giá cho line
+                    });
+
+                    invoices.Add(invoice);
+                }
+
+                context.Invoices.AddRange(invoices);
                 context.SaveChanges();
             }
-
 
             if (!context.Imports.Any())
             {

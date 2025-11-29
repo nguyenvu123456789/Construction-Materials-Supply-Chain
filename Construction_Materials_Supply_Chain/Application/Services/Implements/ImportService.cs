@@ -56,7 +56,7 @@ namespace Services.Implementations
                     ImportDate = DateTime.UtcNow,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
-                    Status = ImportStatus.Pending.ToString(),
+                    Status = ImportStatus.Success.ToString(),
                     Notes = notes,
                     CreatedAt = DateTime.UtcNow
                 };

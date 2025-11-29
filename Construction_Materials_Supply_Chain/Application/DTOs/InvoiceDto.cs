@@ -43,6 +43,7 @@
         public int InvoiceId { get; set; }
         public string InvoiceCode { get; set; } = null!;
         public string InvoiceType { get; set; } = null!;
+        public string? Address { get; set; }
         public int PartnerId { get; set; }
         public string PartnerName { get; set; } = null!;
         public DateTime IssueDate { get; set; }

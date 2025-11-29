@@ -515,6 +515,7 @@ namespace Infrastructure.Persistence
                         OrderId = order.OrderId,
                         IssueDate = DateTime.Now,
                         ExportStatus = "Pending",
+                        Address = order.DeliveryAddress,         
                         TotalAmount = totalLine,
                         DiscountAmount = discount,
                         PayableAmount = totalLine - discount,
@@ -527,7 +528,7 @@ namespace Infrastructure.Persistence
                         Quantity = data.Quantity,
                         UnitPrice = data.UnitPrice,
                         LineTotal = totalLine,
-                        DiscountAmount = discount // áp dụng giảm giá cho line
+                        DiscountAmount = discount
                     });
 
                     invoices.Add(invoice);

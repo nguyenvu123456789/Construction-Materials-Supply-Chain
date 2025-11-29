@@ -17,8 +17,10 @@ public partial class Invoice
     public string? ImportStatus { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-
+    public string? Address { get; set; }
     public virtual User CreatedByNavigation { get; set; } = null!;
     public virtual Partner Partner { get; set; } = null!;
+    public virtual Order Order { get; set; } = null!;
     public virtual ICollection<InvoiceDetail> InvoiceDetails { get; set; } = new List<InvoiceDetail>();
+
 }

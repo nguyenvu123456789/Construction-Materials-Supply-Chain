@@ -326,7 +326,7 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // SEED PRICE MATERIAL PARTNER
+            // ==================== SEED PRICE MATERIAL PARTNER ====================
             if (!context.PriceMaterialPartners.Any())
             {
                 var partners = context.Partners.ToList();
@@ -339,14 +339,12 @@ namespace Infrastructure.Persistence
                 {
                     foreach (var material in materials)
                     {
-                        var buyPrice = rnd.Next(50, 200) * 1000;
-                        var sellPrice = buyPrice + rnd.Next(10, 50) * 1000;  // Lời thêm 10k–50k
+                        var sellPrice = rnd.Next(50, 200) * 1000; // Giá bán random
 
                         list.Add(new PriceMaterialPartner
                         {
                             PartnerId = partner.PartnerId,
                             MaterialId = material.MaterialId,
-                            BuyPrice = buyPrice,
                             SellPrice = sellPrice,
                             Status = "Active"
                         });
@@ -357,6 +355,56 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
+            // ==================== SEED RELATION TYPE ====================
+            if (!context.RelationTypes.Any())
+            {
+                var relationTypes = new List<RelationType>
+    {
+        new RelationType { Name = "VIP", DiscountPercent = 10, DiscountAmount = 0, Status = "Active" },
+        new RelationType { Name = "Preferred", DiscountPercent = 5, DiscountAmount = 0, Status = "Active" },
+        new RelationType { Name = "Regular", DiscountPercent = 0, DiscountAmount = 0, Status = "Active" }
+    };
+
+                context.RelationTypes.AddRange(relationTypes);
+                context.SaveChanges();
+            }
+
+            // ==================== SEED PARTNER RELATION ====================
+            if (!context.PartnerRelations.Any())
+            {
+                var partners = context.Partners.ToList();
+                var relationTypes = context.RelationTypes.ToList();
+
+                var rnd = new Random();
+                var partnerRelations = new List<PartnerRelation>();
+
+                // Tạo ngẫu nhiên các quan hệ giữa các partner
+                for (int i = 0; i < partners.Count; i++)
+                {
+                    for (int j = 0; j < partners.Count; j++)
+                    {
+                        if (i == j) continue; // tránh cùng partner với chính nó
+
+                        var buyer = partners[i];
+                        var seller = partners[j];
+
+                        // Chọn ngẫu nhiên relation type
+                        var type = relationTypes[rnd.Next(relationTypes.Count)];
+
+                        partnerRelations.Add(new PartnerRelation
+                        {
+                            BuyerPartnerId = buyer.PartnerId,
+                            SellerPartnerId = seller.PartnerId,
+                            RelationTypeId = type.RelationTypeId,
+                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)), // Ngẫu nhiên trong 1 năm trước
+                            Status = "Active"
+                        });
+                    }
+                }
+
+                context.PartnerRelations.AddRange(partnerRelations);
+                context.SaveChanges();
+            }
 
             if (!context.Orders.Any())
             {

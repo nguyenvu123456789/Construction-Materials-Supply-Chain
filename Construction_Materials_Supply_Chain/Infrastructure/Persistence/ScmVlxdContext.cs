@@ -38,6 +38,8 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<PartnerType> PartnerTypes { get; set; }
     public DbSet<Region> Regions { get; set; }
     public DbSet<PartnerRegion> PartnerRegions { get; set; }
+    public DbSet<RelationType> RelationTypes { get; set; } = null!;
+    public DbSet<PartnerRelation> PartnerRelations { get; set; } = null!;
 
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserRole> UserRoles { get; set; }
@@ -52,7 +54,6 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ExportReportDetail> ExportReportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
     public virtual DbSet<MaterialPartner> MaterialPartners { get; set; } = null!;
-
     public virtual DbSet<GlAccount> GlAccounts { get; set; }
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
     public virtual DbSet<JournalLine> JournalLines { get; set; }
@@ -65,7 +66,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<SubLedgerEntry> SubLedgerEntries { get; set; }
 
     public DbSet<Address> Addresses { get; set; }
-    public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<Vehicle> Vehicles { get; set; } 
     public DbSet<Driver> Drivers { get; set; }
     public DbSet<Porter> Porters { get; set; }
 
@@ -645,6 +646,26 @@ public partial class ScmVlxdContext : DbContext
 
         });
 
+
+        modelBuilder.Entity<PartnerRelation>()
+    .HasOne(pr => pr.BuyerPartner)
+    .WithMany(p => p.RelationsAsBuyer)
+    .HasForeignKey(pr => pr.BuyerPartnerId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PartnerRelation>()
+            .HasOne(pr => pr.SellerPartner)
+            .WithMany(p => p.RelationsAsSeller)
+            .HasForeignKey(pr => pr.SellerPartnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RelationType>() 
+            .HasMany(rt => rt.PartnerRelations)
+            .WithOne(pr => pr.RelationType)
+            .HasForeignKey(pr => pr.RelationTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
         modelBuilder.Entity<Region>()
         .HasIndex(r => r.RegionName)
         .IsUnique();
@@ -942,7 +963,6 @@ public partial class ScmVlxdContext : DbContext
         modelBuilder.Entity<PriceMaterialPartner>(e =>
         {
             e.HasKey(x => x.PriceMaterialPartnerId);
-            e.Property(x => x.BuyPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             e.Property(x => x.SellPrice).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
             e.HasOne(x => x.Partner).WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Material).WithMany().HasForeignKey(x => x.MaterialId).OnDelete(DeleteBehavior.Restrict);

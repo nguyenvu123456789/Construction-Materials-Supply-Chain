@@ -26,13 +26,11 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Order> Orders { get; set; }
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
     public virtual DbSet<HandleRequest> HandleRequests { get; set; }
-    public virtual DbSet<Permission> Permissions { get; set; }
     public virtual DbSet<Material> Materials { get; set; }
     public virtual DbSet<MaterialCheck> MaterialChecks { get; set; }
     public virtual DbSet<MaterialCheckDetail> MaterialCheckDetails { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<RolePermission> RolePermissions { get; set; }
     public virtual DbSet<ShippingLog> ShippingLogs { get; set; }
     public virtual DbSet<Partner> Partners { get; set; }
     public virtual DbSet<PartnerType> PartnerTypes { get; set; }
@@ -462,16 +460,6 @@ public partial class ScmVlxdContext : DbContext
                 .HasConstraintName("FK_HandleRequests_User_HandledByNavigationUserId");
         });
 
-
-        modelBuilder.Entity<Permission>(entity =>
-        {
-            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB0F3117DF6B");
-            entity.ToTable("Permission");
-            entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA357954640BC").IsUnique();
-            entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
-            entity.Property(e => e.Description).HasMaxLength(255);
-            entity.Property(e => e.PermissionName).HasMaxLength(100);
-        });
         modelBuilder.Entity<Material>(entity =>
         {
             entity.HasKey(e => e.MaterialId).HasName("PK__Material__B40CC6ED9105ABE6");
@@ -591,27 +579,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.RoleName).HasMaxLength(50);
-        });
-
-        modelBuilder.Entity<RolePermission>(entity =>
-        {
-            entity.HasKey(e => e.RolePermissionId).HasName("PK__Role_Per__120F469A85ACD2C4");
-            entity.ToTable("Role_Permission");
-            entity.HasIndex(e => new { e.RoleId, e.PermissionId }, "UQ__Role_Per__6400A18BF5DF240B").IsUnique();
-            entity.Property(e => e.RolePermissionId).HasColumnName("RolePermissionID");
-            entity.Property(e => e.AssignedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
-            entity.Property(e => e.RoleId).HasColumnName("RoleID");
-            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.PermissionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Role_Perm__Permi__49C3F6B7");
-            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Role_Perm__RoleI__48CFD27E");
         });
 
         modelBuilder.Entity<PartnerType>(entity =>

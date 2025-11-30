@@ -74,7 +74,7 @@ namespace Application.Services.Implements
                 MaterialName = request.MaterialName,
                 CategoryId = request.CategoryId,
                 Unit = request.Unit,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 Status = StatusEnum.Active.ToStatusString()
             };
 
@@ -85,7 +85,7 @@ namespace Application.Services.Implements
                 MaterialId = material.MaterialId,
                 WarehouseId = request.WarehouseId,
                 Quantity = 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             _materials.AddInventory(inventory);

@@ -1,4 +1,6 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.DTOs;
 using Domain.Interface;
 using Domain.Models;
 
@@ -25,20 +27,21 @@ namespace Application.Services.Implements
             _handleRequests = handleRequests;
             _userRepo = userRepo;
         }
-
-        // 🔹 Tạo báo cáo hư hỏng
         public ExportReport CreateReport(CreateExportReportDto dto)
         {
             var export = _exportRepo.GetById(dto.ExportId)
-                         ?? throw new Exception("Không tìm thấy phiếu xuất.");
+                         ?? throw new Exception(ExportMessages.EXPORT_NOT_FOUND);
+
+            if (dto.Details == null || !dto.Details.Any())
+                throw new Exception(ExportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL);
 
             var report = new ExportReport
             {
                 ExportId = export.ExportId,
                 ReportedBy = dto.ReportedBy,
                 Notes = dto.Notes,
-                Status = "Pending",
-                ReportDate = DateTime.UtcNow
+                Status = StatusEnum.Pending.ToStatusString(),
+                ReportDate = DateTime.Now
             };
 
             foreach (var d in dto.Details)
@@ -56,33 +59,36 @@ namespace Application.Services.Implements
             return report;
         }
 
+
         // 🔹 Duyệt báo cáo
         public void ReviewReport(int reportId, ReviewExportReportDto dto)
         {
+            // Lấy báo cáo với chi tiết
             var report = _reportRepo.GetByIdWithDetails(reportId)
-                         ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
+                         ?? throw new Exception(ExportMessages.EXPORT_NOT_FOUND);
 
+            // Lấy phiếu xuất liên quan
             var export = _exportRepo.GetById(report.ExportId)
-                         ?? throw new Exception("Không tìm thấy phiếu xuất.");
+                         ?? throw new Exception(ExportMessages.EXPORT_NOT_FOUND);
 
             var warehouseId = export.WarehouseId;
             report.DecidedBy = dto.DecidedBy;
-            report.DecidedAt = DateTime.UtcNow;
+            report.DecidedAt = DateTime.Now;
 
             if (dto.Approve == null)
-                throw new Exception("Phải chọn duyệt hoặc từ chối báo cáo.");
+                throw new Exception(ExportMessages.INVALID_REQUEST);
 
             if (dto.Approve == false)
             {
-                report.Status = "Rejected";
+                report.Status = StatusEnum.Rejected.ToStatusString();
                 _reportRepo.Update(report);
 
                 _handleRequests.Add(new HandleRequest
                 {
-                    RequestType = "ExportReport",
+                    RequestType = StatusEnum.ExportReport.ToStatusString(),
                     RequestId = reportId,
                     HandledBy = dto.DecidedBy,
-                    ActionType = "Rejected",
+                    ActionType = StatusEnum.Rejected.ToStatusString(),
                     Note = dto.Notes,
                     HandledAt = DateTime.Now
                 });
@@ -90,22 +96,22 @@ namespace Application.Services.Implements
             }
 
             if (dto.Details == null || !dto.Details.Any())
-                throw new Exception("Thiếu danh sách chi tiết duyệt vật tư.");
+                throw new Exception(ExportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL);
 
             foreach (var d in report.ExportReportDetails)
             {
                 var decision = dto.Details.FirstOrDefault(x => x.MaterialId == d.MaterialId)
-                               ?? throw new Exception($"Thiếu quyết định cho vật tư ID {d.MaterialId}.");
+                               ?? throw new Exception(string.Format(ExportMessages.MSG_MATERIAL_NOT_FOUND, d.MaterialId));
 
                 d.Keep = decision.Keep;
 
                 if (!d.Keep.Value)
                 {
                     var inventory = _inventoryRepo.GetByMaterialId(d.MaterialId, warehouseId)
-                        ?? throw new Exception($"Không tìm thấy vật tư {d.MaterialId} trong kho {warehouseId}.");
+                        ?? throw new Exception(string.Format(ExportMessages.MSG_MATERIAL_NOT_FOUND_IN_WAREHOUSE, d.MaterialId, warehouseId));
 
                     if ((inventory.Quantity ?? 0) < d.QuantityDamaged)
-                        throw new Exception($"Không đủ vật tư {d.MaterialId} trong kho {warehouseId}.");
+                        throw new Exception(string.Format(ExportMessages.MSG_NOT_ENOUGH_STOCK, d.MaterialId, inventory.Quantity ?? 0, d.QuantityDamaged));
 
                     inventory.Quantity -= d.QuantityDamaged;
                     _inventoryRepo.Update(inventory);
@@ -114,23 +120,21 @@ namespace Application.Services.Implements
 
             _handleRequests.Add(new HandleRequest
             {
-                RequestType = "ExportReport",
+                RequestType = StatusEnum.ExportReport.ToStatusString(),
                 RequestId = reportId,
                 HandledBy = dto.DecidedBy,
-                ActionType = "Approved",
+                ActionType = StatusEnum.Approved.ToStatusString(),
                 Note = dto.Notes,
                 HandledAt = DateTime.Now
             });
 
-            report.Status = "Approved";
+            report.Status = StatusEnum.Approved.ToStatusString();
             _reportRepo.Update(report);
         }
-
-        // 🔹 Lấy báo cáo theo ID
         public ExportReportResponseDto GetById(int reportId)
         {
             var report = _reportRepo.GetByIdWithDetails(reportId)
-                         ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
+                         ?? throw new Exception(ExportMessages.EXPORT_NOT_FOUND);
 
             var reporter = _userRepo.GetById(report.ReportedBy);
 
@@ -143,7 +147,7 @@ namespace Application.Services.Implements
                 Keep = d.Keep ?? false
             }).ToList();
 
-            var lastHandle = _handleRequests.GetByRequest("ExportReport", reportId)
+            var lastHandle = _handleRequests.GetByRequest(StatusEnum.ExportReport.ToStatusString(), reportId)
                 .OrderByDescending(h => h.HandledAt)
                 .FirstOrDefault();
 
@@ -175,15 +179,12 @@ namespace Application.Services.Implements
             };
         }
 
-
-        // 🔹 Lấy tất cả báo cáo theo PartnerId
         public List<ExportReportResponseDto> GetAllReports(int? partnerId = null, int? createdByUserId = null)
         {
             var reports = _reportRepo.GetAllWithDetails()
                 .OrderByDescending(r => r.ReportDate)
                 .ToList();
 
-            // Filter theo partnerId nếu có
             if (partnerId.HasValue)
             {
                 reports = reports
@@ -195,7 +196,6 @@ namespace Application.Services.Implements
                     .ToList();
             }
 
-            // Filter theo userId nếu có
             if (createdByUserId.HasValue)
             {
                 reports = reports
@@ -222,7 +222,7 @@ namespace Application.Services.Implements
                     Keep = d.Keep ?? false
                 }).ToList();
 
-                var lastHandle = _handleRequests.GetByRequest("ExportReport", report.ExportReportId)
+                var lastHandle = _handleRequests.GetByRequest(StatusEnum.ExportReport.ToStatusString(), report.ExportReportId)
                     .OrderByDescending(h => h.HandledAt)
                     .FirstOrDefault();
 
@@ -256,21 +256,16 @@ namespace Application.Services.Implements
 
             return result;
         }
-
-
-        // 🔹 Đánh dấu báo cáo là "Đã xem"
         public void MarkAsViewed(int reportId)
         {
             var report = _reportRepo.GetById(reportId)
-                         ?? throw new Exception("Không tìm thấy báo cáo hư hỏng.");
-
-            if (report.Status == "Pending")
+                         ?? throw new Exception(ExportMessages.EXPORT_NOT_FOUND);
+            if (report.Status == StatusEnum.Pending.ToStatusString())
             {
-                report.Status = "Viewed";
+                report.Status = StatusEnum.Viewed.ToStatusString();
                 _reportRepo.Update(report);
             }
         }
-
 
     }
 }

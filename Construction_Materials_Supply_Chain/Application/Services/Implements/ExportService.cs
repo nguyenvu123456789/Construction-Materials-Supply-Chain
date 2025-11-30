@@ -55,7 +55,7 @@ namespace Services.Implementations
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes,
                 Status = StatusEnum.Pending.ToStatusString(),   
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             _exports.Add(export);
@@ -115,8 +115,8 @@ namespace Services.Implementations
 
             export.Status = StatusEnum.Success.ToStatusString();
             export.Notes = notes ?? export.Notes;
-            export.ExportDate = DateTime.UtcNow;
-            export.UpdatedAt = DateTime.UtcNow;
+            export.ExportDate = DateTime.Now;
+            export.UpdatedAt = DateTime.Now;
 
             _exports.Update(export);
             return export;
@@ -131,7 +131,7 @@ namespace Services.Implementations
             if (export.Status != StatusEnum.Pending.ToStatusString())
                 throw new Exception(ExportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
             export.Status = StatusEnum.Rejected.ToStatusString();
-            export.UpdatedAt = DateTime.UtcNow;
+            export.UpdatedAt = DateTime.Now;
 
             _exports.Update(export);
             return export;

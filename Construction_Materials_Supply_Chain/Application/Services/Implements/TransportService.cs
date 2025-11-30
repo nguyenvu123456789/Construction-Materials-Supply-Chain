@@ -72,7 +72,7 @@ namespace Application.Services.Implements
 
             var t = new Transport
             {
-                TransportCode = $"T-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                TransportCode = $"T-{DateTime.Now:yyyyMMddHHmmss}",
                 DepotId = dto.DepotId,
                 ProviderPartnerId = dto.ProviderPartnerId,
                 Status = TransportStatus.Planned,
@@ -92,7 +92,7 @@ namespace Application.Services.Implements
             };
 
             _transportRepo.Add(t);
-            _logRepo.Add(new ShippingLog { TransportId = t.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = t.TransportId, Status = "Transport.Created", CreatedAt = DateTime.Now });
             var id = t.TransportId;
 
             _event.Trigger(new EventNotifyTriggerDto
@@ -135,7 +135,7 @@ namespace Application.Services.Implements
             if (v.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Vehicle partner mismatch");
             if (dr.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Driver partner mismatch");
 
-            var s = t.StartTimePlanned ?? DateTimeOffset.UtcNow;
+            var s = t.StartTimePlanned ?? DateTimeOffset.Now;
             var e = t.EndTimePlanned;
 
             if (_transportRepo.VehicleBusy(dto.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
@@ -154,7 +154,7 @@ namespace Application.Services.Implements
             _transportRepo.ReplacePorters(transportId, dto.PorterIds ?? new());
 
             _transportRepo.UpdateStatus(transportId, TransportStatus.Assigned, null, null);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.Now });
         }
 
         public void AddStops(int transportId, TransportAddStopsRequestDto dto)
@@ -169,7 +169,7 @@ namespace Application.Services.Implements
                 Status = TransportStopStatus.Planned
             }).ToList();
             _transportRepo.AddStops(transportId, stops);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.StopsUpdated", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.StopsUpdated", CreatedAt = DateTime.Now });
         }
 
         public void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds)
@@ -191,7 +191,7 @@ namespace Application.Services.Implements
                 TransportId = transportId,
                 TransportStopId = transportStopId,
                 Status = "Stop.InvoicesUpdated",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             });
         }
 
@@ -225,44 +225,44 @@ namespace Application.Services.Implements
                 throw new InvalidOperationException("Porter(s) busy");
 
             _transportRepo.UpdateStatus(transportId, TransportStatus.EnRoute, at, null);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Started", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Started", CreatedAt = DateTime.Now });
         }
 
         public void ArriveStop(int transportId, TransportStopArriveRequestDto dto)
         {
             _transportRepo.UpdateStopArrival(transportId, dto.TransportStopId, dto.At);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = dto.TransportStopId, Status = "Stop.Arrived", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = dto.TransportStopId, Status = "Stop.Arrived", CreatedAt = DateTime.Now });
         }
 
         public void CompleteStop(int transportId, TransportStopDoneRequestDto dto)
         {
             _transportRepo.UpdateStopDeparture(transportId, dto.TransportStopId, dto.At);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = dto.TransportStopId, Status = "Stop.Done", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = dto.TransportStopId, Status = "Stop.Done", CreatedAt = DateTime.Now });
         }
 
         public void Complete(int transportId, DateTimeOffset at)
         {
             if (!_transportRepo.AllNonDepotStopsDone(transportId)) throw new InvalidOperationException("Stops not completed");
             _transportRepo.UpdateStatus(transportId, TransportStatus.Completed, null, at);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Completed", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Completed", CreatedAt = DateTime.Now });
         }
 
         public void Cancel(int transportId, string reason)
         {
             _transportRepo.Cancel(transportId, reason);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = $"Transport.Cancelled:{reason}", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = $"Transport.Cancelled:{reason}", CreatedAt = DateTime.Now });
         }
 
         public void DeleteStop(int transportId, int transportStopId)
         {
             _transportRepo.RemoveStop(transportId, transportStopId);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = transportStopId, Status = "Stop.Deleted", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, TransportStopId = transportStopId, Status = "Stop.Deleted", CreatedAt = DateTime.Now });
         }
 
         public void ClearStops(int transportId, bool keepDepot)
         {
             _transportRepo.ClearStops(transportId, keepDepot);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = keepDepot ? "Stops.ClearedKeepDepot" : "Stops.ClearedAll", CreatedAt = DateTime.UtcNow });
+            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = keepDepot ? "Stops.ClearedKeepDepot" : "Stops.ClearedAll", CreatedAt = DateTime.Now });
         }
 
         public void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto)
@@ -276,7 +276,7 @@ namespace Application.Services.Implements
                 TransportId = transportId,
                 TransportStopId = dto.TransportStopId,
                 Status = "Stop.ProofUploaded",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             });
         }
 

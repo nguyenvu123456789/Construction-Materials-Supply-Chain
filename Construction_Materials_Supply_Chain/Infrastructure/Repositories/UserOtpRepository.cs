@@ -13,7 +13,7 @@ namespace Infrastructure.Repositories
 
         public UserOtp? GetActive(int userId, string purpose, string code)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             return _context.UserOtps
                 .FirstOrDefault(x =>
                     x.UserId == userId &&

@@ -1,4 +1,6 @@
-﻿using Application.Interfaces;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
 
@@ -17,26 +19,27 @@ namespace Application.Services.Implements
 
         public List<Category> GetAll()
         {
-            return _categories
-                .GetAll()
-                .Where(c => c.Status != "Deleted")
+            return _categories.GetAll()
+                .Where(c => c.Status != StatusEnum.Deleted.ToStatusString())
                 .ToList();
         }
 
         public Category? GetById(int id)
         {
             var category = _categories.GetById(id);
-            return category != null && category.Status != "Deleted" ? category : null;
+            if (category == null || category.Status == StatusEnum.Deleted.ToStatusString())
+                return null;
+
+            return category;
         }
 
         public void Create(Category category)
         {
             if (_categories.ExistsByName(category.CategoryName))
-                throw new Exception("Category name already exists.");
+                throw new Exception(CategoryMessages.MSG_CATEGORY_NAME_EXISTS);
 
-            // ID tự tăng trong DB
             category.Status = "Active";
-            category.CreatedAt = DateTime.UtcNow;
+            category.CreatedAt = DateTime.Now;
 
             _categories.Add(category);
         }
@@ -44,12 +47,12 @@ namespace Application.Services.Implements
         public void Update(Category category)
         {
             var existing = _categories.GetById(category.CategoryId);
-            if (existing == null || existing.Status == "Deleted")
-                throw new Exception("Category not found or deleted.");
+            if (existing == null || existing.Status == StatusEnum.Deleted.ToStatusString())
+                throw new Exception(CategoryMessages.MSG_CATEGORY_NOT_FOUND);
 
             existing.CategoryName = category.CategoryName;
             existing.Description = category.Description;
-            existing.Status = category.Status; // Active / Inactive
+            existing.Status = category.Status;
 
             _categories.Update(existing);
         }
@@ -57,27 +60,25 @@ namespace Application.Services.Implements
         public void Delete(int id)
         {
             var category = _categories.GetById(id);
-            if (category == null || category.Status == "Deleted")
-                throw new Exception("Category not found or already deleted.");
+            if (category == null || category.Status == StatusEnum.Deleted.ToStatusString())
+                throw new Exception(CategoryMessages.MSG_CATEGORY_NOT_FOUND);
 
-            // Soft delete category
-            category.Status = "Deleted";
+            category.Status = StatusEnum.Deleted.ToStatusString()   ;
             _categories.Update(category);
 
             // Soft delete all related materials
             var materials = _materials.GetByCategory(id);
-            foreach (var material in materials.Where(m => m.Status != "Deleted"))
+            foreach (var material in materials.Where(m => m.Status != StatusEnum.Deleted.ToStatusString()))
             {
-                material.Status = "Deleted";
+                material.Status = StatusEnum.Deleted.ToStatusString();
                 _materials.Update(material);
             }
         }
 
         public List<Category> GetCategoriesFiltered(string? searchTerm, int pageNumber, int pageSize, out int totalCount)
         {
-            var query = _categories
-                .GetAll()
-                .Where(c => c.Status != "Deleted")
+            var query = _categories.GetAll()
+                .Where(c => c.Status != StatusEnum.Deleted.ToStatusString())
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -93,8 +94,7 @@ namespace Application.Services.Implements
 
         public List<Category> GetByStatus(string status)
         {
-            return _categories
-                .GetAll()
+            return _categories.GetAll()
                 .Where(c => c.Status.Equals(status, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }

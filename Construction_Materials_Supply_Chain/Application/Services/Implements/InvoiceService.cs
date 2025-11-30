@@ -42,7 +42,7 @@ namespace Services.Implementations
                 DueDate = dto.DueDate,
                 ExportStatus = StatusEnum.Pending.ToStatusString(),
                 ImportStatus = StatusEnum.Pending.ToStatusString(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             foreach (var item in dto.Details)
@@ -141,7 +141,7 @@ namespace Services.Implementations
                     DueDate = dto.DueDate,
                     ExportStatus = StatusEnum.Pending.ToStatusString(),
                     ImportStatus = StatusEnum.Pending.ToStatusString(),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     Address = order.DeliveryAddress,
                     TotalAmount = lineTotal,
                     DiscountAmount = lineDiscount,
@@ -170,7 +170,6 @@ namespace Services.Implementations
             return createdInvoices;
         }
 
-        // 🔹 Cập nhật trạng thái của bên xuất
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
@@ -178,12 +177,11 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ExportStatus = newStatus;
-            invoice.UpdatedAt = DateTime.UtcNow;
+            invoice.UpdatedAt = DateTime.Now;
             _invoices.Update(invoice);
             return invoice;
         }
 
-        // 🔹 Cập nhật trạng thái của bên nhập
         public Invoice? UpdateImportStatus(int id, string newStatus)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
@@ -191,12 +189,12 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ImportStatus = newStatus;
-            invoice.UpdatedAt = DateTime.UtcNow;
+            invoice.UpdatedAt = DateTime.Now;
             _invoices.Update(invoice);
             return invoice;
         }
 
-        // 🔹 Lấy hóa đơn theo Partner (phân biệt bên xem)
+        // 🔹 Lấy hóa đơn theo Partner 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
@@ -222,7 +220,7 @@ namespace Services.Implementations
             return dto;
         }
 
-        // 🔹 Lấy tất cả hóa đơn theo Partner (phân biệt vai trò)
+        // 🔹 Lấy tất cả hóa đơn theo Partner 
         public List<InvoiceDto> GetAllInvoicesForPartner(int partnerId)
         {
             var invoices = _invoices.GetAllWithDetails()

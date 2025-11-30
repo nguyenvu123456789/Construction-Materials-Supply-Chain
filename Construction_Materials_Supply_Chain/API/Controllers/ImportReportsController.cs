@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Constants.Messages;
+using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,8 +48,6 @@ namespace API.Controllers
             }
         }
 
-
-
         [HttpGet("{id:int}")]
         public IActionResult GetById(int id)
         {
@@ -56,7 +55,7 @@ namespace API.Controllers
             {
                 var report = _service.GetByIdResponse(id);
                 if (report == null)
-                    return NotFound(new { message = "Không tìm thấy báo cáo nhập kho." });
+                    return NotFound(new { message = ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND });
 
                 return Ok(report);
             }
@@ -72,7 +71,7 @@ namespace API.Controllers
             try
             {
                 _service.MarkAsViewed(id);
-                return Ok(new { message = "Đã đánh dấu báo cáo nhập kho là đã xem." });
+                return Ok(new { message = ImportMessages.MSG_IMPORT_REVIEWED_SUCCESS });
             }
             catch (Exception ex)
             {
@@ -88,7 +87,7 @@ namespace API.Controllers
                 var result = _service.ReviewReport(reportId, dto);
                 return Ok(new
                 {
-                    message = "Đã xử lý báo cáo nhập kho thành công.",
+                    message = ImportMessages.MSG_IMPORT_REVIEWED_SUCCESS,
                     data = result
                 });
             }
@@ -97,6 +96,5 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
     }
 }

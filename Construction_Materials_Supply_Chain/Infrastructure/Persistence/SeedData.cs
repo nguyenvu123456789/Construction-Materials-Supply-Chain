@@ -1283,7 +1283,7 @@ namespace Infrastructure.Persistence
                     DepotId = depot.AddressId,
                     ProviderPartnerId = 1,
                     Status = TransportStatus.Assigned,
-                    StartTimePlanned = DateTimeOffset.UtcNow.AddHours(1),
+                    StartTimePlanned = DateTimeOffset.Now.AddHours(1),
                     Notes = "Seed trip",
                     VehicleId = v1.VehicleId,
                     DriverId = d1.DriverId
@@ -1313,8 +1313,8 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
 
                 context.ShippingLogs.AddRange(
-                    new ShippingLog { InvoiceId = inv1.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.UtcNow },
-                    new ShippingLog { InvoiceId = inv2.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.UtcNow }
+                    new ShippingLog { InvoiceId = inv1.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Created", CreatedAt = DateTime.Now },
+                    new ShippingLog { InvoiceId = inv2.InvoiceId, TransportId = t1.TransportId, Status = "Transport.Assigned", CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
             }

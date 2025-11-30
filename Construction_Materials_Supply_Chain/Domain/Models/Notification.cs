@@ -52,7 +52,7 @@
         public int PartnerId { get; set; }
         public int UserId { get; set; }
         public string Message { get; set; } = null!;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public int? ParentReplyId { get; set; }
         public virtual Notification Notification { get; set; } = null!;
         public virtual Partner Partner { get; set; } = null!;

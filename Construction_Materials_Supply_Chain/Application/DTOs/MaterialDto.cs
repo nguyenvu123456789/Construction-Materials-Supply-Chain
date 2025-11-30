@@ -24,6 +24,7 @@ namespace Application.DTOs.Material
         public int? Quantity { get; set; }
         public string? WarehouseName { get; set; }
     }
+
     public class UpdateMaterialRequest
     {
         public string MaterialCode { get; set; } = null!;

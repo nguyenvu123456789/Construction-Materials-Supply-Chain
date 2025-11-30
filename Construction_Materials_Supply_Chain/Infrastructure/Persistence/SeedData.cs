@@ -340,7 +340,7 @@ namespace Infrastructure.Persistence
                 {
                     foreach (var material in materials)
                     {
-                        var sellPrice = rnd.Next(50, 200) * 1000; // Giá bán random
+                        var sellPrice = rnd.Next(50, 200) * 1000; 
 
                         list.Add(new PriceMaterialPartner
                         {
@@ -356,15 +356,14 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            // ==================== SEED RELATION TYPE ====================
             if (!context.RelationTypes.Any())
             {
                 var relationTypes = new List<RelationType>
-    {
-        new RelationType { Name = "VIP", DiscountPercent = 10, DiscountAmount = 0, Status = "Active" },
-        new RelationType { Name = "Preferred", DiscountPercent = 5, DiscountAmount = 0, Status = "Active" },
-        new RelationType { Name = "Regular", DiscountPercent = 0, DiscountAmount = 0, Status = "Active" }
-    };
+            {
+                new RelationType { Name = "VIP", DiscountPercent = 10, DiscountAmount = 0, Status = "Active" },
+                new RelationType { Name = "Preferred", DiscountPercent = 5, DiscountAmount = 0, Status = "Active" },
+                new RelationType { Name = "Regular", DiscountPercent = 0, DiscountAmount = 0, Status = "Active" }
+            };
 
                 context.RelationTypes.AddRange(relationTypes);
                 context.SaveChanges();
@@ -379,17 +378,14 @@ namespace Infrastructure.Persistence
                 var rnd = new Random();
                 var partnerRelations = new List<PartnerRelation>();
 
-                // Tạo ngẫu nhiên các quan hệ giữa các partner
                 for (int i = 0; i < partners.Count; i++)
                 {
                     for (int j = 0; j < partners.Count; j++)
                     {
-                        if (i == j) continue; // tránh cùng partner với chính nó
+                        if (i == j) continue; 
 
                         var buyer = partners[i];
                         var seller = partners[j];
-
-                        // Chọn ngẫu nhiên relation type
                         var type = relationTypes[rnd.Next(relationTypes.Count)];
 
                         partnerRelations.Add(new PartnerRelation
@@ -397,7 +393,7 @@ namespace Infrastructure.Persistence
                             BuyerPartnerId = buyer.PartnerId,
                             SellerPartnerId = seller.PartnerId,
                             RelationTypeId = type.RelationTypeId,
-                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)), // Ngẫu nhiên trong 1 năm trước
+                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)), 
                             Status = "Active"
                         });
                     }
@@ -515,7 +511,7 @@ namespace Infrastructure.Persistence
                         OrderId = order.OrderId,
                         IssueDate = DateTime.Now,
                         ExportStatus = "Pending",
-                        Address = order.DeliveryAddress,         
+                        Address = order.DeliveryAddress,
                         TotalAmount = totalLine,
                         DiscountAmount = discount,
                         PayableAmount = totalLine - discount,
@@ -556,7 +552,7 @@ namespace Infrastructure.Persistence
                         WarehouseId = wh1.WarehouseId,
                         CreatedBy = invoice.CreatedBy,
                         Notes = $"Tự động nhập từ hóa đơn {invoice.InvoiceCode}",
-                        Status = "Pending", // Đây là trạng thái phiếu nhập, giữ nguyên
+                        Status = "Pending",
                         CreatedAt = DateTime.Now
                     };
                     context.Imports.Add(import);

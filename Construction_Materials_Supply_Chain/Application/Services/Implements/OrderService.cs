@@ -131,9 +131,6 @@ namespace Application.Services.Implements
             };
 
             _handleRequestRepository.Add(handle);
-
-            // _unitOfWork.Commit();
-
             return order;
         }
 
@@ -162,7 +159,6 @@ namespace Application.Services.Implements
                 }).ToList()
             };
         }
-
         public List<Order> GetPurchaseOrders(int partnerId)
         {
             return _orderRepository

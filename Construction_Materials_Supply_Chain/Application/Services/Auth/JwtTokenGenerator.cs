@@ -60,8 +60,8 @@ namespace Infrastructure.Auth
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(_expiresMinutes),
+                notBefore: DateTime.Now,
+                expires: DateTime.Now.AddMinutes(_expiresMinutes),
                 signingCredentials: _creds
             );
 

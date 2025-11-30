@@ -52,7 +52,7 @@ namespace Application.Services.Implements
             }
 
             var accuracy = skuWithChecks == 0 ? 0 : (double)skuAccurate / skuWithChecks * 100;
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.Now.Date;
 
             int activeChecks = checksInRange.Count(c => c.CheckDate >= today);
 
@@ -85,7 +85,7 @@ namespace Application.Services.Implements
                 var firstMat = c.Details.FirstOrDefault();
                 string warehouseName = firstMat?.Material?.Inventories.FirstOrDefault()?.Warehouse?.WarehouseName ?? "—";
 
-                var status = (DateTime.UtcNow - c.CheckDate).TotalHours <= 12 ? "Đang" : "Đã duyệt";
+                var status = (DateTime.Now - c.CheckDate).TotalHours <= 12 ? "Đang" : "Đã duyệt";
 
                 items.Add(new StockCheckListItemDto
                 {

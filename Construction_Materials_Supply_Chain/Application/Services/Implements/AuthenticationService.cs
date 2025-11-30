@@ -136,7 +136,7 @@ namespace Application.Services.Implements
                 Email = email,
                 PasswordHash = passwordHash,
                 Status = status,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 MustChangePassword = true,
                 FullName = string.IsNullOrWhiteSpace(request.FullName) ? null : request.FullName.Trim(),
                 Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
@@ -212,7 +212,7 @@ namespace Application.Services.Implements
                     Email = email,
                     PasswordHash = passwordHash,
                     Status = "Active",
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     MustChangePassword = true
                 };
 
@@ -262,7 +262,7 @@ namespace Application.Services.Implements
             _userOtps.InvalidateAll(user.UserId, request.Purpose);
 
             var code = GenerateOtpCode();
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             var otp = new UserOtp
             {

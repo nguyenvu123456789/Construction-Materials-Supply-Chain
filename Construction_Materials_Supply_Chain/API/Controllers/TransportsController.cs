@@ -65,7 +65,7 @@ namespace Api.Controllers
         [HttpPost("{id:int}/start")]
         public IActionResult Start(int id, [FromQuery] DateTimeOffset? at)
         {
-            _service.Start(id, at ?? DateTimeOffset.UtcNow);
+            _service.Start(id, at ?? DateTimeOffset.Now);
             return Ok();
         }
 
@@ -100,7 +100,7 @@ namespace Api.Controllers
         [HttpPost("{id:int}/complete")]
         public IActionResult Complete(int id, [FromQuery] DateTimeOffset? at)
         {
-            _service.Complete(id, at ?? DateTimeOffset.UtcNow);
+            _service.Complete(id, at ?? DateTimeOffset.Now);
             return Ok();
         }
 

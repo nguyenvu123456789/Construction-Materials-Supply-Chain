@@ -1,4 +1,6 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
@@ -13,7 +15,6 @@ namespace Services.Implementations
         private readonly IImportReportDetailRepository _reportDetails;
         private readonly IMaterialRepository _materials;
         private readonly IImportRepository _imports;
-        private readonly IImportService _importService;
         private readonly IImportDetailRepository _importDetails;
         private readonly IHandleRequestRepository _handleRequests;
 
@@ -24,7 +25,6 @@ namespace Services.Implementations
             IImportReportDetailRepository reportDetails,
             IMaterialRepository materials,
             IImportRepository imports,
-            IImportService importService,
             IImportDetailRepository importDetails,
             IHandleRequestRepository handleRequests)
         {
@@ -34,78 +34,74 @@ namespace Services.Implementations
             _reportDetails = reportDetails;
             _materials = materials;
             _imports = imports;
-            _importService = importService;
             _importDetails = importDetails;
             _handleRequests = handleRequests;
         }
 
-        // 🔹 Tạo mới ImportReport
         public ImportReport CreateReport(CreateImportReportDto dto)
         {
             if (string.IsNullOrEmpty(dto.InvoiceCode))
-                throw new Exception("InvoiceCode is required.");
+                throw new Exception(ImportMessages.MSG_INVOICE_CODE_REQUIRED);
 
+            // Lấy invoice
             var invoice = _invoices.GetByCode(dto.InvoiceCode)
-                ?? throw new Exception("Invoice not found.");
+                          ?? throw new Exception(ImportMessages.MSG_INVOICE_NOT_FOUND);
 
-            // Tạo import tạm (Pending)
+            // 🔹 Tạo Import tạm thời (Pending)
             var import = new Import
             {
-                ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                ImportCode = $"IMP-{DateTime.Now:yyyyMMddHHmmss}",
                 WarehouseId = invoice.PartnerId,
                 CreatedBy = dto.CreatedBy,
-                CreatedAt = DateTime.UtcNow,
-                Status = "Pending"
+                CreatedAt = DateTime.Now,
+                Status = StatusEnum.Pending.ToStatusString()
             };
             _imports.Add(import);
 
-            // Tạo report
+            // 🔹 Tạo ImportReport
             var report = new ImportReport
             {
                 ImportId = import.ImportId,
                 InvoiceId = invoice.InvoiceId,
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             _reports.Add(report);
 
-            // Thêm chi tiết report
-            foreach (var clientDetail in dto.Details)
+            // 🔹 Thêm chi tiết report
+            foreach (var d in dto.Details)
             {
                 var detail = new ImportReportDetail
                 {
                     ImportReportId = report.ImportReportId,
-                    MaterialId = clientDetail.MaterialId,
-                    TotalQuantity = clientDetail.TotalQuantity,
-                    GoodQuantity = clientDetail.GoodQuantity,
-                    DamagedQuantity = clientDetail.DamagedQuantity,
-                    Comment = clientDetail.Comment
+                    MaterialId = d.MaterialId,
+                    TotalQuantity = d.TotalQuantity,
+                    GoodQuantity = d.GoodQuantity,
+                    DamagedQuantity = d.DamagedQuantity,
+                    Comment = d.Comment
                 };
                 _reportDetails.Add(detail);
             }
 
-            // Ghi log xử lý (Pending)
-            var handle = new HandleRequest
+            _handleRequests.Add(new HandleRequest
             {
-                RequestType = "ImportReport",
+                RequestType = StatusEnum.ImportReport.ToStatusString(),
                 RequestId = report.ImportReportId,
                 HandledBy = dto.CreatedBy,
-                ActionType = "Pending",
-                Note = "Báo cáo nhập kho được tạo.",
-                HandledAt = DateTime.UtcNow
-            };
-            _handleRequests.Add(handle);
+                ActionType = StatusEnum.Pending.ToStatusString(),
+                Note = ImportMessages.MSG_IMPORT_REPORT_CREATED,
+                HandledAt = DateTime.Now
+            });
 
             return _reports.GetByIdWithDetails(report.ImportReportId)
-                ?? throw new Exception("Failed to load created report.");
+                   ?? throw new Exception(ImportMessages.MSG_FAILED_LOAD_REPORT);
         }
 
-        // 🔹 Duyệt hoặc từ chối ImportReport
         public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
-                         ?? throw new Exception("Report not found.");
+                         ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
 
             // 🔹 Cập nhật trạng thái ImportReport
             report.Status = dto.Status;
@@ -114,25 +110,25 @@ namespace Services.Implementations
             // 🔹 Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
-                RequestType = "ImportReport",
+                RequestType = StatusEnum.ImportReport.ToStatusString(),
                 RequestId = report.ImportReportId,
                 HandledBy = dto.ReviewedBy,
                 ActionType = dto.Status,
                 Note = dto.Note,
-                HandledAt = DateTime.UtcNow
+                HandledAt = DateTime.Now
             };
             _handleRequests.Add(handle);
 
             // 🔹 Nếu được duyệt
-            if (dto.Status == "Approved")
+            if (dto.Status == StatusEnum.Success.ToStatusString())
             {
                 var import = report.Import ?? new Import
                 {
-                    ImportCode = $"IMP-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    ImportCode = $"IMP-{DateTime.Now:yyyyMMddHHmmss}",
                     WarehouseId = report.Invoice?.PartnerId ?? 0,
                     CreatedBy = dto.ReviewedBy,
-                    CreatedAt = DateTime.UtcNow,
-                    Status = "Success"
+                    CreatedAt = DateTime.Now,
+                    Status = StatusEnum.Success.ToStatusString()
                 };
 
                 if (report.Import == null)
@@ -142,13 +138,12 @@ namespace Services.Implementations
                     _reports.Update(report);
                 }
 
-                // Cập nhật tồn kho
+                // 🔹 Cập nhật tồn kho
                 foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
                 {
                     var material = _materials.GetById(detail.MaterialId)
-                        ?? throw new Exception($"Material {detail.MaterialId} not found");
+                        ?? throw new Exception(string.Format(ImportMessages.MSG_MATERIAL_NOT_FOUND, detail.MaterialId));
 
-                    // Tạo ImportDetail
                     var importDetail = new ImportDetail
                     {
                         ImportId = import.ImportId,
@@ -162,7 +157,6 @@ namespace Services.Implementations
                     };
                     _importDetails.Add(importDetail);
 
-                    // Cập nhật tồn kho
                     var inventory = _inventories.GetByWarehouseAndMaterial(import.WarehouseId, material.MaterialId);
                     if (inventory == null)
                     {
@@ -171,22 +165,22 @@ namespace Services.Implementations
                             WarehouseId = import.WarehouseId,
                             MaterialId = material.MaterialId,
                             Quantity = detail.GoodQuantity,
-                            UpdatedAt = DateTime.UtcNow
+                            UpdatedAt = DateTime.Now
                         });
                     }
                     else
                     {
                         inventory.Quantity += detail.GoodQuantity;
-                        inventory.UpdatedAt = DateTime.UtcNow;
+                        inventory.UpdatedAt = DateTime.Now;
                         _inventories.Update(inventory);
                     }
                 }
             }
-            else if (dto.Status == "Rejected")
+            else if (dto.Status == StatusEnum.Rejected.ToStatusString())
             {
                 if (report.Invoice != null)
                 {
-                    report.Invoice.ImportStatus = "Rejected";
+                    report.Invoice.ImportStatus = StatusEnum.Rejected.ToStatusString();
                     _invoices.Update(report.Invoice);
                 }
             }
@@ -197,14 +191,14 @@ namespace Services.Implementations
                 ImportReportId = report.ImportReportId,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
-                ReviewedAt = DateTime.UtcNow,
+                ReviewedAt = DateTime.Now,
                 Status = report.Status,
                 Import = report.Import != null
                     ? new SimpleImportDto
                     {
                         ImportId = report.Import.ImportId,
                         ImportCode = report.Import.ImportCode,
-                        CreatedAt = report.Import.CreatedAt ?? DateTime.UtcNow,
+                        CreatedAt = report.Import.CreatedAt ?? DateTime.Now,
                         Status = report.Import.Status
                     }
                     : new SimpleImportDto(),
@@ -233,18 +227,16 @@ namespace Services.Implementations
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {
             var report = _reports.GetByIdWithDetails(reportId)
-                         ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
+                         ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
 
-            // Lấy bản ghi HandleRequest mới nhất
-            var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
+            var lastHandle = _handleRequests.GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
                                             .OrderByDescending(h => h.HandledAt)
                                             .FirstOrDefault();
 
             var reviewerName = lastHandle?.HandledByNavigation?.FullName
                                ?? lastHandle?.HandledByNavigation?.UserName
-                               ?? "Chưa duyệt";
+                               ?? ImportMessages.MSG_NOT_YET_REVIEWED;
 
-            // Tạo 1 HandleRequestDto duy nhất
             var handleHistory = lastHandle != null
                 ? new List<HandleRequestDto>
                 {
@@ -259,15 +251,12 @@ namespace Services.Implementations
                 }
                 : new List<HandleRequestDto>();
 
-            // Tên người tạo lấy từ CreatedBy
-            var createdByName = "Không rõ"; // mặc định
-            var creatorHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
+            var creatorHandle = _handleRequests.GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
                                                .OrderBy(h => h.HandledAt)
                                                .FirstOrDefault();
-            if (creatorHandle != null)
-                createdByName = creatorHandle.HandledByNavigation?.FullName
-                                ?? creatorHandle.HandledByNavigation?.UserName
-                                ?? "Không rõ";
+            var createdByName = creatorHandle?.HandledByNavigation?.FullName
+                                ?? creatorHandle?.HandledByNavigation?.UserName
+                                ?? ImportMessages.MSG_UNKNOWN_CREATOR;
 
             return new ImportReportResponseDto
             {
@@ -276,7 +265,7 @@ namespace Services.Implementations
                 CreatedAt = report.CreatedAt,
                 CreatedBy = report.CreatedBy,
                 CreatedByName = createdByName,
-                Status = report.Status ?? "Pending",
+                Status = report.Status ?? StatusEnum.Pending.ToStatusString(),
                 Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
                 {
                     MaterialId = d.MaterialId,
@@ -291,8 +280,7 @@ namespace Services.Implementations
             };
         }
 
-
-        // 🔹 Lấy tất cả theo Partner
+        // 🔹 Lấy tất cả báo cáo theo Partner hoặc người tạo
         public List<ImportReportResponseDto> GetAllByPartner(int? partnerId = null, int? createdByUserId = null)
         {
             var reports = _reports.GetAllWithDetails()
@@ -303,9 +291,11 @@ namespace Services.Implementations
 
             foreach (var report in reports)
             {
-                var lastHandle = _handleRequests.GetByRequest("ImportReport", report.ImportReportId)
-                                                .OrderByDescending(h => h.HandledAt)
-                                                .FirstOrDefault();
+                // Lấy HandleRequest mới nhất
+                var lastHandle = _handleRequests
+                    .GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
+                    .OrderByDescending(h => h.HandledAt)
+                    .FirstOrDefault();
 
                 // Filter theo partner nếu có
                 if (partnerId.HasValue && lastHandle?.HandledByNavigation?.PartnerId != partnerId.Value)
@@ -315,6 +305,7 @@ namespace Services.Implementations
                 if (createdByUserId.HasValue && report.CreatedBy != createdByUserId.Value)
                     continue;
 
+                // Tạo lịch sử xử lý
                 var handleHistory = lastHandle != null
                     ? new List<HandleRequestDto>
                     {
@@ -323,7 +314,7 @@ namespace Services.Implementations
                     HandledBy = lastHandle.HandledBy,
                     HandledByName = lastHandle.HandledByNavigation?.FullName
                                     ?? lastHandle.HandledByNavigation?.UserName
-                                    ?? "Không rõ",
+                                    ?? ImportMessages.MSG_UNKNOWN_USER,
                     ActionType = lastHandle.ActionType,
                     Note = lastHandle.Note,
                     HandledAt = lastHandle.HandledAt
@@ -331,9 +322,10 @@ namespace Services.Implementations
                     }
                     : new List<HandleRequestDto>();
 
+                // Tên người tạo
                 var createdByName = lastHandle?.HandledByNavigation?.FullName
                                     ?? lastHandle?.HandledByNavigation?.UserName
-                                    ?? "Không rõ";
+                                    ?? ImportMessages.MSG_UNKNOWN_USER;
 
                 result.Add(new ImportReportResponseDto
                 {
@@ -342,7 +334,7 @@ namespace Services.Implementations
                     CreatedByName = createdByName,
                     Notes = report.Notes,
                     CreatedAt = report.CreatedAt,
-                    Status = report.Status ?? "Pending",
+                    Status = report.Status ?? StatusEnum.Pending.ToStatusString(),
                     Details = report.ImportReportDetails.Select(d => new ImportReportDetailDto
                     {
                         MaterialId = d.MaterialId,
@@ -360,20 +352,17 @@ namespace Services.Implementations
             return result;
         }
 
-
-
+        // 🔹 Đánh dấu báo cáo là "Đã xem"
         public void MarkAsViewed(int reportId)
         {
             var report = _reports.GetById(reportId)
-                         ?? throw new Exception("Không tìm thấy báo cáo nhập kho.");
+                         ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
 
-            if (report.Status == "Pending")
+            if (report.Status == StatusEnum.Pending.ToStatusString())
             {
-                report.Status = "Viewed";
+                report.Status = StatusEnum.Viewed.ToStatusString();
                 _reports.Update(report);
             }
         }
-
-
     }
 }

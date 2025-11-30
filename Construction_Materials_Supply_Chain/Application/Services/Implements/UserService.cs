@@ -49,7 +49,7 @@ public class UserService : IUserService
     public UserDto Create(UserCreateDto dto)
     {
         var entity = _mapper.Map<User>(dto);
-        entity.CreatedAt = DateTime.UtcNow;
+        entity.CreatedAt = DateTime.Now;
         entity.Status = "Active";
 
         if (dto.AvatarFile != null)
@@ -85,7 +85,7 @@ public class UserService : IUserService
             existing.AvatarBase64 = Convert.ToBase64String(bytes);
         }
 
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = DateTime.Now;
         _users.Update(existing);
 
         if (dto.RoleIds != null)
@@ -98,7 +98,7 @@ public class UserService : IUserService
         if (u == null) return;
         if (u.Status == "Deleted") return;
         u.Status = "Deleted";
-        u.UpdatedAt = DateTime.UtcNow;
+        u.UpdatedAt = DateTime.Now;
         _users.Update(u);
     }
 
@@ -113,7 +113,7 @@ public class UserService : IUserService
         if (u == null) throw new KeyNotFoundException("User not found");
         if (u.Status != "Deleted") return;
         u.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
-        u.UpdatedAt = DateTime.UtcNow;
+        u.UpdatedAt = DateTime.Now;
         _users.Update(u);
     }
 
@@ -259,7 +259,7 @@ public class UserService : IUserService
             existing.AvatarBase64 = Convert.ToBase64String(bytes);
         }
 
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = DateTime.Now;
         _users.Update(existing);
     }
 

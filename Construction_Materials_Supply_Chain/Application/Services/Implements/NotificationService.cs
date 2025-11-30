@@ -50,7 +50,7 @@ namespace Application.Services.Implements
                 Type = (int)NotificationType.Conversation,
                 RequireAcknowledge = request.RequireAcknowledge,
                 Status = 1,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             notificationRepository.AddNotification(notification);
@@ -81,7 +81,7 @@ namespace Application.Services.Implements
                 Type = (int)NotificationType.Alert,
                 RequireAcknowledge = request.RequireAcknowledge,
                 Status = 1,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             notificationRepository.AddNotification(notification);
@@ -139,7 +139,7 @@ namespace Application.Services.Implements
                 PartnerId = request.PartnerId,
                 UserId = request.UserId,
                 Message = request.Content,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             notificationRepository.AddReply(reply, request.PartnerId);
@@ -200,7 +200,7 @@ namespace Application.Services.Implements
                     Type = (int)NotificationType.CrossPartnerAlert,
                     RequireAcknowledge = request.RequireAcknowledge,
                     Status = 1,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 notificationRepository.AddNotification(notification);
@@ -422,7 +422,7 @@ namespace Application.Services.Implements
                         Type = (int)NotificationType.LowStockAlert,
                         RequireAcknowledge = true,
                         Status = 1,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         UserId = recipients.First()
                     };
 

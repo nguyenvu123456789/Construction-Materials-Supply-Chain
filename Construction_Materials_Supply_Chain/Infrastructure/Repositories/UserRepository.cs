@@ -84,8 +84,8 @@ namespace Infrastructure.Implementations
                 Email = $"system+p{partnerId}@scmvlxd.vn",
                 Phone = "0000000000",
                 Status = "Active",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
                 PartnerId = partnerId
             };
             _context.Users.Add(u);

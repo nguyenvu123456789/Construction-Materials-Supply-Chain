@@ -23,7 +23,7 @@ namespace Infrastructure.Implementations
                 Action = action,
                 EntityName = entityName,
                 EntityId = entityId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             _dbSet.Add(log);
             _context.SaveChanges();

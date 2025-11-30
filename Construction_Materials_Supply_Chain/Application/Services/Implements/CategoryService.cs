@@ -39,7 +39,7 @@ namespace Application.Services.Implements
                 throw new Exception(CategoryMessages.MSG_CATEGORY_NAME_EXISTS);
 
             category.Status = "Active";
-            category.CreatedAt = DateTime.UtcNow;
+            category.CreatedAt = DateTime.Now;
 
             _categories.Add(category);
         }

@@ -52,12 +52,12 @@ namespace Services.Implementations
                 var import = new Import
                 {
                     ImportCode = importCode ?? $"IMP-{Guid.NewGuid():N}".Substring(0, 8),
-                    ImportDate = DateTime.UtcNow,
+                    ImportDate = DateTime.Now,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
                     Status = ImportStatus.Success.ToString(),
                     Notes = notes,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
                 _imports.Add(import);
 
@@ -92,13 +92,13 @@ namespace Services.Implementations
                             WarehouseId = warehouseId,
                             MaterialId = detail.MaterialId,
                             Quantity = detail.Quantity,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.Now
                         });
                     }
                     else
                     {
                         inventory.Quantity = (inventory.Quantity ?? 0) + detail.Quantity;
-                        inventory.UpdatedAt = DateTime.UtcNow;
+                        inventory.UpdatedAt = DateTime.Now;
                         _inventories.Update(inventory);
                     }
 
@@ -126,7 +126,7 @@ namespace Services.Implementations
 
                 // Cập nhật trạng thái hóa đơn
                 invoice.ImportStatus = ImportStatus.Success.ToString();
-                invoice.UpdatedAt = DateTime.UtcNow;
+                invoice.UpdatedAt = DateTime.Now;
                 _invoices.Update(invoice);
 
                 return import;
@@ -137,7 +137,7 @@ namespace Services.Implementations
             if (existingImport != null)
             {
                 existingImport.Notes = notes ?? existingImport.Notes;
-                existingImport.UpdatedAt = DateTime.UtcNow;
+                existingImport.UpdatedAt = DateTime.Now;
                 _imports.Update(existingImport);
                 return existingImport;
             }
@@ -149,7 +149,7 @@ namespace Services.Implementations
                 CreatedBy = createdBy,
                 Status = ImportStatus.Success.ToString(),
                 Notes = notes,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             _imports.Add(newImport);
             return newImport;
@@ -179,20 +179,20 @@ namespace Services.Implementations
                         WarehouseId = import.WarehouseId,
                         MaterialId = detail.MaterialId,
                         Quantity = detail.Quantity,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     });
                 }
                 else
                 {
                     inventory.Quantity = (inventory.Quantity ?? 0) + detail.Quantity;
-                    inventory.UpdatedAt = DateTime.UtcNow;
+                    inventory.UpdatedAt = DateTime.Now;
                     _inventories.Update(inventory);
                 }
             }
 
             import.Status = ImportStatus.Success.ToString();
             import.Notes = notes ?? import.Notes;
-            import.UpdatedAt = DateTime.UtcNow;
+            import.UpdatedAt = DateTime.Now;
             _imports.Update(import);
 
             return import;
@@ -232,7 +232,7 @@ namespace Services.Implementations
                 CreatedBy = createdBy,
                 Status = ImportStatus.Pending.ToString(),
                 Notes = notes,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             _imports.Add(import);
 
@@ -269,7 +269,7 @@ namespace Services.Implementations
                 throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
 
             import.Status = ImportStatus.Rejected.ToString();
-            import.UpdatedAt = DateTime.UtcNow;
+            import.UpdatedAt = DateTime.Now;
             _imports.Update(import);
 
             return import;

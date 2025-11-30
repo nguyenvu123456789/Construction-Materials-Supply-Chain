@@ -59,7 +59,7 @@ namespace Application.Services.Implements
             var entity = _repo.GetById(id);
             if (entity == null) return (false, "Not found");
             entity.IsDeleted = true;
-            entity.DeletedAt = DateTime.UtcNow;
+            entity.DeletedAt = DateTime.Now;
             _repo.Update(entity);
             return (true, null);
         }

@@ -42,7 +42,7 @@ namespace Services.Implementations
                 DueDate = dto.DueDate,
                 ExportStatus = StatusEnum.Pending.ToStatusString(),
                 ImportStatus = StatusEnum.Pending.ToStatusString(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             foreach (var item in dto.Details)
@@ -141,7 +141,7 @@ namespace Services.Implementations
                     DueDate = dto.DueDate,
                     ExportStatus = StatusEnum.Pending.ToStatusString(),
                     ImportStatus = StatusEnum.Pending.ToStatusString(),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     Address = order.DeliveryAddress,
                     TotalAmount = lineTotal,
                     DiscountAmount = lineDiscount,
@@ -177,7 +177,7 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ExportStatus = newStatus;
-            invoice.UpdatedAt = DateTime.UtcNow;
+            invoice.UpdatedAt = DateTime.Now;
             _invoices.Update(invoice);
             return invoice;
         }
@@ -189,7 +189,7 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ImportStatus = newStatus;
-            invoice.UpdatedAt = DateTime.UtcNow;
+            invoice.UpdatedAt = DateTime.Now;
             _invoices.Update(invoice);
             return invoice;
         }

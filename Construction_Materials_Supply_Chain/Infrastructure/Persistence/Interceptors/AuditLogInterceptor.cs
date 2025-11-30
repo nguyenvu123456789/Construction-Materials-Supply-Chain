@@ -57,7 +57,7 @@ namespace Infrastructure.Persistence.Interceptors
                     EntityId = entityId,
                     Action = action,
                     Changes = changesJson,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     UserId = _currentUser.UserId
                 });
             }

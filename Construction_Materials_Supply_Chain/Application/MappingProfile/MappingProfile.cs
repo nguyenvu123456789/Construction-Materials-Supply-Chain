@@ -55,7 +55,7 @@ namespace Application.MappingProfile
 
             CreateMap<Import, ImportResponseDto>()
                 .ForMember(d => d.InvoiceCode, o => o.Ignore())
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.UtcNow))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.Now))
                 .ForMember(d => d.Materials, o => o.MapFrom(s => s.ImportDetails));
             CreateMap<ImportRequestDto, Import>().ReverseMap();
             CreateMap<ImportReport, ImportReportResponseDto>()
@@ -80,7 +80,7 @@ namespace Application.MappingProfile
             CreateMap<CreateInvoiceDto, Invoice>()
                 .ForMember(dest => dest.ExportStatus, opt => opt.MapFrom(src => "Pending"))
                 .ForMember(dest => dest.ImportStatus, opt => opt.MapFrom(src => "Pending"))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.InvoiceDetails, opt => opt.MapFrom(src => src.Details));
 
             CreateMap<CreateInvoiceDetailDto, InvoiceDetail>()

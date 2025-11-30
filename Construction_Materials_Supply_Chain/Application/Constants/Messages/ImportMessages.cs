@@ -9,7 +9,19 @@
         public const string MSG_IMPORT_DETAIL_NOT_FOUND = "Không tìm thấy chi tiết cho phiếu nhập này.";
         public const string MSG_REQUIRE_AT_LEAST_ONE_MATERIAL = "Cần ít nhất một vật tư.";
         public const string MSG_MATERIAL_NOT_FOUND = "MaterialId {0} không tồn tại.";
+        public const string MSG_INVOICE_CODE_REQUIRED = "InvoiceCode là bắt buộc.";
+        public const string MSG_IMPORT_REPORT_CREATED = "Báo cáo nhập kho được tạo thành công.";
+        public const string MSG_FAILED_LOAD_REPORT = "Không thể tải báo cáo vừa tạo.";
+        public const string MSG_IMPORT_REPORT_NOT_FOUND = "Không tìm thấy báo cáo nhập kho.";
+        public const string MSG_NOT_YET_REVIEWED = "Chưa duyệt";
+        public const string MSG_UNKNOWN_CREATOR = "Không rõ";
         public const string MSG_ONLY_PENDING_CAN_BE_REJECTED = "Chỉ có thể từ chối phiếu nhập đang chờ.";
+        public const string MSG_UNKNOWN_USER = "Không rõ";
+        public const string MSG_INVALID_REPORT_DATA = "Dữ liệu báo cáo không hợp lệ.";
+        public const string MSG_IMPORT_CREATED_SUCCESS = "Báo cáo nhập kho tạo thành công.";
+        public const string MSG_IMPORT_REVIEWED_SUCCESS = "Báo cáo nhập kho đã được duyệt/từ chối.";
+        public const string MSG_IMPORT_DETAIL_MISSING = "Thiếu chi tiết báo cáo nhập kho.";
+        public const string MSG_NOT_ENOUGH_STOCK = "Không đủ tồn kho cho vật tư {0}.";
     }
 
 }

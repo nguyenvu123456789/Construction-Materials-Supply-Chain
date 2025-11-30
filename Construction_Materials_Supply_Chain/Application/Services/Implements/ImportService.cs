@@ -102,7 +102,6 @@ namespace Services.Implementations
                         _inventories.Update(inventory);
                     }
 
-                    // Quan hệ Material-Buyer-Partner
                     var existingRelation = _materialPartners.GetAll()
                         .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
                                               mp.BuyerId == invoice.CreatedBy &&
@@ -117,7 +116,6 @@ namespace Services.Implementations
                         });
                     }
 
-                    // Cập nhật trạng thái OrderDetail
                     var orderDetail = _orderDetailRepository.GetByOrderAndMaterial(invoice.OrderId, detail.MaterialId);
                     if (orderDetail != null)
                     {
@@ -309,7 +307,6 @@ namespace Services.Implementations
         }
         private string GenerateImportCode()
         {
-            // Lấy import có code lớn nhất
             var lastImport = _imports
                 .GetAll()
                 .OrderByDescending(i => i.ImportId)
@@ -319,7 +316,6 @@ namespace Services.Implementations
 
             if (lastImport != null && !string.IsNullOrEmpty(lastImport.ImportCode))
             {
-                // Tách phần số trong INV_00x
                 var parts = lastImport.ImportCode.Split('_');
                 if (parts.Length == 2 && int.TryParse(parts[1], out int currentNumber))
                 {

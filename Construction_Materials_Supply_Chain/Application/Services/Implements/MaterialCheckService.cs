@@ -18,11 +18,11 @@ namespace Application.Services.Implements
         private readonly IHandleRequestRepository _handleRequests;
 
         public MaterialCheckService(
-    IMaterialRepository materials,
-    IMaterialCheckRepository checks,
-    IUserRepository users,
-    IWarehouseRepository warehouses,
-    IHandleRequestRepository handleRequests)
+            IMaterialRepository materials,
+            IMaterialCheckRepository checks,
+            IUserRepository users,
+            IWarehouseRepository warehouses,
+            IHandleRequestRepository handleRequests)
         {
             _materials = materials;
             _checks = checks;
@@ -32,14 +32,14 @@ namespace Application.Services.Implements
         }
 
         public ApiResponse<PagedResultDto<MaterialCheckResponseDto>> GetAllMaterialChecks(
-    int? partnerId = null,
-    int? userId = null,
-    string? searchTerm = null,
-    DateTime? fromDate = null,
-    DateTime? toDate = null,
-    string? status = null,
-    int pageNumber = 1,
-    int pageSize = 10)
+            int? partnerId = null,
+            int? userId = null,
+            string? searchTerm = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            string? status = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             // Base query
             var query = _checks.GetAllWithDetails().AsQueryable();
@@ -113,7 +113,6 @@ namespace Application.Services.Implements
                 Status = c.Status
             }).ToList();
 
-            // Result
             var result = new PagedResultDto<MaterialCheckResponseDto>
             {
                 Data = data,
@@ -221,7 +220,7 @@ namespace Application.Services.Implements
                 }).ToList()
             };
 
-            _checks.Add(check); // giả sử Add() đã save changes
+            _checks.Add(check); 
 
             var response = new MaterialCheckResponseDto
             {

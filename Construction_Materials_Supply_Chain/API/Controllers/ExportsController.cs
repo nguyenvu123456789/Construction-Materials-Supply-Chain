@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Constants.Messages;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,12 +19,13 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-
         [HttpGet("{id}")]
         public IActionResult GetExport(int id)
         {
             var export = _exportService.GetById(id);
-            if (export == null) return NotFound();
+            if (export == null)
+                return NotFound(ExportMessages.EXPORT_NOT_FOUND);
+
             var result = _mapper.Map<ExportResponseDto>(export);
             return Ok(result);
         }
@@ -46,13 +48,12 @@ namespace API.Controllers
             }
         }
 
-
         // 🔹 Tạo Pending Export
         [HttpPost("request")]
         public IActionResult CreatePendingExport([FromBody] ExportRequestDto dto)
         {
             if (dto == null)
-                return BadRequest("Invalid request data.");
+                return BadRequest(ExportMessages.INVALID_REQUEST);
 
             try
             {
@@ -71,7 +72,7 @@ namespace API.Controllers
         public IActionResult ConfirmExport([FromBody] ExportConfirmDto dto)
         {
             if (dto == null || string.IsNullOrEmpty(dto.ExportCode))
-                return BadRequest("Invalid request data.");
+                return BadRequest(ExportMessages.INVALID_REQUEST);
 
             try
             {
@@ -85,7 +86,6 @@ namespace API.Controllers
             }
         }
 
-
         // 🔹 Cập nhật trạng thái sang Rejected
         [HttpPut("reject/{id}")]
         public IActionResult RejectExport(int id)
@@ -94,7 +94,7 @@ namespace API.Controllers
             {
                 var export = _exportService.RejectExport(id);
                 if (export == null)
-                    return NotFound("Export not found.");
+                    return NotFound(ExportMessages.EXPORT_NOT_FOUND);
 
                 var result = _mapper.Map<ExportResponseDto>(export);
                 return Ok(result);
@@ -105,11 +105,12 @@ namespace API.Controllers
             }
         }
 
+        // 🔹 Tạo Export từ Invoice
         [HttpPost("from-invoice")]
         public IActionResult CreateExportFromInvoice([FromBody] ExportFromInvoiceDto dto)
         {
             if (dto == null || string.IsNullOrEmpty(dto.InvoiceCode))
-                return BadRequest("Invalid request data.");
+                return BadRequest(ExportMessages.INVALID_REQUEST);
 
             try
             {
@@ -122,6 +123,5 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
     }
 }

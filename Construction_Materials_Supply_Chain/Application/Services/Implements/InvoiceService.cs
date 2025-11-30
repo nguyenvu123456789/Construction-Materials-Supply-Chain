@@ -170,7 +170,6 @@ namespace Services.Implementations
             return createdInvoices;
         }
 
-        // 🔹 Cập nhật trạng thái của bên xuất
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
@@ -183,7 +182,6 @@ namespace Services.Implementations
             return invoice;
         }
 
-        // 🔹 Cập nhật trạng thái của bên nhập
         public Invoice? UpdateImportStatus(int id, string newStatus)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
@@ -196,7 +194,7 @@ namespace Services.Implementations
             return invoice;
         }
 
-        // 🔹 Lấy hóa đơn theo Partner (phân biệt bên xem)
+        // 🔹 Lấy hóa đơn theo Partner 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
@@ -222,7 +220,7 @@ namespace Services.Implementations
             return dto;
         }
 
-        // 🔹 Lấy tất cả hóa đơn theo Partner (phân biệt vai trò)
+        // 🔹 Lấy tất cả hóa đơn theo Partner 
         public List<InvoiceDto> GetAllInvoicesForPartner(int partnerId)
         {
             var invoices = _invoices.GetAllWithDetails()

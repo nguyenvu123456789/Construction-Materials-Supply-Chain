@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Constants.Messages;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,7 @@ namespace API.Controllers
         public IActionResult CreateReport([FromBody] CreateExportReportDto dto)
         {
             if (dto == null || dto.Details.Count == 0)
-                return BadRequest("Invalid report data.");
+                return BadRequest(new { message = ExportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL });
 
             try
             {
@@ -42,7 +43,7 @@ namespace API.Controllers
             try
             {
                 _reportService.ReviewReport(reportId, dto);
-                return Ok(new { message = "Report reviewed successfully." });
+                return Ok(new { message = ExportMessages.MSG_EXPORT_APPROVED });
             }
             catch (Exception ex)
             {
@@ -54,9 +55,18 @@ namespace API.Controllers
         [HttpGet("{reportId:int}")]
         public IActionResult GetReport(int reportId)
         {
-            var report = _reportService.GetById(reportId);
-            if (report == null) return NotFound();
-            return Ok(_mapper.Map<ExportReportResponseDto>(report));
+            try
+            {
+                var report = _reportService.GetById(reportId);
+                if (report == null)
+                    return NotFound(new { message = ExportMessages.EXPORT_NOT_FOUND });
+
+                return Ok(_mapper.Map<ExportReportResponseDto>(report));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("reports")]
@@ -75,7 +85,6 @@ namespace API.Controllers
             }
         }
 
-
         // 🔹 PUT: /api/ExportReports/{reportId}/view
         [HttpPut("{reportId:int}/view")]
         public IActionResult MarkAsViewed(int reportId)
@@ -83,14 +92,12 @@ namespace API.Controllers
             try
             {
                 _reportService.MarkAsViewed(reportId);
-                return Ok(new { message = "Đã đánh dấu báo cáo là đã xem." });
+                return Ok(new { message = ExportMessages.MSG_MARK_VIEWED });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
-
-
     }
 }

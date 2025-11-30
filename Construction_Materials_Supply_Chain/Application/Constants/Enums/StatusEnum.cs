@@ -18,6 +18,9 @@ namespace Application.Constants.Enums
         Deleted=12,
         Active=13,
         InActive =14,
+        ExportReport=15,
+        ImportReport = 16,
+        Viewed=17,
     }
 
     public static class StatusEnumExtensions

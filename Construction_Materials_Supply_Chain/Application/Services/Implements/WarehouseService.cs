@@ -8,13 +8,12 @@ namespace Application.Services.Implements
     public class WarehouseService : IWarehouseService
     {
         private readonly IWarehouseRepository _warehouses;
-        private readonly IUserRepository _userRepository;
 
 
-        public WarehouseService(IWarehouseRepository warehouses, IUserRepository userRepository)
+        public WarehouseService(IWarehouseRepository warehouses)
         {
             _warehouses = warehouses;
-            _userRepository = userRepository;
+            
         }
 
         public List<Warehouse> GetAll(int? managerId = null, int? partnerId = null)

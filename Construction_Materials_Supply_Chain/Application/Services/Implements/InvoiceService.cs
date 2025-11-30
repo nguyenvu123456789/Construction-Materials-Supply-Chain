@@ -1,4 +1,6 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
@@ -9,8 +11,6 @@ namespace Services.Implementations
     {
         private readonly IInvoiceRepository _invoices;
         private readonly IMaterialRepository _materials;
-        private readonly IInventoryRepository _inventories;
-        private readonly IImportRepository _imports;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
 
@@ -18,24 +18,19 @@ namespace Services.Implementations
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
-            IInventoryRepository inventories,
-            IImportRepository imports,
             IPartnerRelationRepository partnerRelationRepository,
             IOrderRepository orderRepository)
         {
             _invoices = invoices;
             _materials = materials;
-            _inventories = inventories;
-            _imports = imports;
             _orderRepository = orderRepository;
             _partnerRelationRepository = partnerRelationRepository;
         }
 
-        // 🔹 Tạo hóa đơn thủ công
         public Invoice CreateInvoice(CreateInvoiceDto dto)
         {
             if (_invoices.GetByCode(dto.InvoiceCode) != null)
-                throw new Exception("InvoiceCode already exists.");
+                throw new Exception(InvoiceMessages.INVOICE_CODE_EXISTS);
 
             var invoice = new Invoice
             {
@@ -45,8 +40,8 @@ namespace Services.Implementations
                 CreatedBy = dto.CreatedBy,
                 IssueDate = dto.IssueDate,
                 DueDate = dto.DueDate,
-                ExportStatus = "Pending",
-                ImportStatus = "Pending",
+                ExportStatus = StatusEnum.Pending.ToStatusString(),
+                ImportStatus = StatusEnum.Pending.ToStatusString(),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -54,7 +49,7 @@ namespace Services.Implementations
             {
                 var material = _materials.GetById(item.MaterialId);
                 if (material == null)
-                    throw new Exception($"MaterialId {item.MaterialId} not found.");
+                    throw new Exception(string.Format(InvoiceMessages.MATERIAL_NOT_FOUND, item.MaterialId));
 
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
@@ -71,24 +66,22 @@ namespace Services.Implementations
             return invoice;
         }
 
-        
 
-        // 🔹 Tạo hóa đơn từ Order
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
             if (order == null)
-                throw new Exception("Order not found.");
+                throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
-            if (order.Status != "Approved")
-                throw new Exception("Order must be approved to create invoices.");
+            if (order.Status != StatusEnum.Approved.ToStatusString())
+                throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
 
             var partnerId = order.CreatedByNavigation?.PartnerId;
             if (partnerId == null || partnerId == 0)
-                throw new Exception("PartnerId (supplier) not found for this order.");
+                throw new Exception(InvoiceMessages.PARTNER_NOT_FOUND);
 
             if (dto.UnitPrices == null || !dto.UnitPrices.Any())
-                throw new Exception("At least one material must be provided for invoicing.");
+                throw new Exception(InvoiceMessages.NO_MATERIAL_PROVIDED);
 
             var selectedMaterialIds = dto.UnitPrices.Select(u => u.MaterialId).ToList();
             var selectedDetails = order.OrderDetails
@@ -96,11 +89,10 @@ namespace Services.Implementations
                 .ToList();
 
             if (!selectedDetails.Any())
-                throw new Exception("No matching materials found in the order.");
+                throw new Exception(InvoiceMessages.NO_MATCHING_MATERIALS);
 
             var createdInvoices = new List<Invoice>();
 
-            // 🔹 Sinh mã hóa đơn mới tự động
             var lastInvoice = _invoices.GetAllWithDetails()
                 .OrderByDescending(i => i.InvoiceId)
                 .FirstOrDefault();
@@ -114,7 +106,7 @@ namespace Services.Implementations
             }
 
             if (partnerId == null || order.CreatedByNavigation?.PartnerId == null)
-                throw new Exception("PartnerId (buyer or seller) not found for this order.");
+                throw new Exception(InvoiceMessages.PARTNER_NOT_FOUND);
 
             var relation = _partnerRelationRepository.GetRelation(
                 buyerPartnerId: partnerId.Value,
@@ -127,18 +119,13 @@ namespace Services.Implementations
             foreach (var od in selectedDetails)
             {
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
-                if (unitPriceDto == null)
-                    continue;
+                if (unitPriceDto == null) continue;
 
                 var unitPrice = unitPriceDto.UnitPrice;
                 var lineTotal = od.Quantity * unitPrice;
 
-                // 🔹 Áp dụng giảm giá toàn bộ hóa đơn
                 decimal lineDiscount = lineTotal * discountPercent / 100 + discountAmount;
-
-                // Không được giảm vượt quá tổng line
-                if (lineDiscount > lineTotal)
-                    lineDiscount = lineTotal;
+                if (lineDiscount > lineTotal) lineDiscount = lineTotal;
 
                 var newCode = $"INV-{nextNumber:D3}";
                 nextNumber++;
@@ -146,14 +133,14 @@ namespace Services.Implementations
                 var invoice = new Invoice
                 {
                     InvoiceCode = newCode,
-                    InvoiceType = "Export",
+                    InvoiceType = StatusEnum.Export.ToStatusString(),
                     PartnerId = partnerId.Value,
                     CreatedBy = dto.CreatedBy,
                     OrderId = order.OrderId,
                     IssueDate = dto.IssueDate,
                     DueDate = dto.DueDate,
-                    ExportStatus = "Pending",
-                    ImportStatus = "Pending",
+                    ExportStatus = StatusEnum.Pending.ToStatusString(),
+                    ImportStatus = StatusEnum.Pending.ToStatusString(),
                     CreatedAt = DateTime.UtcNow,
                     Address = order.DeliveryAddress,
                     TotalAmount = lineTotal,
@@ -173,23 +160,22 @@ namespace Services.Implementations
                 _invoices.Add(invoice);
                 createdInvoices.Add(invoice);
 
-                od.Status = "Invoiced";
+                od.Status = StatusEnum.Invoiced.ToStatusString();
             }
 
-            if (order.OrderDetails.All(od => od.Status == "Invoiced"))
-                order.Status = "Invoiced";
+            if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
+                order.Status = StatusEnum.Invoiced.ToStatusString();
 
             _orderRepository.Update(order);
             return createdInvoices;
         }
-
 
         // 🔹 Cập nhật trạng thái của bên xuất
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
             if (invoice == null)
-                throw new Exception("Invoice not found.");
+                throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ExportStatus = newStatus;
             invoice.UpdatedAt = DateTime.UtcNow;
@@ -202,7 +188,7 @@ namespace Services.Implementations
         {
             var invoice = _invoices.GetByIdWithDetails(id);
             if (invoice == null)
-                throw new Exception("Invoice not found.");
+                throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             invoice.ImportStatus = newStatus;
             invoice.UpdatedAt = DateTime.UtcNow;
@@ -215,7 +201,7 @@ namespace Services.Implementations
         {
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
             if (invoice == null)
-                throw new Exception("Invoice not found");
+                throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
             bool isExporter = invoice.CreatedByNavigation?.PartnerId == currentPartnerId;
 
@@ -269,23 +255,22 @@ namespace Services.Implementations
 
             return result;
         }
+
         public Invoice? RejectInvoice(int id)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
             if (invoice == null)
                 return null;
 
-            invoice.ExportStatus = "Rejected";
-            invoice.ImportStatus = "Rejected";
-            invoice.UpdatedAt = DateTime.UtcNow;
+            invoice.ExportStatus = StatusEnum.Rejected.ToStatusString();
+            invoice.ImportStatus = StatusEnum.Rejected.ToStatusString();
+            invoice.UpdatedAt = DateTime.Now;
             _invoices.Update(invoice);
 
             return invoice;
         }
-        // 🔹 Lấy 1 hóa đơn theo ID kèm chi tiết
-        public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
 
-        // 🔹 Lấy tất cả hóa đơn có chi tiết
+        public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
 
     }

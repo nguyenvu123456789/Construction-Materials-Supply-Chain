@@ -6,12 +6,15 @@ namespace Application.Constants.Enums
     {
         Pending = 1,        // Chờ xử lý
         Approved = 2,       // Đã duyệt
-        Rejected = 3,       // Từ chối
+        Rejected = 3,       
         InProgress = 4,     // Đang xử lý
-        Completed = 5,      // Hoàn thành
-        Canceled = 6,       // Hủy
-        Draft = 7,          // Nháp
-        Success = 8         // Thành công
+        Completed = 5,      
+        Canceled = 6,       
+        Draft = 7,         
+        Success = 8,
+        Invoiced = 9,
+        Export = 10,
+        Import = 11
     }
 
     public static class StatusEnumExtensions

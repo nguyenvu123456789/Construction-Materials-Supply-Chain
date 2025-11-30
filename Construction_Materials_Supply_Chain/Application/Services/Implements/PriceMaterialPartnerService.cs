@@ -82,7 +82,7 @@ namespace Application.Services
             if (!string.IsNullOrWhiteSpace(dto.Status))
                 entity.Status = dto.Status;
 
-            _repo.Update(entity); // repo SaveChanges synchronous
+            _repo.Update(entity); 
         }
 
         public async Task<List<PriceMaterialPartnerDto>> GetPricesForPartnerAsync(int buyerPartnerId, int sellerPartnerId)

@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Application.Constants.Messages;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -15,12 +16,11 @@ namespace API.Controllers
             _invoiceService = invoiceService;
         }
 
-
         [HttpGet("{id:int}")]
         public IActionResult GetInvoice(int id)
         {
             var invoice = _invoiceService.GetByIdWithDetails(id);
-            if (invoice == null) return NotFound();
+            if (invoice == null) return NotFound(new { message = InvoiceMessages.INVOICE_NOT_FOUND });
             return Ok(invoice);
         }
 
@@ -31,18 +31,17 @@ namespace API.Controllers
             return Ok(invoices);
         }
 
-
         [HttpPost("from-order")]
         public IActionResult CreateInvoiceFromOrder([FromBody] CreateInvoiceFromOrderDto dto)
         {
-            if (dto == null) return BadRequest("Invalid request data");
+            if (dto == null) return BadRequest(new { message = InvoiceMessages.INVALID_REQUEST });
 
             try
             {
                 var invoices = _invoiceService.CreateInvoiceFromOrder(dto);
                 return Ok(new
                 {
-                    message = $"{invoices.Count} invoice(s) created successfully",
+                    message = string.Format(InvoiceMessages.INVOICE_CREATED_SUCCESS, invoices.Count),
                     invoices
                 });
             }
@@ -52,8 +51,6 @@ namespace API.Controllers
             }
         }
 
-
-
         [HttpPut("reject/{id}")]
         public IActionResult RejectInvoice(int id)
         {
@@ -61,9 +58,9 @@ namespace API.Controllers
             {
                 var invoice = _invoiceService.RejectInvoice(id);
                 if (invoice == null)
-                    return NotFound("Invoice not found.");
+                    return NotFound(new { message = InvoiceMessages.INVOICE_NOT_FOUND });
 
-                return Ok(invoice);
+                return Ok(new { message = InvoiceMessages.INVOICE_REJECTED_SUCCESS, invoice });
             }
             catch (Exception ex)
             {
@@ -84,6 +81,5 @@ namespace API.Controllers
             var invoices = _invoiceService.GetAllInvoicesForPartner(partnerId);
             return Ok(invoices);
         }
-
     }
 }

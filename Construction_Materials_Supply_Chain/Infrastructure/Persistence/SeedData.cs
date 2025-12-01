@@ -137,7 +137,9 @@ namespace Infrastructure.Persistence
                     new Role { RoleName = "Kế toán", Description = "Quản lý tài chính và hóa đơn" },
                     new Role { RoleName = "Nhân viên bán hàng", Description = "Xử lý đơn hàng và khách hàng" },
                     new Role { RoleName = "Nhân viên hỗ trợ", Description = "Hỗ trợ khách hàng và kho" },
-                    new Role { RoleName = "Kiểm kho", Description = "Kiểm tra và báo cáo tồn kho" }
+                    new Role { RoleName = "Kiểm kho", Description = "Kiểm tra và báo cáo tồn kho" },
+                    new Role { RoleName = "Phân tích viên", Description = "Phân tích viên của công ty mẹ" },
+                    new Role { RoleName = "Đại Lý", Description = "Đại lý khách hàng" }
                 );
                 context.SaveChanges();
             }

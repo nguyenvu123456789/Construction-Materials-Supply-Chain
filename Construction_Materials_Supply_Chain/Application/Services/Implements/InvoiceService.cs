@@ -116,6 +116,26 @@ namespace Services.Implementations
             decimal discountPercent = relation?.RelationType.DiscountPercent ?? 0;
             decimal discountAmount = relation?.RelationType.DiscountAmount ?? 0;
 
+            var newCode = $"INV-{nextNumber:D3}";
+
+            var invoice = new Invoice
+            {
+                InvoiceCode = newCode,
+                InvoiceType = StatusEnum.Export.ToStatusString(),
+                PartnerId = partnerId.Value,
+                CreatedBy = dto.CreatedBy,
+                OrderId = order.OrderId,
+                IssueDate = dto.IssueDate,
+                DueDate = dto.DueDate,
+                ExportStatus = StatusEnum.Pending.ToStatusString(),
+                ImportStatus = StatusEnum.Pending.ToStatusString(),
+                CreatedAt = DateTime.Now,
+                Address = order.DeliveryAddress
+            };
+
+            decimal totalAmount = 0;
+            decimal totalDiscount = 0;
+
             foreach (var od in selectedDetails)
             {
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
@@ -127,27 +147,6 @@ namespace Services.Implementations
                 decimal lineDiscount = lineTotal * discountPercent / 100 + discountAmount;
                 if (lineDiscount > lineTotal) lineDiscount = lineTotal;
 
-                var newCode = $"INV-{nextNumber:D3}";
-                nextNumber++;
-
-                var invoice = new Invoice
-                {
-                    InvoiceCode = newCode,
-                    InvoiceType = StatusEnum.Export.ToStatusString(),
-                    PartnerId = partnerId.Value,
-                    CreatedBy = dto.CreatedBy,
-                    OrderId = order.OrderId,
-                    IssueDate = dto.IssueDate,
-                    DueDate = dto.DueDate,
-                    ExportStatus = StatusEnum.Pending.ToStatusString(),
-                    ImportStatus = StatusEnum.Pending.ToStatusString(),
-                    CreatedAt = DateTime.Now,
-                    Address = order.DeliveryAddress,
-                    TotalAmount = lineTotal,
-                    DiscountAmount = lineDiscount,
-                    PayableAmount = lineTotal - lineDiscount
-                };
-
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
                     MaterialId = od.MaterialId,
@@ -157,16 +156,24 @@ namespace Services.Implementations
                     DiscountAmount = lineDiscount
                 });
 
-                _invoices.Add(invoice);
-                createdInvoices.Add(invoice);
+                totalAmount += lineTotal;
+                totalDiscount += lineDiscount;
 
                 od.Status = StatusEnum.Invoiced.ToStatusString();
             }
+
+            invoice.TotalAmount = totalAmount;
+            invoice.DiscountAmount = totalDiscount;
+            invoice.PayableAmount = totalAmount - totalDiscount;
+
+            _invoices.Add(invoice);
+            createdInvoices.Add(invoice);
 
             if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
                 order.Status = StatusEnum.Invoiced.ToStatusString();
 
             _orderRepository.Update(order);
+
             return createdInvoices;
         }
 

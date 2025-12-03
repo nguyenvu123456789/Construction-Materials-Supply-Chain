@@ -13,8 +13,10 @@ public partial class Order
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public int? SupplierId { get; set; }
+    public int? WarehouseId { get; set; }
     public virtual Partner? Supplier { get; set; }
     public virtual User? CreatedByNavigation { get; set; }
+    public virtual Warehouse? Warehouse { get; set; }
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     public virtual ICollection<ShippingLog> ShippingLogs { get; set; } = new List<ShippingLog>();

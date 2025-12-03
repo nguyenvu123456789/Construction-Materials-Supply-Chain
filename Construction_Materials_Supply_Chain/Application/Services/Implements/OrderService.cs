@@ -67,6 +67,7 @@ namespace Application.Services.Implements
                 OrderCode = orderCode,
                 CreatedBy = dto.CreatedBy,
                 SupplierId = dto.SupplierId,
+                WarehouseId = dto.WarehouseId,
                 CreatedAt = DateTime.Now,
                 Status = "Pending Approval",
                 CustomerName = buyer.FullName ?? "",
@@ -83,7 +84,7 @@ namespace Application.Services.Implements
             }).ToList();
 
             _orderRepository.Add(order);
-
+            var savedOrder = _orderRepository.GetByCode(order.OrderCode);
             return new OrderResponseDto
             {
                 OrderId = order.OrderId,
@@ -92,7 +93,9 @@ namespace Application.Services.Implements
                 Status = order.Status ?? "",
                 CreatedAt = order.CreatedAt ?? DateTime.Now,
                 PhoneNumber = order.PhoneNumber,
+                WarehouseId = order.WarehouseId,
                 DeliveryAddress = order.DeliveryAddress,
+                WarehouseName = savedOrder.Warehouse?.WarehouseName,
                 Note = order.Note,
                 Materials = order.OrderDetails.Select(d => new OrderMaterialResponseDto
                 {
@@ -149,6 +152,8 @@ namespace Application.Services.Implements
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,
+                WarehouseId = order.WarehouseId,
+                WarehouseName = order.Warehouse?.WarehouseName,
                 OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {
                     MaterialId = od.MaterialId,

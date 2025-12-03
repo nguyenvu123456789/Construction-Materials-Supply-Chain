@@ -11,7 +11,6 @@ namespace Application.Interfaces
         Invoice? RejectInvoice(int id);
         List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto);
         InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId);
-        List<InvoiceDto> GetAllInvoicesForPartner(int currenBtPartnerId);
-
+        List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId);
     }
 }

@@ -123,6 +123,7 @@ namespace Services.Implementations
                 InvoiceCode = newCode,
                 InvoiceType = StatusEnum.Export.ToStatusString(),
                 PartnerId = partnerId.Value,
+                WarehouseId = order.WarehouseId,
                 CreatedBy = dto.CreatedBy,
                 OrderId = order.OrderId,
                 IssueDate = dto.IssueDate,
@@ -220,6 +221,8 @@ namespace Services.Implementations
                 IssueDate = invoice.IssueDate,
                 DueDate = invoice.DueDate,
                 TotalAmount = invoice.TotalAmount,
+                WarehouseId = invoice.WarehouseId,
+                WarehouseName = invoice.Warehouse?.WarehouseName ?? "Không xác định",
                 Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                 CreatedAt = invoice.CreatedAt
             };
@@ -228,19 +231,21 @@ namespace Services.Implementations
         }
 
         // 🔹 Lấy tất cả hóa đơn theo Partner 
-        public List<InvoiceDto> GetAllInvoicesForPartner(int partnerId)
+        public List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId)
         {
-            var invoices = _invoices.GetAllWithDetails()
-                .Where(i => i.PartnerId == partnerId || i.CreatedByNavigation.PartnerId == partnerId)
-                .ToList();
+            var invoices = _invoices.GetAllWithDetails();
 
-            var result = new List<InvoiceDto>();
+            if (partnerId.HasValue)
+                invoices = invoices.Where(i => i.PartnerId == partnerId.Value || i.CreatedByNavigation?.PartnerId == partnerId.Value).ToList();
 
-            foreach (var invoice in invoices)
+            if (managerId.HasValue)
+                invoices = invoices.Where(i => i.Warehouse != null && i.Warehouse.ManagerId == managerId.Value).ToList();
+
+            var result = invoices.Select(invoice =>
             {
-                bool isExporter = invoice.CreatedByNavigation.PartnerId == partnerId;
+                bool isExporter = invoice.CreatedByNavigation?.PartnerId == partnerId;
 
-                result.Add(new InvoiceDto
+                return new InvoiceDto
                 {
                     InvoiceId = invoice.InvoiceId,
                     InvoiceCode = invoice.InvoiceCode,
@@ -250,16 +255,19 @@ namespace Services.Implementations
                     IssueDate = invoice.IssueDate,
                     DueDate = invoice.DueDate,
                     TotalAmount = invoice.TotalAmount,
-                    Address =  invoice.Address,
+                    Address = invoice.Address,
                     DiscountAmount = invoice.DiscountAmount,
                     PayableAmount = invoice.PayableAmount,
+                    WarehouseId = invoice.WarehouseId,
+                    WarehouseName = invoice.Warehouse?.WarehouseName ?? "Không xác định",
                     Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                     CreatedAt = invoice.CreatedAt
-                });
-            }
+                };
+            }).ToList();
 
             return result;
         }
+
 
         public Invoice? RejectInvoice(int id)
         {

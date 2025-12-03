@@ -75,11 +75,12 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("partner/{partnerId:int}")]
-        public IActionResult GetAllInvoicesForPartner(int partnerId)
+        [HttpGet("partner")]
+        public IActionResult GetAllInvoicesForPartner([FromQuery] int? partnerId, [FromQuery] int? managerId)
         {
-            var invoices = _invoiceService.GetAllInvoicesForPartner(partnerId);
+            var invoices = _invoiceService.GetAllInvoicesForPartnerOrManager(partnerId, managerId);
             return Ok(invoices);
         }
+
     }
 }

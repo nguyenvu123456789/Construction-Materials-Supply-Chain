@@ -16,6 +16,8 @@ namespace Infrastructure.Implementations
                 .AsNoTracking()
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
+                    .Include(i => i.Order)                  
+            .ThenInclude(o => o.Warehouse)
                 .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
         }
         public Invoice? GetByCodeNoTracking(string invoiceCode)
@@ -28,8 +30,11 @@ namespace Infrastructure.Implementations
 
         public Invoice? GetByIdWithDetails(int id)
         {
-            return _dbSet.Include(i => i.InvoiceDetails)
+            return _dbSet
+                .Include(i => i.InvoiceDetails)
                          .ThenInclude(d => d.Material)
+                         .Include(i => i.Order)
+            .ThenInclude(o => o.Warehouse)
                          .FirstOrDefault(i => i.InvoiceId == id);
         }
 
@@ -37,6 +42,8 @@ namespace Infrastructure.Implementations
         {
             return _dbSet
                 .Include(i => i.CreatedByNavigation)
+                .Include(i => i.Order)                  
+            .ThenInclude(o => o.Warehouse)
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .Include(i => i.Partner)

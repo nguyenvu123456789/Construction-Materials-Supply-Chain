@@ -45,6 +45,8 @@
         public string InvoiceType { get; set; } = null!;
         public string? Address { get; set; }
         public int PartnerId { get; set; }
+        public int? WarehouseId { get; set; }         
+        public string? WarehouseName { get; set; }
         public string PartnerName { get; set; } = null!;
         public DateTime IssueDate { get; set; }
         public DateTime? DueDate { get; set; }

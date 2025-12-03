@@ -533,6 +533,8 @@ namespace Infrastructure.Persistence
                         InvoiceCode = data.Code,
                         InvoiceType = "Export",
                         PartnerId = partner.PartnerId,
+                        WarehouseId = order.WarehouseId,         
+                        Warehouse = order.Warehouse,
                         CreatedBy = manager.UserId,
                         OrderId = order.OrderId,
                         IssueDate = DateTime.Now,

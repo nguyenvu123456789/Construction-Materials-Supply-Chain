@@ -8,6 +8,7 @@ public partial class Invoice
     public int PartnerId { get; set; }
     public int CreatedBy { get; set; }
     public int OrderId { get; set; }
+    public int? WarehouseId { get; set; }
     public DateTime IssueDate { get; set; }
     public DateTime? DueDate { get; set; }
     public decimal TotalAmount { get; set; }
@@ -22,5 +23,6 @@ public partial class Invoice
     public virtual Partner Partner { get; set; } = null!;
     public virtual Order Order { get; set; } = null!;
     public virtual ICollection<InvoiceDetail> InvoiceDetails { get; set; } = new List<InvoiceDetail>();
+    public virtual Warehouse? Warehouse { get; set; }
 
 }

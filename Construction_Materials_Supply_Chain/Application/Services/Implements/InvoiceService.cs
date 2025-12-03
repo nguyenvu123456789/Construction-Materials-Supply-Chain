@@ -123,6 +123,7 @@ namespace Services.Implementations
                 InvoiceCode = newCode,
                 InvoiceType = StatusEnum.Export.ToStatusString(),
                 PartnerId = partnerId.Value,
+                WarehouseId = order.WarehouseId,
                 CreatedBy = dto.CreatedBy,
                 OrderId = order.OrderId,
                 IssueDate = dto.IssueDate,
@@ -220,6 +221,8 @@ namespace Services.Implementations
                 IssueDate = invoice.IssueDate,
                 DueDate = invoice.DueDate,
                 TotalAmount = invoice.TotalAmount,
+                WarehouseId = invoice.WarehouseId,
+                WarehouseName = invoice.Warehouse?.WarehouseName ?? "Không xác định",
                 Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
                 CreatedAt = invoice.CreatedAt
             };

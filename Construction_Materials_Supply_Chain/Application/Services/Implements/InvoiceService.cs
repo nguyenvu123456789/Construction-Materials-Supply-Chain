@@ -159,7 +159,7 @@ namespace Services.Implementations
 
                 totalAmount += lineTotal;
                 totalDiscount += lineDiscount;
-
+                od.UnitPrice = unitPrice;
                 od.Status = StatusEnum.Invoiced.ToStatusString();
             }
 

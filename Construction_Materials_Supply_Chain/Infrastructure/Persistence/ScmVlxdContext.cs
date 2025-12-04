@@ -52,12 +52,15 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<ExportReportDetail> ExportReportDetails { get; set; }
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
     public virtual DbSet<MaterialPartner> MaterialPartners { get; set; } = null!;
-
     public virtual DbSet<GlAccount> GlAccounts { get; set; }
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
     public virtual DbSet<JournalLine> JournalLines { get; set; }
+    public virtual DbSet<MoneyAccount> MoneyAccounts { get; set; }
+    public virtual DbSet<BankStatement> BankStatements { get; set; }
+    public virtual DbSet<BankStatementLine> BankStatementLines { get; set; }
     public virtual DbSet<Receipt> Receipts { get; set; }
     public virtual DbSet<Payment> Payments { get; set; }
+    public virtual DbSet<PostingPolicy> PostingPolicies { get; set; }
     public virtual DbSet<SubLedgerEntry> SubLedgerEntries { get; set; }
 
     public DbSet<Address> Addresses { get; set; }
@@ -612,10 +615,10 @@ public partial class ScmVlxdContext : DbContext
 
 
         modelBuilder.Entity<PartnerRelation>()
-            .HasOne(pr => pr.BuyerPartner)
-            .WithMany(p => p.RelationsAsBuyer)
-            .HasForeignKey(pr => pr.BuyerPartnerId)
-            .OnDelete(DeleteBehavior.Restrict);
+    .HasOne(pr => pr.BuyerPartner)
+    .WithMany(p => p.RelationsAsBuyer)
+    .HasForeignKey(pr => pr.BuyerPartnerId)
+    .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<PartnerRelation>()
             .HasOne(pr => pr.SellerPartner)
@@ -726,6 +729,102 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<GlAccount>(e =>
+        {
+            e.ToTable("GlAccount");
+            e.HasKey(x => x.AccountId);
+            e.Property(x => x.Code).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Name).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => new { x.PartnerId, x.Code }).IsUnique();
+            e.HasOne(x => x.Parent).WithMany(p => p.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<JournalEntry>(e =>
+        {
+            e.ToTable("JournalEntry");
+            e.HasKey(x => x.JournalEntryId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.Property(x => x.PostingDate).HasColumnType("datetime");
+            e.HasIndex(x => new { x.PartnerId, x.SourceType, x.SourceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<JournalLine>(e =>
+        {
+            e.ToTable("JournalLine");
+            e.HasKey(x => x.JournalLineId);
+            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
+            e.HasOne(x => x.JournalEntry).WithMany(j => j.Lines).HasForeignKey(x => x.JournalEntryId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Account).WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.PartnerId, x.AccountId });
+        });
+
+        modelBuilder.Entity<PostingPolicy>(e =>
+        {
+            e.ToTable("PostingPolicy");
+            e.HasKey(x => x.PostingPolicyId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.Property(x => x.DocumentType).HasMaxLength(50).IsRequired();
+            e.Property(x => x.RuleKey).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => new { x.PartnerId, x.DocumentType, x.RuleKey }).IsUnique();
+        });
+
+        modelBuilder.Entity<SubLedgerEntry>(e =>
+        {
+            e.ToTable("SubLedgerEntry");
+            e.HasKey(x => x.SubLedgerEntryId);
+            e.Property(x => x.SubLedgerType).HasMaxLength(5).IsRequired();
+            e.Property(x => x.Debit).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Credit).HasColumnType("decimal(18,2)");
+            e.HasIndex(x => new { x.PartnerId, x.SubLedgerType, x.Date });
+        });
+
+        modelBuilder.Entity<Receipt>(e =>
+        {
+            e.ToTable("Receipt");
+            e.HasKey(x => x.ReceiptId);
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Method).HasMaxLength(50);
+            e.HasIndex(x => new { x.Date, x.PartnerId });
+        });
+
+        modelBuilder.Entity<Payment>(e =>
+        {
+            e.ToTable("Payment");
+            e.HasKey(x => x.PaymentId);
+            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Method).HasMaxLength(50);
+            e.HasIndex(x => new { x.Date, x.PartnerId });
+        });
+
+        modelBuilder.Entity<MoneyAccount>(e =>
+        {
+            e.ToTable("MoneyAccount");
+            e.HasKey(x => x.MoneyAccountId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.Property(x => x.Name).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(50).IsRequired();
+            e.HasIndex(x => new { x.PartnerId, x.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<BankStatement>(e =>
+        {
+            e.ToTable("BankStatement");
+            e.HasKey(x => x.BankStatementId);
+            e.Property(x => x.PartnerId).IsRequired();
+            e.HasOne(x => x.MoneyAccount).WithMany().HasForeignKey(x => x.MoneyAccountId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.PartnerId, x.MoneyAccountId, x.From, x.To });
+        });
+
+        modelBuilder.Entity<BankStatementLine>(e =>
+        {
+            e.ToTable("BankStatementLine");
+            e.HasKey(x => x.BankStatementLineId);
+            e.HasOne(x => x.BankStatement).WithMany(b => b.Lines).HasForeignKey(x => x.BankStatementId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Address>(e =>

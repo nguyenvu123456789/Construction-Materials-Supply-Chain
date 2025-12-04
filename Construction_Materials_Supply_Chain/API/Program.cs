@@ -69,6 +69,10 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IHandleRequestRepository, HandleRequestRepository>();
 builder.Services.AddScoped<ITransportRepository, TransportRepository>();
+builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
+builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();
@@ -81,8 +85,6 @@ builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowS
 builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
-builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Services
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();
@@ -107,6 +109,7 @@ builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISupplyChainAnalysisService, SupplyChainAnalysisService>();
+builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
 builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
@@ -114,9 +117,11 @@ builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IRegionService, RegionService>();
 
+builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 builder.Services.AddHttpContextAccessor();

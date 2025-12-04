@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interface;
 using Domain.Models;
@@ -46,8 +47,7 @@ namespace Application.Services.Implements
         {
             var warehouse = _warehouses.GetById(id);
             if (warehouse == null)
-                throw new Exception("Warehouse not found.");
-
+                throw new Exception(WarehouseMessages.MSG_WAREHOUSE_NOT_FOUND);
             warehouse.WarehouseName = dto.WarehouseName;
             warehouse.Location = dto.Location;
             warehouse.ManagerId = dto.ManagerId;

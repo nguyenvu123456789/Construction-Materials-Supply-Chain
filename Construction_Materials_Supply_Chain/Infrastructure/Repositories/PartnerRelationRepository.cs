@@ -42,5 +42,12 @@ namespace Infrastructure.Repositories
             return QueryWithRelations()
                 .FirstOrDefault(pr => pr.BuyerPartnerId == buyerPartnerId && pr.SellerPartnerId == sellerPartnerId);
         }
+        public List<PartnerRelation> GetRelationsBySeller(int sellerPartnerId)
+        {
+            return QueryWithRelations()
+                .Where(pr => pr.SellerPartnerId == sellerPartnerId)
+                .ToList();
+        }
+
     }
 }

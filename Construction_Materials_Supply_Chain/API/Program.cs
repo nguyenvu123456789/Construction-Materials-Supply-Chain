@@ -120,6 +120,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IRegionService, RegionService>();
+builder.Services.AddScoped<IPartnerRelationService, PartnerRelationService>();
 
 builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

@@ -12,8 +12,9 @@ namespace Application.Validation.Accountant
     {
         public ReceiptValidator()
         {
-            RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Số tiền phải lớn hơn 0.");
-            RuleFor(x => x.PartnerId).NotEmpty().WithMessage("Khách hàng không được để trống.");
+            RuleFor(r => r.PartnerName).NotEmpty().WithMessage("Tên người nộp tiền không được để trống");
+            RuleFor(r => r.Amount).GreaterThan(0).WithMessage("Số tiền phải lớn hơn 0");
+            RuleFor(r => r.Reason).NotEmpty().WithMessage("Lý do thu không được để trống");
         }
     }
 }

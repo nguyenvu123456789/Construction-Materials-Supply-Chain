@@ -1,15 +1,14 @@
 ﻿using Application.DTOs;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Services.Interfaces
 {
     public interface IPaymentService
     {
-        List<PaymentDTO> GetAllPayments();
-        PaymentDTO GetPaymentById(int id);
-        void AddPayment(PaymentDTO paymentDTO);
-        void UpdatePayment(PaymentDTO paymentDTO);
-        void DeletePayment(int id);
-        List<PaymentDTO> GetPaymentsByPartnerId(int partnerId);
+        string GeneratePaymentNumber();
+        void CreatePayment(PaymentDTO paymentDto, IFormFile file);
+        Payment GetPaymentById(int id);
+        List<Payment> GetAllPayments();
+        List<Payment> GetPaymentsByPartnerId(int partnerId);
     }
 }

@@ -243,8 +243,50 @@ namespace Application.MappingProfile
             CreateMap<PartnerRelationCreateDto, PartnerRelation>();
             CreateMap<PartnerRelationUpdateDto, PartnerRelation>();
 
-            CreateMap<Receipt, ReceiptDTO>().ReverseMap();
-            CreateMap<Payment, PaymentDTO>().ReverseMap();
+            CreateMap<Receipt, ReceiptDTO>();
+            CreateMap<Payment, PaymentDTO>();
+
+            CreateMap<PaymentDTO, Payment>()
+                .ForMember(dest => dest.PaymentNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.DateCreated, opt => opt.MapFrom(src => src.DateCreated))
+                .ForMember(dest => dest.AccountingDate, opt => opt.MapFrom(src => src.AccountingDate))
+                .ForMember(dest => dest.PaymentType, opt => opt.MapFrom(src => src.PaymentType))
+                .ForMember(dest => dest.PartnerName, opt => opt.MapFrom(src => src.PartnerName))
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.BankAccountFrom, opt => opt.MapFrom(src => src.BankAccountFrom))
+                .ForMember(dest => dest.BankAccountTo, opt => opt.MapFrom(src => src.BankAccountTo))
+                .ForMember(dest => dest.DebitAccount, opt => opt.MapFrom(src => src.DebitAccount))
+                .ForMember(dest => dest.CreditAccount, opt => opt.MapFrom(src => src.CreditAccount))
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.RequestedBy, opt => opt.MapFrom(src => src.RequestedBy))
+                .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedBy))
+                .ForMember(dest => dest.ApprovalDate, opt => opt.MapFrom(src => src.ApprovalDate))
+                .ForMember(dest => dest.PaidBy, opt => opt.MapFrom(src => src.PaidBy))
+                .ForMember(dest => dest.Recipient, opt => opt.MapFrom(src => src.Recipient))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.Account, opt => opt.MapFrom(src => src.Account));
+
+            CreateMap<ReceiptDTO, Receipt>()
+                .ForMember(dest => dest.DateCreated, opt => opt.MapFrom(src => src.DateCreated))
+                .ForMember(dest => dest.AccountingDate, opt => opt.MapFrom(src => src.AccountingDate))
+                .ForMember(dest => dest.ReceiptType, opt => opt.MapFrom(src => src.ReceiptType))
+                .ForMember(dest => dest.PartnerName, opt => opt.MapFrom(src => src.PartnerName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.BankAccount, opt => opt.MapFrom(src => src.BankAccount))
+                .ForMember(dest => dest.DebitAccount, opt => opt.MapFrom(src => src.DebitAccount))
+                .ForMember(dest => dest.CreditAccount, opt => opt.MapFrom(src => src.CreditAccount))
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.Payee, opt => opt.MapFrom(src => src.Payee))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.PartnerId, opt => opt.MapFrom(src => src.PartnerId))
+                .ForMember(dest => dest.ReceiptNumber, opt => opt.Ignore());
         }
     }
 }

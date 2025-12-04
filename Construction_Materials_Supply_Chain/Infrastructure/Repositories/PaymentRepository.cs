@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Interface.Base;
+using Domain.Interfaces;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
@@ -15,15 +16,35 @@ namespace Infrastructure.Repositories
     {
         public PaymentRepository(ScmVlxdContext context) : base(context) { }
 
-        public void AddPaymentInvoice(PaymentInvoice paymentInvoice)
-        {
-            _context.Set<PaymentInvoice>().Add(paymentInvoice);
-            _context.SaveChanges();
-        }
-
         public List<Payment> GetPaymentsByPartnerId(int partnerId)
         {
-            return _dbSet.Where(p => p.PartnerId == partnerId).ToList();
+            return _context.Payments
+                .Where(p => p.PartnerId == partnerId)
+                .ToList();
+        }
+
+        public Payment GetLastPaymentByPrefix(string prefix)
+        {
+            return _context.Payments
+                .AsNoTracking()
+                .Where(p => p.PaymentNumber.StartsWith(prefix))
+                .OrderByDescending(p => p.PaymentNumber)
+                .FirstOrDefault();
+        }
+
+        public List<Payment> GetPaymentsByInvoice(string code)
+        {
+            return _context.Payments
+                .Where(x => x.Invoices.Equals(code))
+                .ToList();
+        }
+
+        public List<Payment> GetByDateRange(DateTime from, DateTime to)
+        {
+            return _context.Payments
+                .Where(x => x.DateCreated >= from && x.DateCreated <= to)
+                .OrderBy(x => x.DateCreated)
+                .ToList();
         }
     }
 }

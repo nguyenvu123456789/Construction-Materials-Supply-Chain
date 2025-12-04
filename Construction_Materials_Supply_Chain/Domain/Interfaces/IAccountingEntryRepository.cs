@@ -10,6 +10,6 @@ namespace Domain.Interfaces
 {
     public interface IAccountingEntryRepository : IGenericRepository<AccountingEntry>
     {
-        List<AccountingEntry> GetEntriesByDocumentType(string documentType);
+        List<AccountingEntry> GetEntries(DateTime from, DateTime to);
     }
 }

@@ -79,8 +79,6 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Receipt> Receipts { get; set; }
     public virtual DbSet<Payment> Payments { get; set; }
     public virtual DbSet<AccountingEntry> AccountingEntries { get; set; }
-    public DbSet<PaymentInvoice> PaymentInvoices { get; set; }
-    public DbSet<ReceiptInvoice> ReceiptInvoices { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -966,9 +964,9 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.DateCreated).HasColumnType("datetime");
             entity.Property(e => e.AccountingDate).HasColumnType("datetime");
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.AmountInWords).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(20);
+
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -978,7 +976,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.DateCreated).HasColumnType("datetime");
             entity.Property(e => e.AccountingDate).HasColumnType("datetime");
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.AmountInWords).HasMaxLength(500);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(20);
         });
@@ -992,12 +989,6 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CreditAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Description).HasMaxLength(500);
         });
-
-        modelBuilder.Entity<PaymentInvoice>()
-            .HasKey(pi => new { pi.PaymentId, pi.InvoiceId });
-
-        modelBuilder.Entity<ReceiptInvoice>()
-            .HasKey(ri => new { ri.ReceiptId, ri.InvoiceId });
 
         OnModelCreatingPartial(modelBuilder);
     }

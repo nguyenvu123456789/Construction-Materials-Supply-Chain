@@ -1,103 +1,79 @@
 ﻿using Application.DTOs;
 using Application.Services.Interfaces;
 using AutoMapper;
-using Domain.Interface;
 using Domain.Interfaces;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Infrastructure.Services
 {
     public class ReceiptService : IReceiptService
     {
         private readonly IReceiptRepository _receiptRepository;
-        private readonly IInvoiceRepository _invoiceRepository;
         private readonly IMapper _mapper;
 
-        public ReceiptService(IReceiptRepository receiptRepository, IInvoiceRepository invoiceRepository, IMapper mapper)
+        public ReceiptService(IReceiptRepository receiptRepository, IMapper mapper)
         {
             _receiptRepository = receiptRepository;
-            _invoiceRepository = invoiceRepository;
             _mapper = mapper;
         }
 
-        public List<ReceiptDTO> GetAllReceipts()
+        public string GenerateReceiptNumber()
         {
-            var receipts = _receiptRepository.GetAll();
-            return _mapper.Map<List<ReceiptDTO>>(receipts);
-        }
+            var day = DateTime.Now.ToString("yyyyMMdd");
+            var prefix = $"PT-{day}-";
+            var lastReceipt = _receiptRepository.GetLastReceiptByPrefix(prefix);
+            var number = 1;
 
-        public List<ReceiptDTO> GetReceiptsByPartnerId(int partnerId)
-        {
-            var receipts = _receiptRepository.GetReceiptsByPartnerId(partnerId);
-            return _mapper.Map<List<ReceiptDTO>>(receipts);
-        }
-
-        public ReceiptDTO GetReceiptById(int id)
-        {
-            var receipt = _receiptRepository.GetById(id);
-            return _mapper.Map<ReceiptDTO>(receipt);
-        }
-
-        public void AddReceipt(ReceiptDTO receiptDTO)
-        {
-            var receipt = _mapper.Map<Receipt>(receiptDTO);
-
-            string receiptNumber = GenerateReceiptNumber();
-            receipt.ReceiptNumber = receiptNumber;
-            receipt.DateCreated = DateTime.Now;
-            receipt.AccountingDate = DateTime.Now;
-            receipt.Status = "Nháp";
-
-            receipt.AmountInWords = NumberToWords.ConvertAmountToWords(receipt.Amount);
-
-            receipt.DebitAccount = "1111";
-            receipt.CreditAccount = "131";
-
-            if (string.IsNullOrEmpty(receipt.Address))
+            if (lastReceipt != null)
             {
-                receipt.Address = "Không có thông tin địa chỉ";
+                var numberPart = lastReceipt.ReceiptNumber.Substring(prefix.Length);
+                if (int.TryParse(numberPart, out int parsed))
+                    number = parsed + 1;
             }
+
+            return $"{prefix}{number:D3}";
+        }
+
+        public void CreateReceipt(ReceiptDTO dto, IFormFile file)
+        {
+            var receipt = _mapper.Map<Receipt>(dto);
+            receipt.ReceiptNumber = GenerateReceiptNumber();
+            receipt.AttachmentFile = SaveFile(file);
+            receipt.Status = "Draft";
 
             _receiptRepository.Add(receipt);
-
-            if (!string.IsNullOrEmpty(receiptDTO.LinkedInvoiceIds))
-            {
-                foreach (var invoiceCode in receiptDTO.LinkedInvoiceIds.Split(','))
-                {
-                    var invoice = _invoiceRepository.GetByCode(invoiceCode.Trim());
-                    if (invoice != null)
-                    {
-                        var receiptInvoice = new ReceiptInvoice
-                        {
-                            ReceiptId = receipt.Id,
-                            InvoiceId = invoice.InvoiceId
-                        };
-                        _receiptRepository.AddReceiptInvoice(receiptInvoice);
-                    }
-                }
-            }
         }
 
-        public void UpdateReceipt(ReceiptDTO receiptDTO)
+        public Receipt GetReceiptById(int id)
         {
-            var receipt = _mapper.Map<Receipt>(receiptDTO);
-            _receiptRepository.Update(receipt);
+            return _receiptRepository.GetById(id);
         }
 
-        public void DeleteReceipt(int id)
+        public List<Receipt> GetAllReceipts()
         {
-            var receipt = _receiptRepository.GetById(id);
-            _receiptRepository.Delete(receipt);
+            return _receiptRepository.GetAll();
         }
 
-        private string GenerateReceiptNumber()
+        public List<Receipt> GetReceiptsByPartnerId(int partnerId)
         {
-            string datePart = DateTime.Now.ToString("yyyyMMdd");
-            int count = _receiptRepository.GetAll().Where(r => r.ReceiptNumber.StartsWith($"PT-{datePart}")).Count();
-            string serialNumber = (count + 1).ToString("D3");
-            return $"PT-{datePart}-{serialNumber}";
+            return _receiptRepository.GetReceiptsByPartnerId(partnerId);
+        }
+
+        private string SaveFile(IFormFile file)
+        {
+            if (file == null) return null;
+
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            var path = Path.Combine(folder, file.FileName);
+
+            using var stream = new FileStream(path, FileMode.Create);
+            file.CopyTo(stream);
+
+            return Path.Combine("UploadedFiles", file.FileName);
         }
     }
 }

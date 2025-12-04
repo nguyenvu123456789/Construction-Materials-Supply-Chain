@@ -17,9 +17,12 @@ namespace Infrastructure.Repositories
         {
         }
 
-        public List<AccountingEntry> GetEntriesByDocumentType(string documentType)
+        public List<AccountingEntry> GetEntries(DateTime from, DateTime to)
         {
-            return _dbSet.Where(a => a.DocumentType == documentType).ToList();
+            return _dbSet
+                .Where(x => x.EntryDate >= from && x.EntryDate <= to)
+                .OrderBy(x => x.EntryDate)
+                .ToList();
         }
     }
 }

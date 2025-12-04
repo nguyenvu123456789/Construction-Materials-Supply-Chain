@@ -1,36 +1,25 @@
-﻿namespace Domain.Models
+﻿using Domain.Models;
+
+public class Receipt
 {
-    public class Receipt
-    {
-        public int Id { get; set; }
-        public string ReceiptNumber { get; set; }
-        public DateTime DateCreated { get; set; }
-        public DateTime AccountingDate { get; set; }
-        public string ReceiptType { get; set; }
-        public int PartnerId { get; set; }
-        public string PartnerName { get; set; }
-        public string Address { get; set; }
-        public string Reason { get; set; }
-        public decimal Amount { get; set; }
-        public string AmountInWords { get; set; }
-        public string PaymentMethod { get; set; }
-        public string BankAccount { get; set; }
-        public string LinkedInvoiceIds { get; set; }
-        public string Notes { get; set; }
-        public string Status { get; set; }
-        public string CreatedBy { get; set; }
-        public string Payee { get; set; }
-        public string AttachmentFile { get; set; }
-        public string DebitAccount { get; set; }
-        public string CreditAccount { get; set; }
-    }
-
-    public class ReceiptInvoice
-    {
-        public int ReceiptId { get; set; }
-        public Receipt Receipt { get; set; }
-
-        public int InvoiceId { get; set; }
-        public Invoice Invoice { get; set; }
-    }
+    public int Id { get; set; }
+    public string ReceiptNumber { get; set; }
+    public DateTime DateCreated { get; set; }
+    public DateTime AccountingDate { get; set; }
+    public string ReceiptType { get; set; }
+    public int PartnerId { get; set; }
+    public string PartnerName { get; set; }
+    public string Address { get; set; }
+    public string Reason { get; set; }
+    public decimal Amount { get; set; }
+    public string PaymentMethod { get; set; }
+    public string BankAccount { get; set; }
+    public string Invoices { get; set; }
+    public string DebitAccount { get; set; }
+    public string CreditAccount { get; set; }
+    public string Status { get; set; }
+    public string CreatedBy { get; set; }
+    public string Payee { get; set; }
+    public string AttachmentFile { get; set; }
+    public string Notes { get; set; }
 }

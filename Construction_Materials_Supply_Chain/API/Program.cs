@@ -82,8 +82,9 @@ builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowS
 builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
-builder.Services.AddScoped<IReceiptRepository,ReceiptRepository >();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IAccountingEntryRepository, AccountingEntryRepository>();
 
 // Services
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();
@@ -120,6 +121,7 @@ builder.Services.AddScoped<IRegionService, RegionService>();
 builder.Services.AddScoped<IPartnerRelationService, PartnerRelationService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAccountingService, AccountingService>();
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

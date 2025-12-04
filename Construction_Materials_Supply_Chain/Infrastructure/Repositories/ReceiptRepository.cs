@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces;
+﻿using Domain.Interface.Base;
+using Domain.Interfaces;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
@@ -15,15 +16,26 @@ namespace Infrastructure.Repositories
     {
         public ReceiptRepository(ScmVlxdContext context) : base(context) { }
 
-        public void AddReceiptInvoice(ReceiptInvoice receiptInvoice)
-        {
-            _context.Set<ReceiptInvoice>().Add(receiptInvoice);
-            _context.SaveChanges();
-        }
-
         public List<Receipt> GetReceiptsByPartnerId(int partnerId)
         {
-            return _dbSet.Where(r => r.PartnerId == partnerId).ToList();
+            return _context.Receipts.Where(r => r.PartnerId == partnerId).ToList();
+        }
+
+        public Receipt GetLastReceiptByPrefix(string prefix)
+        {
+            return _context.Receipts
+                .AsNoTracking()
+                .Where(r => r.ReceiptNumber.StartsWith(prefix))
+                .OrderByDescending(r => r.ReceiptNumber)
+                .FirstOrDefault();
+        }
+
+        public List<Receipt> GetByDateRange(DateTime from, DateTime to)
+        {
+            return _context.Receipts
+                .Where(x => x.DateCreated >= from && x.DateCreated <= to)
+                .OrderBy(x => x.DateCreated)
+                .ToList();
         }
     }
 }

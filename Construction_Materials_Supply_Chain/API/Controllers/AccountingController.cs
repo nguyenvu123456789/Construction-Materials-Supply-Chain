@@ -1,9 +1,10 @@
-﻿using Application.Services.Interfaces;
-using Application.DTOs;
+﻿using Application.DTOs;
+using Application.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using FluentValidation.Results;
+using System.Text.Json;
 
-namespace WebAPI.Controllers
+namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -18,14 +19,23 @@ namespace WebAPI.Controllers
             _paymentService = paymentService;
         }
 
-        [HttpGet("receipts/{partnerId}")]
-        public IActionResult GetReceiptsByPartnerId(int partnerId)
+        [HttpPost("create-receipt")]
+        public async Task<IActionResult> CreateReceipt([FromForm] CreateReceiptRequest request)
         {
-            var receipts = _receiptService.GetReceiptsByPartnerId(partnerId);
-            return Ok(receipts);
+            _receiptService.CreateReceipt(request.Receipt, request.AttachmentFile);
+
+            return Ok(new { Message = "Tạo phiếu thu thành công!" });
         }
 
-        [HttpGet("receipt/{id}")]
+        [HttpPost("create-payment")]
+        public async Task<IActionResult> CreatePayment([FromForm] CreatePaymentRequest request)
+        {
+            _paymentService.CreatePayment(request.Payment, request.AttachmentFile);
+
+            return Ok(new { Message = "Tạo phiếu chi thành công!" });
+        }
+
+        [HttpGet("get-receipt/{id}")]
         public IActionResult GetReceiptById(int id)
         {
             var receipt = _receiptService.GetReceiptById(id);
@@ -34,59 +44,7 @@ namespace WebAPI.Controllers
             return Ok(receipt);
         }
 
-        [HttpPost("receipts")]
-        public IActionResult AddReceipt([FromBody] ReceiptDTO receiptDTO)
-        {
-            try
-            {
-                _receiptService.AddReceipt(receiptDTO);
-                return CreatedAtAction(nameof(GetReceiptById), new { id = receiptDTO.ReceiptNumber }, receiptDTO);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut("receipts/{id}")]
-        public IActionResult UpdateReceipt(int id, [FromBody] ReceiptDTO receiptDTO)
-        {
-            if (id.ToString() != receiptDTO.ReceiptNumber)
-                return BadRequest("ID mismatch");
-
-            try
-            {
-                _receiptService.UpdateReceipt(receiptDTO);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("receipts/{id}")]
-        public IActionResult DeleteReceipt(int id)
-        {
-            try
-            {
-                _receiptService.DeleteReceipt(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("payments/{partnerId}")]
-        public IActionResult GetPaymentsByPartnerId(int partnerId)
-        {
-            var payments = _paymentService.GetPaymentsByPartnerId(partnerId);
-            return Ok(payments);
-        }
-
-        [HttpGet("payment/{id}")]
+        [HttpGet("get-payment/{id}")]
         public IActionResult GetPaymentById(int id)
         {
             var payment = _paymentService.GetPaymentById(id);
@@ -95,49 +53,42 @@ namespace WebAPI.Controllers
             return Ok(payment);
         }
 
-        [HttpPost("payments")]
-        public IActionResult AddPayment([FromBody] PaymentDTO paymentDTO)
+        [HttpGet("get-all-receipts")]
+        public IActionResult GetAllReceipts()
         {
-            try
-            {
-                _paymentService.AddPayment(paymentDTO);
-                return CreatedAtAction(nameof(GetPaymentById), new { id = paymentDTO.PaymentNumber }, paymentDTO);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var receipts = _receiptService.GetAllReceipts();
+            return Ok(receipts);
         }
 
-        [HttpPut("payments/{id}")]
-        public IActionResult UpdatePayment(int id, [FromBody] PaymentDTO paymentDTO)
+        [HttpGet("get-all-payments")]
+        public IActionResult GetAllPayments()
         {
-            if (id.ToString() != paymentDTO.PaymentNumber)
-                return BadRequest("ID mismatch");
-
-            try
-            {
-                _paymentService.UpdatePayment(paymentDTO);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var payments = _paymentService.GetAllPayments();
+            return Ok(payments);
         }
 
-        [HttpDelete("payments/{id}")]
-        public IActionResult DeletePayment(int id)
+        [HttpGet("get-receipts-by-partner/{partnerId}")]
+        public IActionResult GetReceiptsByPartnerId(int partnerId)
         {
-            try
+            var receipts = _receiptService.GetReceiptsByPartnerId(partnerId);
+            if (receipts == null || receipts.Count == 0)
             {
-                _paymentService.DeletePayment(id);
-                return NoContent();
+                return NotFound("No receipts found for the given partner.");
             }
-            catch (Exception ex)
+
+            return Ok(receipts);
+        }
+
+        [HttpGet("get-payments-by-partner/{partnerId}")]
+        public IActionResult GetPaymentsByPartnerId(int partnerId)
+        {
+            var payments = _paymentService.GetPaymentsByPartnerId(partnerId);
+            if (payments == null || payments.Count == 0)
             {
-                return BadRequest(ex.Message);
+                return NotFound("No payments found for the given partner.");
             }
+
+            return Ok(payments);
         }
     }
 }

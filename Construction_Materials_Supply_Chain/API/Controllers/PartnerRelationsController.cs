@@ -86,6 +86,5 @@ namespace WebAPI.Controllers
             var data = _service.GetBySeller(sellerId);
             return Ok(data);
         }
-
     }
 }

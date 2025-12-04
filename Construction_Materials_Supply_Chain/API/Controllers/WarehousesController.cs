@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        // CREATE
         [HttpPost]
         public IActionResult Create([FromBody] WarehouseCreateDto dto)
         {
@@ -25,7 +27,8 @@ namespace API.Controllers
             {
                 var warehouse = _service.Create(dto);
                 var result = _mapper.Map<WarehouseDto>(warehouse);
-                return Ok(result);
+
+                return CreatedAtAction(nameof(GetById), new { id = result.WarehouseId }, result);
             }
             catch (Exception ex)
             {
@@ -33,6 +36,7 @@ namespace API.Controllers
             }
         }
 
+        // UPDATE
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] WarehouseUpdateDto dto)
         {
@@ -48,16 +52,18 @@ namespace API.Controllers
             }
         }
 
+        // DELETE
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             try
             {
                 var success = _service.Delete(id);
-                if (!success)
-                    return NotFound(new { message = "Warehouse not found." });
 
-                return Ok(new { message = "Warehouse deleted successfully." });
+                if (!success)
+                    return NotFound(new { message = WarehouseMessages.MSG_WAREHOUSE_NOT_FOUND });
+
+                return Ok(new { message = WarehouseMessages.MSG_WAREHOUSE_DELETE_SUCCESS });
             }
             catch (Exception ex)
             {
@@ -65,17 +71,20 @@ namespace API.Controllers
             }
         }
 
+        // GET BY ID
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var warehouse = _service.GetById(id);
+
             if (warehouse == null)
-                return NotFound(new { message = "Warehouse not found." });
+                return NotFound(new { message = WarehouseMessages.MSG_WAREHOUSE_NOT_FOUND });
 
             var result = _mapper.Map<WarehouseDto>(warehouse);
             return Ok(result);
         }
 
+        // GET ALL
         [HttpGet]
         public IActionResult GetAll([FromQuery] int? managerId, [FromQuery] int? partnerId)
         {
@@ -90,8 +99,5 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
-
-
     }
 }

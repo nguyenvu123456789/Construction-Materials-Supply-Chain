@@ -13,8 +13,12 @@ namespace Infrastructure.Repositories
 {
     public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
     {
-        public PaymentRepository(ScmVlxdContext context) : base(context)
+        public PaymentRepository(ScmVlxdContext context) : base(context) { }
+
+        public void AddPaymentInvoice(PaymentInvoice paymentInvoice)
         {
+            _context.Set<PaymentInvoice>().Add(paymentInvoice);
+            _context.SaveChanges();
         }
 
         public List<Payment> GetPaymentsByPartnerId(int partnerId)

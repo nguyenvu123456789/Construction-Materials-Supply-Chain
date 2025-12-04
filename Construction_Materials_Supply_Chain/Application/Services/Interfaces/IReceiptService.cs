@@ -10,5 +10,6 @@ namespace Application.Services.Interfaces
         void AddReceipt(ReceiptDTO receiptDTO);
         void UpdateReceipt(ReceiptDTO receiptDTO);
         void DeleteReceipt(int id);
+        List<ReceiptDTO> GetReceiptsByPartnerId(int partnerId);
     }
 }

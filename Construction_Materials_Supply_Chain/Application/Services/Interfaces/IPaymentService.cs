@@ -10,5 +10,6 @@ namespace Application.Services.Interfaces
         void AddPayment(PaymentDTO paymentDTO);
         void UpdatePayment(PaymentDTO paymentDTO);
         void DeletePayment(int id);
+        List<PaymentDTO> GetPaymentsByPartnerId(int partnerId);
     }
 }

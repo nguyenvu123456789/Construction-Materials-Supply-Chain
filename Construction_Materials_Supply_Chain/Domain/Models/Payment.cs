@@ -31,8 +31,16 @@ namespace Domain.Models
         public string PaidBy { get; set; }
         public string Recipient { get; set; }
         public string AttachmentFile { get; set; }
-
         public string DebitAccount { get; set; }
         public string CreditAccount { get; set; }
+    }
+
+    public class PaymentInvoice
+    {
+        public int PaymentId { get; set; }
+        public Payment Payment { get; set; }
+
+        public int InvoiceId { get; set; }
+        public Invoice Invoice { get; set; }
     }
 }

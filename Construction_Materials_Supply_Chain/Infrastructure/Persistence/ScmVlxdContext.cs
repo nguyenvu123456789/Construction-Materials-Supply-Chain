@@ -79,6 +79,8 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<Receipt> Receipts { get; set; }
     public virtual DbSet<Payment> Payments { get; set; }
     public virtual DbSet<AccountingEntry> AccountingEntries { get; set; }
+    public DbSet<PaymentInvoice> PaymentInvoices { get; set; }
+    public DbSet<ReceiptInvoice> ReceiptInvoices { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -990,6 +992,12 @@ public partial class ScmVlxdContext : DbContext
             entity.Property(e => e.CreditAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Description).HasMaxLength(500);
         });
+
+        modelBuilder.Entity<PaymentInvoice>()
+            .HasKey(pi => new { pi.PaymentId, pi.InvoiceId });
+
+        modelBuilder.Entity<ReceiptInvoice>()
+            .HasKey(ri => new { ri.ReceiptId, ri.InvoiceId });
 
         OnModelCreatingPartial(modelBuilder);
     }

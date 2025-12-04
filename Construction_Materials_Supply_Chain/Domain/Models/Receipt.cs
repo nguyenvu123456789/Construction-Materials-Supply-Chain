@@ -24,4 +24,13 @@
         public string DebitAccount { get; set; }
         public string CreditAccount { get; set; }
     }
+
+    public class ReceiptInvoice
+    {
+        public int ReceiptId { get; set; }
+        public Receipt Receipt { get; set; }
+
+        public int InvoiceId { get; set; }
+        public Invoice Invoice { get; set; }
+    }
 }

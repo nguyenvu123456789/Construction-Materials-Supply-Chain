@@ -28,6 +28,12 @@ namespace Infrastructure.Services
             return _mapper.Map<List<ReceiptDTO>>(receipts);
         }
 
+        public List<ReceiptDTO> GetReceiptsByPartnerId(int partnerId)
+        {
+            var receipts = _receiptRepository.GetReceiptsByPartnerId(partnerId);
+            return _mapper.Map<List<ReceiptDTO>>(receipts);
+        }
+
         public ReceiptDTO GetReceiptById(int id)
         {
             var receipt = _receiptRepository.GetById(id);
@@ -37,19 +43,41 @@ namespace Infrastructure.Services
         public void AddReceipt(ReceiptDTO receiptDTO)
         {
             var receipt = _mapper.Map<Receipt>(receiptDTO);
+
             string receiptNumber = GenerateReceiptNumber();
             receipt.ReceiptNumber = receiptNumber;
             receipt.DateCreated = DateTime.Now;
             receipt.AccountingDate = DateTime.Now;
             receipt.Status = "Nháp";
+
             receipt.AmountInWords = NumberToWords.ConvertAmountToWords(receipt.Amount);
-            if (receipt.PaymentMethod == "Chuyển khoản")
-            {
-                receipt.BankAccount = "Ngân hàng nhận";
-            }
+
             receipt.DebitAccount = "1111";
             receipt.CreditAccount = "131";
+
+            if (string.IsNullOrEmpty(receipt.Address))
+            {
+                receipt.Address = "Không có thông tin địa chỉ";
+            }
+
             _receiptRepository.Add(receipt);
+
+            if (!string.IsNullOrEmpty(receiptDTO.LinkedInvoiceIds))
+            {
+                foreach (var invoiceCode in receiptDTO.LinkedInvoiceIds.Split(','))
+                {
+                    var invoice = _invoiceRepository.GetByCode(invoiceCode.Trim());
+                    if (invoice != null)
+                    {
+                        var receiptInvoice = new ReceiptInvoice
+                        {
+                            ReceiptId = receipt.Id,
+                            InvoiceId = invoice.InvoiceId
+                        };
+                        _receiptRepository.AddReceiptInvoice(receiptInvoice);
+                    }
+                }
+            }
         }
 
         public void UpdateReceipt(ReceiptDTO receiptDTO)

@@ -5,6 +5,7 @@ using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Implements;
 using Application.Services.Interfaces;
+using Application.Validation.Accountant;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Notifications;
@@ -146,6 +147,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>()
 builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateConversationRequestDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegionCreateDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<PaymentValidator>();
 
 // Controllers
 builder.Services.AddControllers()

@@ -11,5 +11,6 @@ namespace Domain.Interfaces
     public interface IReceiptRepository : IGenericRepository<Receipt>
     {
         List<Receipt> GetReceiptsByPartnerId(int partnerId);
+        void AddReceiptInvoice(ReceiptInvoice receiptInvoice);
     }
 }

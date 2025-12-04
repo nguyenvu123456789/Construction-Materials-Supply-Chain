@@ -11,5 +11,6 @@ namespace Domain.Interfaces
     public interface IPaymentRepository : IGenericRepository<Payment>
     {
         List<Payment> GetPaymentsByPartnerId(int partnerId);
+        void AddPaymentInvoice(PaymentInvoice paymentInvoice);
     }
 }

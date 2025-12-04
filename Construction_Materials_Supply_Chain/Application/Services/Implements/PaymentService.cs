@@ -28,6 +28,12 @@ namespace Infrastructure.Services
             return _mapper.Map<List<PaymentDTO>>(payments);
         }
 
+        public List<PaymentDTO> GetPaymentsByPartnerId(int partnerId)
+        {
+            var payments = _paymentRepository.GetPaymentsByPartnerId(partnerId);
+            return _mapper.Map<List<PaymentDTO>>(payments);
+        }
+
         public PaymentDTO GetPaymentById(int id)
         {
             var payment = _paymentRepository.GetById(id);
@@ -37,20 +43,41 @@ namespace Infrastructure.Services
         public void AddPayment(PaymentDTO paymentDTO)
         {
             var payment = _mapper.Map<Payment>(paymentDTO);
+
             string paymentNumber = GeneratePaymentNumber();
             payment.PaymentNumber = paymentNumber;
             payment.DateCreated = DateTime.Now;
             payment.AccountingDate = DateTime.Now;
             payment.Status = "Nháp";
             payment.AmountInWords = NumberToWords.ConvertAmountToWords(payment.Amount);
+
             if (payment.PaymentMethod == "Chuyển khoản")
             {
                 payment.BankAccountFrom = "Ngân hàng xuất tiền";
                 payment.BankAccountTo = "STK người nhận";
             }
+
             payment.DebitAccount = "331";
             payment.CreditAccount = "1111";
+
             _paymentRepository.Add(payment);
+
+            if (!string.IsNullOrEmpty(paymentDTO.LinkedInvoiceIds))
+            {
+                foreach (var invoiceCode in paymentDTO.LinkedInvoiceIds.Split(','))
+                {
+                    var invoice = _invoiceRepository.GetByCode(invoiceCode.Trim());
+                    if (invoice != null)
+                    {
+                        var paymentInvoice = new PaymentInvoice
+                        {
+                            PaymentId = payment.Id,
+                            InvoiceId = invoice.InvoiceId
+                        };
+                        _paymentRepository.AddPaymentInvoice(paymentInvoice);
+                    }
+                }
+            }
         }
 
         public void UpdatePayment(PaymentDTO paymentDTO)

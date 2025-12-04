@@ -13,8 +13,12 @@ namespace Infrastructure.Repositories
 {
     public class ReceiptRepository : GenericRepository<Receipt>, IReceiptRepository
     {
-        public ReceiptRepository(ScmVlxdContext context) : base(context)
+        public ReceiptRepository(ScmVlxdContext context) : base(context) { }
+
+        public void AddReceiptInvoice(ReceiptInvoice receiptInvoice)
         {
+            _context.Set<ReceiptInvoice>().Add(receiptInvoice);
+            _context.SaveChanges();
         }
 
         public List<Receipt> GetReceiptsByPartnerId(int partnerId)

@@ -6,9 +6,9 @@
         public int CheckId { get; set; }
         public int MaterialId { get; set; }
 
-        public decimal SystemQty { get; set; }       // Số lượng trong hệ thống
-        public decimal ActualQty { get; set; }       // Số lượng kiểm kê thực tế
-        public string? Reason { get; set; }          // Lý do lệch (nếu có)
+        public decimal SystemQty { get; set; }
+        public decimal ActualQty { get; set; }
+        public string? Reason { get; set; }
 
         // Navigation
         public virtual Material Material { get; set; } = null!;

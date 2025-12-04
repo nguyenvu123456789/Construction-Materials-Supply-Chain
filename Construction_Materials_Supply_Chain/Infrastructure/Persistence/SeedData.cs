@@ -948,43 +948,10 @@ namespace Infrastructure.Persistence
                 }
             }
 
-            void SeedPolicyForPartner(int partnerId)
-            {
-                if (!context.PostingPolicies.Any(p => p.PartnerId == partnerId))
-                {
-                    var acc = context.GlAccounts.Where(a => a.PartnerId == partnerId).ToDictionary(a => a.Code, a => a.AccountId);
-                    context.PostingPolicies.AddRange(
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "SalesInvoice", RuleKey = "Revenue", DebitAccountId = acc["131"], CreditAccountId = acc["511"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "SalesInvoice", RuleKey = "VATOut", DebitAccountId = acc["131"], CreditAccountId = acc["3331"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "PurchaseInvoice", RuleKey = "Inventory", DebitAccountId = acc["156"], CreditAccountId = acc["331"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "PurchaseInvoice", RuleKey = "VATIn", DebitAccountId = acc["133"], CreditAccountId = acc["331"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Receipt", RuleKey = "Cash", DebitAccountId = acc["111"], CreditAccountId = acc["131"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Receipt", RuleKey = "Bank", DebitAccountId = acc["112"], CreditAccountId = acc["131"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Payment", RuleKey = "Cash", DebitAccountId = acc["331"], CreditAccountId = acc["111"] },
-                        new PostingPolicy { PartnerId = partnerId, DocumentType = "Payment", RuleKey = "Bank", DebitAccountId = acc["331"], CreditAccountId = acc["112"] }
-                    );
-                    context.SaveChanges();
-                }
-            }
-
             SeedChartForPartner(pAgent.PartnerId);
             SeedChartForPartner(pRetail.PartnerId);
             SeedChartForPartner(pSupp1.PartnerId);
             SeedChartForPartner(pSupp2.PartnerId);
-
-            SeedPolicyForPartner(pAgent.PartnerId);
-            SeedPolicyForPartner(pRetail.PartnerId);
-            SeedPolicyForPartner(pSupp1.PartnerId);
-            SeedPolicyForPartner(pSupp2.PartnerId);
-
-            if (!context.MoneyAccounts.Any(a => a.PartnerId == pAgent.PartnerId))
-            {
-                context.MoneyAccounts.AddRange(
-                    new MoneyAccount { PartnerId = pAgent.PartnerId, Name = "Vietcombank - CN Hà Nội", Type = "Bank", Number = "0123456789", IsActive = true },
-                    new MoneyAccount { PartnerId = pAgent.PartnerId, Name = "Quỹ tiền mặt", Type = "Cash", Number = "TM-001", IsActive = true }
-                );
-                context.SaveChanges();
-            }
 
             Invoice EnsureInvoice(string code, string type, int partnerId, int createdBy,
                       DateTime issueDate, DateTime dueDate, string status, int orderId)
@@ -1136,66 +1103,6 @@ namespace Infrastructure.Persistence
             {
     (matBrick.MaterialId, 400, 2000)
 });
-
-            if (!context.Receipts.Any())
-            {
-                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
-                var exp1 = context.Invoices.Single(i => i.InvoiceCode == "EXP-001");
-                var exp2 = context.Invoices.Single(i => i.InvoiceCode == "EXP-002");
-                context.Receipts.AddRange(
-                    new Receipt { Date = DateTime.Now.AddDays(-6), PartnerId = pRetail.PartnerId, InvoiceId = exp1.InvoiceId, Amount = 5000000, Method = "Bank", MoneyAccountId = bankAgent.MoneyAccountId, Reference = "Thu công nợ EXP-001", Status = "Draft" },
-                    new Receipt { Date = DateTime.Now.AddDays(-5), PartnerId = pAgent.PartnerId, InvoiceId = exp2.InvoiceId, Amount = 2000000, Method = "Cash", MoneyAccountId = null, Reference = "Thu công nợ EXP-002", Status = "Draft" }
-                );
-                context.SaveChanges();
-            }
-
-            if (!context.Payments.Any())
-            {
-                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
-                var imp1 = context.Invoices.Single(i => i.InvoiceCode == "IMP-001");
-                context.Payments.AddRange(
-                    new Payment { Date = DateTime.Now.AddDays(-6), PartnerId = pSupp1.PartnerId, InvoiceId = imp1.InvoiceId, Amount = 1200000, Method = "Bank", MoneyAccountId = bankAgent.MoneyAccountId, Reference = "Chi NCC IMP-001", Status = "Draft" },
-                    new Payment { Date = DateTime.Now.AddDays(-4), PartnerId = pSupp2.PartnerId, InvoiceId = null, Amount = 800000, Method = "Cash", MoneyAccountId = null, Reference = "Chi NCC khác", Status = "Draft" }
-                );
-                context.SaveChanges();
-            }
-
-            if (!context.BankStatements.Any())
-            {
-                var bankAgent = context.MoneyAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Type == "Bank");
-                var stmt = new BankStatement { PartnerId = pAgent.PartnerId, MoneyAccountId = bankAgent.MoneyAccountId, From = DateTime.Now.AddDays(-10), To = DateTime.Now };
-                context.BankStatements.Add(stmt);
-                context.SaveChanges();
-
-                var rBank = context.Receipts.FirstOrDefault(r => r.Method == "Bank" && r.MoneyAccountId == bankAgent.MoneyAccountId);
-                var pBank = context.Payments.FirstOrDefault(p => p.Method == "Bank" && p.MoneyAccountId == bankAgent.MoneyAccountId);
-
-                var bl1 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-6), Amount = 5000000, Description = "Khách chuyển khoản", ExternalRef = "TXN-R-001", Status = rBank != null ? "Reconciled" : "Unreconciled", ReceiptId = rBank?.ReceiptId, PaymentId = null };
-                var bl2 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-6), Amount = -1200000, Description = "Chi trả NCC", ExternalRef = "TXN-P-001", Status = pBank != null ? "Reconciled" : "Unreconciled", ReceiptId = null, PaymentId = pBank?.PaymentId };
-                var bl3 = new BankStatementLine { BankStatementId = stmt.BankStatementId, Date = DateTime.Now.AddDays(-5), Amount = 750000, Description = "Khách khác chuyển khoản", ExternalRef = "TXN-R-002", Status = "Unreconciled", ReceiptId = null, PaymentId = null };
-
-                context.BankStatementLines.AddRange(bl1, bl2, bl3);
-                context.SaveChanges();
-            }
-
-            if (!context.JournalEntries.Any())
-            {
-                var acc111 = context.GlAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Code == "111");
-                var acc131 = context.GlAccounts.First(a => a.PartnerId == pAgent.PartnerId && a.Code == "131");
-                var je = new JournalEntry
-                {
-                    PartnerId = pAgent.PartnerId,
-                    PostingDate = DateTime.Now.AddDays(-2),
-                    SourceType = "ManualSeed",
-                    SourceId = 1,
-                    ReferenceNo = "TEST-001",
-                    Memo = "Thu tiền mặt test"
-                };
-                je.Lines.Add(new JournalLine { PartnerId = pAgent.PartnerId, AccountId = acc111.AccountId, Debit = 2000000, Credit = 0 });
-                je.Lines.Add(new JournalLine { PartnerId = pAgent.PartnerId, AccountId = acc131.AccountId, Debit = 0, Credit = 2000000 });
-                context.JournalEntries.Add(je);
-                context.SaveChanges();
-            }
 
             var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
             ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;

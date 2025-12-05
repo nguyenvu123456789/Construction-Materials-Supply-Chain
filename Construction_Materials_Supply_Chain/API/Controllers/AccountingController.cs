@@ -1,58 +1,94 @@
-﻿using Application.Interfaces;
-using Domain.Interfaces;
+﻿using Application.DTOs;
+using Application.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class AccountingController : ControllerBase
     {
-        private readonly IAccountingPostingService _posting;
-        private readonly IAccountingQueryService _query;
+        private readonly IReceiptService _receiptService;
+        private readonly IPaymentService _paymentService;
 
-        public AccountingController(IAccountingPostingService posting, IAccountingQueryService query)
+        public AccountingController(IReceiptService receiptService, IPaymentService paymentService)
         {
-            _posting = posting;
-            _query = query;
+            _receiptService = receiptService;
+            _paymentService = paymentService;
         }
 
-        [HttpPost("post/sales-invoice/{id:int}")]
-        public IActionResult PostSalesInvoice(int id) => Ok(_posting.PostSalesInvoice(id));
+        [HttpPost("create-receipt")]
+        public async Task<IActionResult> CreateReceipt([FromForm] CreateReceiptRequest request)
+        {
+            _receiptService.CreateReceipt(request.Receipt, request.AttachmentFile);
 
-        [HttpPost("post/sales-invoice/by-code/{code}")]
-        public IActionResult PostSalesInvoiceByCode(string code) => Ok(_posting.PostSalesInvoiceByCode(code));
+            return Ok(new { Message = "Tạo phiếu thu thành công!" });
+        }
 
-        [HttpPost("post/purchase-invoice/{id:int}")]
-        public IActionResult PostPurchaseInvoice(int id) => Ok(_posting.PostPurchaseInvoice(id));
+        [HttpPost("create-payment")]
+        public async Task<IActionResult> CreatePayment([FromForm] CreatePaymentRequest request)
+        {
+            _paymentService.CreatePayment(request.Payment, request.AttachmentFile);
 
-        [HttpPost("post/receipt/{id:int}")]
-        public IActionResult PostReceipt(int id) => Ok(_posting.PostReceipt(id));
+            return Ok(new { Message = "Tạo phiếu chi thành công!" });
+        }
 
-        [HttpPost("post/payment/{id:int}")]
-        public IActionResult PostPayment(int id) => Ok(_posting.PostPayment(id));
+        [HttpGet("get-receipt/{id}")]
+        public IActionResult GetReceiptById(int id)
+        {
+            var receipt = _receiptService.GetReceiptById(id);
+            if (receipt == null)
+                return NotFound();
+            return Ok(receipt);
+        }
 
-        [HttpDelete("unpost/{sourceType}/{sourceId:int}")]
-        public IActionResult Unpost(string sourceType, int sourceId) => Ok(_posting.Unpost(sourceType, sourceId));
+        [HttpGet("get-payment/{id}")]
+        public IActionResult GetPaymentById(int id)
+        {
+            var payment = _paymentService.GetPaymentById(id);
+            if (payment == null)
+                return NotFound();
+            return Ok(payment);
+        }
 
-        [HttpGet("gl")]
-        public IActionResult GetGeneralLedger([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string accountCode, [FromQuery] int partnerId)
-            => Ok(_query.GetGeneralLedger(from, to, accountCode, partnerId));
+        [HttpGet("get-all-receipts")]
+        public IActionResult GetAllReceipts()
+        {
+            var receipts = _receiptService.GetAllReceipts();
+            return Ok(receipts);
+        }
 
-        [HttpGet("ar-aging")]
-        public IActionResult GetARAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)
-            => Ok(_query.GetARAging(asOf, partnerId));
+        [HttpGet("get-all-payments")]
+        public IActionResult GetAllPayments()
+        {
+            var payments = _paymentService.GetAllPayments();
+            return Ok(payments);
+        }
 
-        [HttpGet("ap-aging")]
-        public IActionResult GetAPAging([FromQuery] DateTime asOf, [FromQuery] int? partnerId)
-            => Ok(_query.GetAPAging(asOf, partnerId));
+        [HttpGet("get-receipts-by-partner/{partnerId}")]
+        public IActionResult GetReceiptsByPartnerId(int partnerId)
+        {
+            var receipts = _receiptService.GetReceiptsByPartnerId(partnerId);
+            if (receipts == null || receipts.Count == 0)
+            {
+                return NotFound("No receipts found for the given partner.");
+            }
 
-        [HttpGet("cashbook")]
-        public IActionResult GetCashbook([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string? method, [FromQuery] int? partnerId)
-            => Ok(_query.GetCashbook(from, to, method, partnerId));
+            return Ok(receipts);
+        }
 
-        [HttpGet("bank-recon/{statementId:int}")]
-        public IActionResult GetBankReconciliation(int statementId)
-            => Ok(_query.GetBankReconciliation(statementId));
+        [HttpGet("get-payments-by-partner/{partnerId}")]
+        public IActionResult GetPaymentsByPartnerId(int partnerId)
+        {
+            var payments = _paymentService.GetPaymentsByPartnerId(partnerId);
+            if (payments == null || payments.Count == 0)
+            {
+                return NotFound("No payments found for the given partner.");
+            }
+
+            return Ok(payments);
+        }
     }
 }

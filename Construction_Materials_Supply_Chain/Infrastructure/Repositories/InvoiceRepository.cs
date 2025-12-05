@@ -41,6 +41,7 @@ namespace Infrastructure.Implementations
         public List<Invoice> GetAllWithDetails()
         {
             return _dbSet
+                .Include(i => i.Warehouse)
                 .Include(i => i.CreatedByNavigation)
                 .Include(i => i.Order)                  
             .ThenInclude(o => o.Warehouse)

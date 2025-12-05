@@ -1,118 +1,110 @@
-﻿namespace Application.DTOs
+﻿using Domain.Models;
+using Microsoft.AspNetCore.Http;
+
+namespace Application.DTOs
 {
-    public class PostResultDto
+    public class ReceiptDTO
     {
-        public bool Ok { get; set; }
-        public string Type { get; set; } = "";
-        public int Id { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime AccountingDate { get; set; }
+        public string ReceiptType { get; set; }
+        public int PartnerId { get; set; }
+        public string PartnerName { get; set; }
+        public string Address { get; set; }
+        public string Reason { get; set; }
+        public decimal Amount { get; set; }
+        public string PaymentMethod { get; set; }
+        public string BankAccount { get; set; }
+        public string Invoices { get; set; }
+        public string DebitAccount { get; set; }
+        public string CreditAccount { get; set; }
+        public string Status { get; set; }
+        public string CreatedBy { get; set; }
+        public string Payee { get; set; }
+        public string Notes { get; set; }
     }
 
-    public class LedgerLineDto
+    public class PaymentDTO
     {
+        public DateTime DateCreated { get; set; }
+        public DateTime AccountingDate { get; set; }
+        public string PaymentType { get; set; }
+        public int PartnerId { get; set; }
+        public string PartnerName { get; set; }
+        public string TaxCode { get; set; }
+        public string Reason { get; set; }
+        public decimal Amount { get; set; }
+        public string PaymentMethod { get; set; }
+        public string BankAccountFrom { get; set; }
+        public string BankAccountTo { get; set; }
+        public string Invoices { get; set; }
+        public string Department { get; set; }
+        public string Status { get; set; }
+        public string RequestedBy { get; set; }
+        public string ApprovedBy { get; set; }
+        public DateTime? ApprovalDate { get; set; }
+        public string PaidBy { get; set; }
+        public string Recipient { get; set; }
+        public string DebitAccount { get; set; }
+        public string CreditAccount { get; set; }
+        public string CreatedBy { get; set; }
+        public string Notes { get; set; }
+        public string Account { get; set; }
+    }
+
+    public class CreateReceiptRequest
+    {
+        public ReceiptDTO Receipt { get; set; }
+        public IFormFile? AttachmentFile { get; set; }
+    }
+
+    public class CreatePaymentRequest
+    {
+        public PaymentDTO Payment { get; set; }
+        public IFormFile? AttachmentFile { get; set; }
+    }
+
+    public class LedgerEntryDto
+    {
+        public int No { get; set; }
+        public DateTime DocumentDate { get; set; }
         public DateTime PostingDate { get; set; }
-        public string SourceType { get; set; } = "";
-        public int SourceId { get; set; }
-        public string? ReferenceNo { get; set; }
-        public int? PartnerId { get; set; }
-        public int? InvoiceId { get; set; }
+        public string DocumentType { get; set; }
+        public string DocumentNumber { get; set; }
+        public string ContraAccount { get; set; }
+        public string PartnerName { get; set; }
+        public string Description { get; set; }
         public decimal Debit { get; set; }
         public decimal Credit { get; set; }
+        public decimal Balance { get; set; }
+        public string BalanceType { get; set; }
     }
 
-    public class GeneralLedgerResponseDto
+    public class APAgingDto
     {
-        public object Account { get; set; } = default!;
-        public object Period { get; set; } = default!;
-        public decimal TotalDebit { get; set; }
-        public decimal TotalCredit { get; set; }
-        public List<LedgerLineDto> Entries { get; set; } = new();
+        public string InvoiceCode { get; set; }
+        public DateTime InvoiceDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public int OverdueDays { get; set; }
+        public decimal OriginalAmount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal RemainingAmount { get; set; }
+        public string Status { get; set; }
     }
 
-    public class AgingItemDto
+    public class CashBookDto
     {
-        public int PartnerId { get; set; }
-        public int? InvoiceId { get; set; }
-        public decimal Debit { get; set; }
-        public decimal Credit { get; set; }
-        public decimal Outstanding { get; set; }
-    }
-
-    public class AgingResponseDto
-    {
-        public DateTime AsOf { get; set; }
-        public List<AgingItemDto> Items { get; set; } = new();
-    }
-
-    public class CashbookItemDto
-    {
-        public string Type { get; set; } = "";
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public string Method { get; set; } = "";
-        public int? PartnerId { get; set; }
-        public int? InvoiceId { get; set; }
-        public string? Reference { get; set; }
-        public int Id { get; set; }
-    }
-
-    public class CashbookResponseDto
-    {
-        public object Period { get; set; } = default!;
-        public decimal TotalIn { get; set; }
-        public decimal TotalOut { get; set; }
-        public decimal Net { get; set; }
-        public List<CashbookItemDto> Items { get; set; } = new();
-    }
-
-    public class BankReconLineDto
-    {
-        public int BankStatementLineId { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public string Description { get; set; } = "";
-        public string? ExternalRef { get; set; }
-        public string Status { get; set; } = "";
-        public int? ReceiptId { get; set; }
-        public int? PaymentId { get; set; }
-    }
-
-    public class BankReconResponseDto
-    {
-        public object Statement { get; set; } = default!;
-        public decimal StatementAmount { get; set; }
-        public decimal BookNet { get; set; }
-        public List<BankReconLineDto> Matched { get; set; } = new();
-        public List<BankReconLineDto> Unmatched { get; set; } = new();
-    }
-
-    public class GlAccountCreateDto
-    {
-        public int PartnerId { get; set; }
-        public string Code { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string Type { get; set; } = "";
-        public bool IsPosting { get; set; } = true;
-        public int? ParentId { get; set; }
-    }
-
-    public class GlAccountUpdateDto
-    {
-        public string Name { get; set; } = "";
-        public string Type { get; set; } = "";
-        public bool IsPosting { get; set; }
-        public int? ParentId { get; set; }
-    }
-
-    public class GlAccountDto
-    {
-        public int AccountId { get; set; }
-        public int PartnerId { get; set; }
-        public string Code { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string Type { get; set; } = "";
-        public bool IsPosting { get; set; }
-        public int? ParentId { get; set; }
-        public bool IsDeleted { get; set; }
-        public DateTime? DeletedAt { get; set; }
+        public int No { get; set; }
+        public DateTime DocumentDate { get; set; }
+        public DateTime PostingDate { get; set; }
+        public string Type { get; set; }
+        public string DocumentNumber { get; set; }
+        public string Partner { get; set; }
+        public string ContraAccount { get; set; }
+        public string Description { get; set; }
+        public decimal InAmount { get; set; }
+        public decimal OutAmount { get; set; }
+        public decimal Balance { get; set; }
+        public string Cashier { get; set; }
     }
 }

@@ -159,7 +159,7 @@ namespace Services.Implementations
 
                 totalAmount += lineTotal;
                 totalDiscount += lineDiscount;
-
+                od.UnitPrice = unitPrice;
                 od.Status = StatusEnum.Invoiced.ToStatusString();
             }
 
@@ -233,40 +233,45 @@ namespace Services.Implementations
         // 🔹 Lấy tất cả hóa đơn theo Partner 
         public List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId)
         {
-            var invoices = _invoices.GetAllWithDetails();
+            // Lấy tất cả hóa đơn kèm các navigation properties cần thiết
+            var invoicesQuery = _invoices.GetAllWithDetails()
+                .AsQueryable(); // đảm bảo có thể dùng LINQ
 
-            if (partnerId.HasValue)
-                invoices = invoices.Where(i => i.PartnerId == partnerId.Value || i.CreatedByNavigation?.PartnerId == partnerId.Value).ToList();
-
-            if (managerId.HasValue)
-                invoices = invoices.Where(i => i.Warehouse != null && i.Warehouse.ManagerId == managerId.Value).ToList();
-
-            var result = invoices.Select(invoice =>
+            // Lọc theo partner hoặc manager
+            if (partnerId.HasValue || managerId.HasValue)
             {
-                bool isExporter = invoice.CreatedByNavigation?.PartnerId == partnerId;
+                invoicesQuery = invoicesQuery.Where(i =>
+                    (partnerId.HasValue && (i.PartnerId == partnerId.Value
+                                           || i.CreatedByNavigation != null
+                                           && i.CreatedByNavigation.PartnerId == partnerId.Value)) ||
+                    (managerId.HasValue && i.Warehouse != null && i.Warehouse.ManagerId == managerId.Value)
+                );
+            }
 
-                return new InvoiceDto
-                {
-                    InvoiceId = invoice.InvoiceId,
-                    InvoiceCode = invoice.InvoiceCode,
-                    InvoiceType = isExporter ? "Export" : "Import",
-                    PartnerId = invoice.PartnerId,
-                    PartnerName = invoice.Partner?.PartnerName ?? "Không xác định",
-                    IssueDate = invoice.IssueDate,
-                    DueDate = invoice.DueDate,
-                    TotalAmount = invoice.TotalAmount,
-                    Address = invoice.Address,
-                    DiscountAmount = invoice.DiscountAmount,
-                    PayableAmount = invoice.PayableAmount,
-                    WarehouseId = invoice.WarehouseId,
-                    WarehouseName = invoice.Warehouse?.WarehouseName ?? "Không xác định",
-                    Status = isExporter ? invoice.ExportStatus : invoice.ImportStatus,
-                    CreatedAt = invoice.CreatedAt
-                };
+            var result = invoicesQuery.Select(invoice => new InvoiceDto
+            {
+                InvoiceId = invoice.InvoiceId,
+                InvoiceCode = invoice.InvoiceCode,
+                InvoiceType = invoice.CreatedByNavigation != null && invoice.CreatedByNavigation.PartnerId == partnerId
+                                ? "Export" : "Import",
+                PartnerId = invoice.PartnerId,
+                PartnerName = invoice.Partner != null ? invoice.Partner.PartnerName : "Không xác định",
+                IssueDate = invoice.IssueDate,
+                DueDate = invoice.DueDate,
+                TotalAmount = invoice.TotalAmount,
+                Address = invoice.Address,
+                DiscountAmount = invoice.DiscountAmount,
+                PayableAmount = invoice.PayableAmount,
+                WarehouseId = invoice.WarehouseId,
+                WarehouseName = invoice.Warehouse != null ? invoice.Warehouse.WarehouseName : "Không xác định",
+                Status = invoice.CreatedByNavigation != null && invoice.CreatedByNavigation.PartnerId == partnerId
+                            ? invoice.ExportStatus : invoice.ImportStatus,
+                CreatedAt = invoice.CreatedAt
             }).ToList();
 
             return result;
         }
+
 
 
         public Invoice? RejectInvoice(int id)

@@ -5,6 +5,7 @@ using Application.Services;
 using Application.Services.Auth;
 using Application.Services.Implements;
 using Application.Services.Interfaces;
+using Application.Validation.Accountant;
 using Application.Validation.ActivityLogs;
 using Application.Validation.Auth;
 using Application.Validation.Notifications;
@@ -69,10 +70,6 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IHandleRequestRepository, HandleRequestRepository>();
 builder.Services.AddScoped<ITransportRepository, TransportRepository>();
-builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<ISubLedgerRepository, SubLedgerRepository>();
-builder.Services.AddScoped<IPostingPolicyRepository, PostingPolicyRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();
@@ -86,6 +83,9 @@ builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
 builder.Services.AddScoped<IRelationTypeRepository, RelationTypeRepository>();
 
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IAccountingEntryRepository, AccountingEntryRepository>();
 
 // Services
 builder.Services.AddScoped<IRelationTypeService, RelationTypeService>();
@@ -112,7 +112,6 @@ builder.Services.AddScoped<IStockCheckService, StockCheckService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISupplyChainAnalysisService, SupplyChainAnalysisService>();
-builder.Services.AddScoped<IAccountingPostingService, AccountingPostingService>();
 builder.Services.AddScoped<ITransportService, TransportService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IPersonnelService, PersonnelService>();
@@ -120,11 +119,13 @@ builder.Services.AddScoped<IMaterialPartnerRepository, MaterialPartnerRepository
 builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 builder.Services.AddScoped<IPriceMaterialPartnerService, PriceMaterialPartnerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IGlAccountService, GlAccountService>();
 builder.Services.AddScoped<IMaterialCheckService, MaterialCheckService>();
 builder.Services.AddScoped<IRegionService, RegionService>();
+builder.Services.AddScoped<IPartnerRelationService, PartnerRelationService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAccountingService, AccountingService>();
 
-builder.Services.AddScoped<IAccountingQueryService, AccountingQueryService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 builder.Services.AddHttpContextAccessor();
@@ -151,6 +152,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<StockCheckQueryValidator>()
 builder.Services.AddValidatorsFromAssemblyContaining<UserCreateValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateConversationRequestDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegionCreateDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<PaymentValidator>();
 
 // Controllers
 builder.Services.AddControllers()

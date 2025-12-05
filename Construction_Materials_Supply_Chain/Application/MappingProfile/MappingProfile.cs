@@ -1,6 +1,6 @@
 ﻿using Application.DTOs;
-using Application.DTOs.RelationType;
 using Application.DTOs.Relations;
+using Application.DTOs.RelationType;
 using AutoMapper;
 using Domain.Models;
 

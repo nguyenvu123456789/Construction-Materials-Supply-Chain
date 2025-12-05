@@ -8,4 +8,11 @@
         public decimal DiscountAmount { get; set; }
         public string Status { get; set; } = "Active";
     }
+    public class CreateRelationTypeDto
+    {
+        public string Name { get; set; } = null!;
+        public decimal DiscountPercent { get; set; } = 0;
+        public decimal DiscountAmount { get; set; } = 0;
+        public string Status { get; set; } = "Active";
+    }
 }

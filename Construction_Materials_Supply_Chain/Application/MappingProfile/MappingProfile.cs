@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.DTOs.RelationType;
 using Application.DTOs.Relations;
 using AutoMapper;
 using Domain.Models;
@@ -236,6 +237,8 @@ namespace Application.MappingProfile
             CreateMap<Region, RegionDto>().ReverseMap();
             CreateMap<RegionCreateDto, Region>();
             CreateMap<RegionUpdateDto, Region>();
+            CreateMap<RelationType, RelationTypeDto>().ReverseMap();
+
             CreateMap<PartnerRelation, PartnerRelationDto>()
                 .ForMember(dest => dest.RelationTypeName, opt => opt.MapFrom(src => src.RelationType.Name))
                 .ForMember(dest => dest.BuyerPartnerName, opt => opt.MapFrom(src => src.BuyerPartner.PartnerName))

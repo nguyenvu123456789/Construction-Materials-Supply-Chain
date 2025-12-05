@@ -74,7 +74,6 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IPorterRepository, PorterRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
-builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 builder.Services.AddScoped<IPriceMaterialPartnerRepository, PriceMaterialPartnerRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationEventSettingRepository, NotificationEventSettingRepository>();
@@ -82,11 +81,15 @@ builder.Services.AddScoped<INotificationLowStockRuleRepository, NotificationLowS
 builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
+builder.Services.AddScoped<IRelationTypeRepository, RelationTypeRepository>();
+
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IAccountingEntryRepository, AccountingEntryRepository>();
 
 // Services
+builder.Services.AddScoped<IRelationTypeService, RelationTypeService>();
+builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 builder.Services.AddSingleton<IVietnamGeoService, VietnamGeoService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

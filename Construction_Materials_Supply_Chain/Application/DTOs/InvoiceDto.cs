@@ -31,7 +31,7 @@
     public class InvoiceUnitPriceDto
     {
         public int MaterialId { get; set; }
-        public decimal UnitPrice { get; set; }
+        public int DeliveredQuantity { get; set; }
     }
     public class MaterialPriceDto
     {

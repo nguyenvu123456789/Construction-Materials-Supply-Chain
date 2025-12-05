@@ -1,4 +1,6 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Interface;
@@ -32,32 +34,30 @@ namespace Application.Services.Implements
         public OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto)
         {
             if (dto == null)
-                throw new Exception("Dữ liệu đơn hàng không hợp lệ");
+                throw new Exception(OrderMessages.INVALID_ORDER_DATA);
 
             var buyer = _userRepository.GetByIdWithPartner(dto.CreatedBy);
             if (buyer == null)
-                throw new Exception("Người mua không tồn tại");
+                throw new Exception(OrderMessages.BUYER_NOT_FOUND);
 
             var supplier = _partnerRepository.GetPartnerWithRegions(dto.SupplierId);
             if (supplier == null)
-                throw new Exception("Nhà cung cấp không tồn tại");
+                throw new Exception(OrderMessages.SUPPLIER_NOT_FOUND);
 
             var buyerPartner = buyer.Partner;
             if (buyerPartner == null)
-                throw new Exception("Người mua chưa thuộc đối tác nào");
+                throw new Exception(OrderMessages.BUYER_NO_PARTNER);
 
-            // Check PartnerType
             if (buyerPartner.PartnerTypeId <= supplier.PartnerTypeId)
-                throw new Exception("Không thể mua từ đối tác có cùng hoặc cấp cao hơn");
+                throw new Exception(OrderMessages.INVALID_PARTNER_LEVEL);
 
-            // ===== Kiểm tra region =====
             var buyerRegionIds = buyerPartner.PartnerRegions.Select(r => r.RegionId).ToList();
             var supplierRegionIds = supplier.PartnerRegions.Select(r => r.RegionId).ToList();
 
             bool hasCommonRegion = buyerRegionIds.Intersect(supplierRegionIds).Any();
             if (!hasCommonRegion)
-                throw new Exception("Người mua và nhà cung cấp không cùng vùng, không thể tạo đơn hàng");
-            
+                throw new Exception(OrderMessages.REGION_MISMATCH);
+
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";
 
@@ -80,7 +80,7 @@ namespace Application.Services.Implements
             {
                 MaterialId = m.MaterialId,
                 Quantity = m.Quantity,
-                Status = "Pending"
+                Status = StatusEnum.Pending.ToStatusString()
             }).ToList();
 
             _orderRepository.Add(order);
@@ -111,11 +111,11 @@ namespace Application.Services.Implements
         {
             var order = _orderRepository.GetById(dto.OrderId);
             if (order == null)
-                throw new Exception("Không tìm thấy đơn hàng");
+                throw new Exception(OrderMessages.ORDER_NOT_FOUND);
 
             var user = _userRepository.GetById(dto.HandledBy);
             if (user == null)
-                throw new Exception("Người xử lý không tồn tại");
+                throw new Exception(OrderMessages.HANDLER_NOT_FOUND);
 
             // Cập nhật trạng thái đơn hàng
             order.Status = dto.ActionType;
@@ -125,7 +125,7 @@ namespace Application.Services.Implements
             // Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
-                RequestType = "Order",
+                RequestType = StatusEnum.Order.ToStatusString(),
                 RequestId = order.OrderId,
                 HandledBy = dto.HandledBy,
                 ActionType = dto.ActionType,

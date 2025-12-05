@@ -105,9 +105,6 @@ namespace Services.Implementations
                     nextNumber = lastNumber + 1;
             }
 
-            if (partnerId == null || order.CreatedByNavigation?.PartnerId == null)
-                throw new Exception(InvoiceMessages.PARTNER_NOT_FOUND);
-
             var relation = _partnerRelationRepository.GetRelation(
                 buyerPartnerId: partnerId.Value,
                 sellerPartnerId: order.CreatedByNavigation.PartnerId.Value
@@ -142,8 +139,18 @@ namespace Services.Implementations
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
                 if (unitPriceDto == null) continue;
 
-                var unitPrice = unitPriceDto.UnitPrice;
-                var lineTotal = od.Quantity * unitPrice;
+                var deliveredQty = unitPriceDto.DeliveredQuantity;
+                od.DeliveredQuantity += deliveredQty;
+                if (od.DeliveredQuantity > od.Quantity)
+                    od.DeliveredQuantity = od.Quantity;
+
+                if (deliveredQty + od.DeliveredQuantity > od.Quantity)
+                    throw new Exception(string.Format(InvoiceMessages.DELIVERED_QTY_EXCEEDS_ORDER, od.MaterialId));
+
+                od.DeliveredQuantity += deliveredQty;
+
+                var unitPrice = od.UnitPrice ?? 0;
+                var lineTotal = deliveredQty * unitPrice;
 
                 decimal lineDiscount = lineTotal * discountPercent / 100 + discountAmount;
                 if (lineDiscount > lineTotal) lineDiscount = lineTotal;
@@ -151,7 +158,7 @@ namespace Services.Implementations
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
                     MaterialId = od.MaterialId,
-                    Quantity = od.Quantity,
+                    Quantity = deliveredQty,
                     UnitPrice = unitPrice,
                     LineTotal = lineTotal,
                     DiscountAmount = lineDiscount
@@ -159,8 +166,10 @@ namespace Services.Implementations
 
                 totalAmount += lineTotal;
                 totalDiscount += lineDiscount;
-                od.UnitPrice = unitPrice;
-                od.Status = StatusEnum.Invoiced.ToStatusString();
+
+                od.Status = od.DeliveredQuantity == od.Quantity
+                    ? StatusEnum.Success.ToStatusString()
+                    : StatusEnum.Invoiced.ToStatusString();
             }
 
             invoice.TotalAmount = totalAmount;
@@ -177,6 +186,7 @@ namespace Services.Implementations
 
             return createdInvoices;
         }
+
 
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {

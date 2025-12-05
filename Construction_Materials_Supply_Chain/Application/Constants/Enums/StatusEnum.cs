@@ -5,7 +5,7 @@ namespace Application.Constants.Enums
     public enum StatusEnum
     {
         Pending = 1,      
-        Approved = 2,       
+        Approved = 2, 
         Rejected = 3,       
         InProgress = 4,    
         Completed = 5,      
@@ -21,6 +21,7 @@ namespace Application.Constants.Enums
         ExportReport=15,
         ImportReport = 16,
         Viewed=17,
+        Order= 18,
     }
 
     public static class StatusEnumExtensions

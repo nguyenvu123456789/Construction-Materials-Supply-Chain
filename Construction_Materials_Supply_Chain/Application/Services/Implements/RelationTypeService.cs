@@ -1,9 +1,12 @@
 ﻿using Application.Common.Pagination;
+using Application.Constants.Enums;
+using Application.Constants.Messages;
 using Application.DTOs;
 using Application.DTOs.RelationType;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Interface;
+using Domain.Models;
 using FluentValidation;
 
 namespace Application.Services.Implements
@@ -23,6 +26,27 @@ namespace Application.Services.Implements
             _relations = relations;
             _mapper = mapper;
         }
+        public async Task<RelationTypeDto> Create(CreateRelationTypeDto dto)
+        {
+            // Check trùng tên
+            var exists = _types.Query()
+                               .Any(rt => rt.Name.ToLower() == dto.Name.ToLower());
+            if (exists)
+                throw new Exception(RelationTypeMessages.NAME_EXISTS);
+
+            var entity = new RelationType
+            {
+                Name = dto.Name,
+                DiscountAmount = dto.DiscountAmount,
+                DiscountPercent = dto.DiscountPercent,
+                Status = dto.Status
+            };
+
+            _types.Add(entity);
+
+            return await Task.FromResult(_mapper.Map<RelationTypeDto>(entity));
+        }
+
 
         public PagedResultDto<RelationTypeDto> GetByPartner(int partnerId, int pageNumber, int pageSize)
         {
@@ -50,14 +74,14 @@ namespace Application.Services.Implements
         {
             var entity = _types.GetById(id);
             if (entity == null)
-                throw new KeyNotFoundException("RelationType not found");
+                throw new KeyNotFoundException(RelationTypeMessages.NOT_FOUND);
 
             entity.Name = dto.Name;
             entity.DiscountAmount = dto.DiscountAmount;
             entity.DiscountPercent = dto.DiscountPercent;
 
             if (!string.IsNullOrWhiteSpace(dto.Status) &&
-                dto.Status.ToLower() != "deleted")
+                dto.Status.ToLower() != StatusEnum.Deleted.ToStatusString())
                 entity.Status = dto.Status;
 
             _types.Update(entity);

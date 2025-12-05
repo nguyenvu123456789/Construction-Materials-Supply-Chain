@@ -21,6 +21,13 @@ namespace API.Controllers
             return Ok(_service.GetByPartner(partnerId, pageNumber, pageSize));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateRelationTypeDto dto)
+        {
+            var result = await _service.Create(dto);
+            return Ok(result);
+        }
+
         [HttpPut("{id:int}")]
         public IActionResult Update(int id, RelationTypeDto dto)
         {

@@ -131,6 +131,29 @@ namespace Services.Implementations
                 Address = order.DeliveryAddress
             };
 
+            var (totalAmount, totalDiscount) = CalculateTotals(selectedDetails, dto, invoice);
+
+
+            invoice.TotalAmount = totalAmount;
+            invoice.DiscountAmount = totalDiscount;
+            invoice.PayableAmount = totalAmount - totalDiscount;
+
+            _invoices.Add(invoice);
+            createdInvoices.Add(invoice);
+
+            if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
+                order.Status = StatusEnum.Invoiced.ToStatusString();
+
+            _orderRepository.Update(order);
+
+            return createdInvoices;
+        }
+
+        private (decimal totalAmount, decimal totalDiscount) CalculateTotals(
+            List<OrderDetail> selectedDetails,
+            CreateInvoiceFromOrderDto dto,
+            Invoice invoice)
+        {
             decimal totalAmount = 0;
             decimal totalDiscount = 0;
 
@@ -139,21 +162,20 @@ namespace Services.Implementations
                 var unitPriceDto = dto.UnitPrices.FirstOrDefault(u => u.MaterialId == od.MaterialId);
                 if (unitPriceDto == null) continue;
 
-                var deliveredQty = unitPriceDto.DeliveredQuantity;
-                od.DeliveredQuantity += deliveredQty;
-                if (od.DeliveredQuantity > od.Quantity)
-                    od.DeliveredQuantity = od.Quantity;
+                int deliveredQty = unitPriceDto.DeliveredQuantity;
+                int deliveredBefore = od.DeliveredQuantity;
 
-                if (deliveredQty + od.DeliveredQuantity > od.Quantity)
+                if (deliveredBefore + deliveredQty > od.Quantity)
                     throw new Exception(string.Format(InvoiceMessages.DELIVERED_QTY_EXCEEDS_ORDER, od.MaterialId));
 
-                od.DeliveredQuantity += deliveredQty;
+                od.DeliveredQuantity = deliveredBefore + deliveredQty;
 
-                var unitPrice = od.UnitPrice ?? 0;
-                var lineTotal = deliveredQty * unitPrice;
+                decimal finalPrice = od.FinalPrice;
+                decimal unitPrice = od.UnitPrice ?? 0m;
 
-                decimal lineDiscount = lineTotal * discountPercent / 100 + discountAmount;
-                if (lineDiscount > lineTotal) lineDiscount = lineTotal;
+                decimal lineTotal = deliveredQty * finalPrice;
+                decimal lineDiscount = (unitPrice - finalPrice) * deliveredQty;
+                if (lineDiscount < 0) lineDiscount = 0m;
 
                 invoice.InvoiceDetails.Add(new InvoiceDetail
                 {
@@ -172,21 +194,8 @@ namespace Services.Implementations
                     : StatusEnum.Invoiced.ToStatusString();
             }
 
-            invoice.TotalAmount = totalAmount;
-            invoice.DiscountAmount = totalDiscount;
-            invoice.PayableAmount = totalAmount - totalDiscount;
-
-            _invoices.Add(invoice);
-            createdInvoices.Add(invoice);
-
-            if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
-                order.Status = StatusEnum.Invoiced.ToStatusString();
-
-            _orderRepository.Update(order);
-
-            return createdInvoices;
+            return (totalAmount, totalDiscount);
         }
-
 
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {
@@ -212,7 +221,7 @@ namespace Services.Implementations
             return invoice;
         }
 
-        // 🔹 Lấy hóa đơn theo Partner 
+        //  Lấy hóa đơn theo Partner 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {
             var invoice = _invoices.GetByIdWithDetails(invoiceId);
@@ -240,14 +249,12 @@ namespace Services.Implementations
             return dto;
         }
 
-        // 🔹 Lấy tất cả hóa đơn theo Partner 
+        // Lấy tất cả hóa đơn theo Partner 
         public List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId)
         {
-            // Lấy tất cả hóa đơn kèm các navigation properties cần thiết
             var invoicesQuery = _invoices.GetAllWithDetails()
-                .AsQueryable(); // đảm bảo có thể dùng LINQ
+                .AsQueryable(); 
 
-            // Lọc theo partner hoặc manager
             if (partnerId.HasValue || managerId.HasValue)
             {
                 invoicesQuery = invoicesQuery.Where(i =>

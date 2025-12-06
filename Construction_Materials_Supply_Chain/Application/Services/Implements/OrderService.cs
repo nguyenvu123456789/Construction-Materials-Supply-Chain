@@ -82,6 +82,7 @@ namespace Application.Services.Implements
                 Quantity = m.Quantity,
                 Status = StatusEnum.Pending.ToStatusString()
             }).ToList();
+            ApplyPricingForOrder(order, buyerPartner.PartnerId, supplier.PartnerId);
 
             _orderRepository.Add(order);
             var savedOrder = _orderRepository.GetByCode(order.OrderCode);
@@ -136,6 +137,36 @@ namespace Application.Services.Implements
             _handleRequestRepository.Add(handle);
             return order;
         }
+        private void ApplyPricingForOrder(Order order, int buyerPartnerId, int supplierPartnerId)
+        {
+            var relation = _partnerRepository.GetRelation(buyerPartnerId, supplierPartnerId);
+
+            decimal relationDiscountPercent = relation?.RelationType.DiscountPercent ?? 0;
+            decimal relationDiscountAmount = relation?.RelationType.DiscountAmount ?? 0;
+
+            foreach (var detail in order.OrderDetails)
+            {
+                var priceInfo = _partnerRepository.GetPriceMaterial(detail.MaterialId, supplierPartnerId);
+
+                decimal basePrice = priceInfo?.SellPrice ?? 0;
+                decimal materialDiscountPercent = priceInfo?.DiscountPercent ?? 0;
+                decimal materialDiscountAmount = priceInfo?.DiscountAmount ?? 0;
+
+                decimal totalDiscountPercent = relationDiscountPercent + materialDiscountPercent;
+                decimal totalDiscountAmount = relationDiscountAmount + materialDiscountAmount;
+
+                var discountedValuePercent = (basePrice * totalDiscountPercent / 100);
+                var finalPrice = basePrice - discountedValuePercent - totalDiscountAmount;
+
+                if (finalPrice < 0) finalPrice = 0;
+
+                detail.UnitPrice = basePrice;
+                detail.DiscountPercent = totalDiscountPercent;
+                detail.DiscountAmount = totalDiscountAmount;
+                detail.FinalPrice = finalPrice;
+            }
+        }
+
 
         public OrderWithDetailsDto? GetOrderWithDetails(string orderCode)
         {
@@ -180,5 +211,7 @@ namespace Application.Services.Implements
                 .Where(o => o.SupplierId == partnerId)
                 .ToList();
         }
+
+        
     }
 }

@@ -451,26 +451,26 @@ namespace Infrastructure.Persistence
                 // ----- ORDER DETAIL -----
 
                 context.OrderDetails.AddRange(
-    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, Status = "Delivered", DeliveredQuantity = 600 },
-    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, Status = "Delivered", DeliveredQuantity = 12 },
-    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, Status = "Delivered", DeliveredQuantity = 22 },
-    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, Status = "Delivered", DeliveredQuantity = 400 },
-    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 }
+    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 600 },
+    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Delivered", DeliveredQuantity = 12 },
+    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Delivered", DeliveredQuantity = 22 },
+    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 400 },
+    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 }
 );
 
                 context.SaveChanges();

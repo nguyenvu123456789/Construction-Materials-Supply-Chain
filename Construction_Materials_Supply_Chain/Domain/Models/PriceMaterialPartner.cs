@@ -5,7 +5,7 @@
         public int PriceMaterialPartnerId { get; set; }
         public int PartnerId { get; set; }
         public int MaterialId { get; set; }
-        // Giá bán cơ 
+        // Giá bán cơ bản
         public decimal SellPrice { get; set; }
         // Giảm giá theo %
         public decimal DiscountPercent { get; set; } = 0;

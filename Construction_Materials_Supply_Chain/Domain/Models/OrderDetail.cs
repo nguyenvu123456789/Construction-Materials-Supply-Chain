@@ -9,6 +9,9 @@ public partial class OrderDetail
     public int DeliveredQuantity { get; set; } = 0;
     public string? Status { get; set; }
     public decimal? UnitPrice { get; set; }
+    public decimal DiscountPercent { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal FinalPrice { get; set; }
     public virtual Order Order { get; set; } = null!;
     public virtual Material Material { get; set; } = null!;
 }

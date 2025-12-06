@@ -45,6 +45,22 @@ namespace Infrastructure.Implementations
                     .ThenInclude(pr => pr.Region)
                 .FirstOrDefault(x => x.PartnerId == partnerId);
         }
+        public PartnerRelation? GetRelation(int buyerPartnerId, int sellerPartnerId)
+        {
+            return _context.PartnerRelations
+                .Include(pr => pr.RelationType)
+                .FirstOrDefault(pr => pr.BuyerPartnerId == buyerPartnerId
+                                   && pr.SellerPartnerId == sellerPartnerId
+                                   && pr.Status == "Active");
+        }
+
+        public PriceMaterialPartner? GetPriceMaterial(int partnerId, int materialId)
+        {
+            return _context.PriceMaterialPartners
+                .FirstOrDefault(p => p.PartnerId == partnerId
+                                  && p.MaterialId == materialId
+                                  && p.Status == "Active");
+        }
 
     }
 }

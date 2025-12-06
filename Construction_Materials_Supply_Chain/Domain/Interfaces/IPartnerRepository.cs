@@ -11,6 +11,8 @@ namespace Domain.Interface
         Partner? GetByIdNotDeleted(int id);
         void SoftDelete(Partner entity);
         Partner? GetPartnerWithRegions(int partnerId);
+        PartnerRelation? GetRelation(int buyerPartnerId, int sellerPartnerId);
+        PriceMaterialPartner? GetPriceMaterial(int partnerId, int materialId);
 
     }
 }

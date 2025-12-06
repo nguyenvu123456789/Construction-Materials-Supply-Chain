@@ -9,5 +9,7 @@ namespace Application.Services.Interfaces
         RegionDto Create(RegionCreateDto dto);
         void Update(int id, RegionUpdateDto dto);
         void Delete(int id);
+        bool CanTrade(string regionNameA, string regionNameB);
+
     }
 }

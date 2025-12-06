@@ -13,6 +13,8 @@ namespace Domain.Interface
         Partner? GetPartnerWithRegions(int partnerId);
         PartnerRelation? GetRelation(int buyerPartnerId, int sellerPartnerId);
         PriceMaterialPartner? GetPriceMaterial(int partnerId, int materialId);
+        List<Region> GetRegionsByPartnerId(int partnerId);
+        List<string> GetRegionNamesByPartnerId(int partnerId);
 
     }
 }

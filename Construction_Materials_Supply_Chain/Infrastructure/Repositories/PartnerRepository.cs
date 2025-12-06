@@ -61,6 +61,26 @@ namespace Infrastructure.Implementations
                                   && p.MaterialId == materialId
                                   && p.Status == "Active");
         }
+        public List<Region> GetRegionsByPartnerId(int partnerId)
+        {
+            return _context.PartnerRegions
+                .AsNoTracking()
+                .Where(pr => pr.PartnerId == partnerId)
+                .Include(pr => pr.Region)
+                .Select(pr => pr.Region)
+                .ToList();
+        }
+
+        public List<string> GetRegionNamesByPartnerId(int partnerId)
+        {
+            return _context.PartnerRegions
+                .AsNoTracking()
+                .Where(pr => pr.PartnerId == partnerId)
+                .Include(pr => pr.Region)
+                .Select(pr => pr.Region.RegionName)
+                .ToList();
+        }
+
 
     }
 }

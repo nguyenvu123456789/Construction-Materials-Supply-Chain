@@ -15,19 +15,22 @@ namespace Application.Services.Implements
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly IPartnerRepository _partnerRepository;
         private readonly IVietnamGeoService _vietnamGeoService;
+        private readonly IRegionService _regionService;
 
         public OrderService(
             IOrderRepository orderRepository,
             IUserRepository userRepository,
             IHandleRequestRepository handleRequestRepository,
             IPartnerRepository partnerRepository,
-            IVietnamGeoService vietnamGeoService)
+            IVietnamGeoService vietnamGeoService,
+            IRegionService regionService)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
             _handleRequestRepository = handleRequestRepository;
             _partnerRepository = partnerRepository;
             _vietnamGeoService = vietnamGeoService;
+            _regionService = regionService;
         }
 
         //  Tạo đơn mua hàng
@@ -51,17 +54,38 @@ namespace Application.Services.Implements
             if (buyerPartner.PartnerTypeId <= supplier.PartnerTypeId)
                 throw new Exception(OrderMessages.INVALID_PARTNER_LEVEL);
 
-            var buyerRegionIds = buyerPartner.PartnerRegions.Select(r => r.RegionId).ToList();
-            var supplierRegionIds = supplier.PartnerRegions.Select(r => r.RegionId).ToList();
+            var buyerRegions = buyerPartner.PartnerRegions
+                .Select(r => r.Region.RegionName)
+                .ToList();
 
-            bool hasCommonRegion = buyerRegionIds.Intersect(supplierRegionIds).Any();
-            if (!hasCommonRegion)
+            var supplierRegions = supplier.PartnerRegions
+                .Select(r => r.Region.RegionName)
+                .ToList();
+
+            if (!buyerRegions.Any() || !supplierRegions.Any())
+                throw new Exception(OrderMessages.REGION_MISMATCH);
+
+            bool canTrade = false;
+
+            foreach (var b in buyerRegions)
+            {
+                foreach (var s in supplierRegions)
+                {
+                    if (_regionService.CanTrade(b, s))
+                    {
+                        canTrade = true;
+                        break;
+                    }
+                }
+                if (canTrade) break;
+            }
+
+            if (!canTrade)
                 throw new Exception(OrderMessages.REGION_MISMATCH);
 
             var orderCount = _orderRepository.GetAll().Count() + 1;
             var orderCode = $"PO-{orderCount:D3}";
 
-            // Tạo đơn hàng
             var order = new Order
             {
                 OrderCode = orderCode,
@@ -82,10 +106,12 @@ namespace Application.Services.Implements
                 Quantity = m.Quantity,
                 Status = StatusEnum.Pending.ToStatusString()
             }).ToList();
+
             ApplyPricingForOrder(order, buyerPartner.PartnerId, supplier.PartnerId);
 
             _orderRepository.Add(order);
             var savedOrder = _orderRepository.GetByCode(order.OrderCode);
+
             return new OrderResponseDto
             {
                 OrderId = order.OrderId,
@@ -108,6 +134,7 @@ namespace Application.Services.Implements
         }
 
 
+
         public Order HandleOrder(HandleOrderRequestDto dto)
         {
             var order = _orderRepository.GetById(dto.OrderId);
@@ -118,7 +145,6 @@ namespace Application.Services.Implements
             if (user == null)
                 throw new Exception(OrderMessages.HANDLER_NOT_FOUND);
 
-            // Cập nhật trạng thái đơn hàng
             order.Status = dto.ActionType;
             order.UpdatedAt = DateTime.Now;
             _orderRepository.Update(order);

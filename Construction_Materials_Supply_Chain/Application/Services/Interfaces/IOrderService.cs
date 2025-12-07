@@ -9,6 +9,7 @@ namespace Application.Interfaces
         Order HandleOrder(HandleOrderRequestDto dto);
         OrderWithDetailsDto? GetOrderWithDetails(string orderCode);
         List<Order> GetPurchaseOrders(int partnerId);
-        List<Order> GetSalesOrders(int partnerId);
+        List<OrderResponseDto> GetSalesOrders(int supplierPartnerId);
+
     }
 }

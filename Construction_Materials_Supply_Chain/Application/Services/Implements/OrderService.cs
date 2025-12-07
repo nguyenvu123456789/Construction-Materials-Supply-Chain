@@ -11,6 +11,7 @@ namespace Application.Services.Implements
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IUserRepository _userRepository;
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly IPartnerRepository _partnerRepository;
@@ -23,7 +24,8 @@ namespace Application.Services.Implements
             IHandleRequestRepository handleRequestRepository,
             IPartnerRepository partnerRepository,
             IVietnamGeoService vietnamGeoService,
-            IRegionService regionService)
+            IRegionService regionService,
+            IOrderDetailRepository orderDetailRepository)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
@@ -31,6 +33,7 @@ namespace Application.Services.Implements
             _partnerRepository = partnerRepository;
             _vietnamGeoService = vietnamGeoService;
             _regionService = regionService;
+            _orderDetailRepository = orderDetailRepository;
         }
 
         //  Tạo đơn mua hàng
@@ -230,14 +233,39 @@ namespace Application.Services.Implements
                 .ToList();
         }
 
-        public List<Order> GetSalesOrders(int partnerId)
-        {
-            return _orderRepository
-                .GetAllWithDetails()
+        public List<OrderResponseDto> GetSalesOrders(int partnerId)
+{
+            var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
                 .Where(o => o.SupplierId == partnerId)
                 .ToList();
+
+            foreach (var order in orders)
+            {
+                order.OrderDetails = _orderDetailRepository.GetByOrderId(order.OrderId);
+            }
+
+            return orders.Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                OrderCode = o.OrderCode,
+                SupplierName = o.Supplier?.PartnerName ?? "",
+                CustomerName = o.CreatedByNavigation?.FullName ?? "",
+                Status = o.Status,
+                DeliveryAddress = o.DeliveryAddress,
+                PhoneNumber = o.PhoneNumber,
+                WarehouseId = o.WarehouseId,
+                WarehouseName = o.Warehouse?.WarehouseName ?? "",
+                Note = o.Note,
+                CreatedAt = o.CreatedAt ?? DateTime.Now,
+                Materials = o.OrderDetails.Select(d => new OrderMaterialResponseDto
+                {
+                    MaterialId = d.MaterialId,
+                    Quantity = d.Quantity,
+                    Status = d.Status
+                }).ToList()
+
+            }).ToList();
         }
 
-        
     }
 }

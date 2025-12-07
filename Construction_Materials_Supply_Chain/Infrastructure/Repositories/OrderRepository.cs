@@ -42,7 +42,26 @@
                     .Include(o => o.Supplier)
                     .ToList();
             }
-
-
+        public List<Order> GetAllWithWarehouseAndSupplier()
+        {
+            return _context.Orders
+                .Include(o => o.Warehouse)
+                .Include(o => o.Supplier)
+                .Include(o => o.CreatedByNavigation)
+                .Include(o => o.OrderDetails)
+                .ToList();
         }
+
+        public List<Order> GetSalesOrders(int warehouseId)
+        {
+            return _context.Orders
+                .Include(o => o.Warehouse)
+                .Include(o => o.Supplier)
+                .Include(o => o.CreatedByNavigation)
+                .Include(o => o.OrderDetails)
+                .Where(o => o.WarehouseId == warehouseId)
+                .ToList();
+        }
+
+    }
     }

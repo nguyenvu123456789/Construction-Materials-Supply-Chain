@@ -25,9 +25,9 @@ namespace API.Controllers
         [HttpGet("sales/{partnerId}")]
         public IActionResult GetSalesOrders(int partnerId)
         {
-            var orders = _orderService.GetSalesOrders(partnerId);
-            return Ok(orders);
+            return Ok(_orderService.GetSalesOrders(partnerId));
         }
+
 
         [HttpGet("{orderCode}/details")]
         public IActionResult GetOrderDetails(string orderCode)

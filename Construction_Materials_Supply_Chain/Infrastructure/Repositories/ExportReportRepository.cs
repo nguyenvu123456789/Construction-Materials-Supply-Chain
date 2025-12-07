@@ -47,7 +47,6 @@ namespace Infrastructure.Repositories
                     .Where(d => d.ExportReportId == report.ExportReportId)
                     .ToList();
 
-                // Không dùng navigation, chỉ gán danh sách rỗng hoặc null
                 report.GetType().GetProperty("HandleRequests")?.SetValue(report, null);
             }
 

@@ -34,6 +34,8 @@ namespace Application.DTOs
     {
         public int ExportReportId { get; set; }
         public int ExportId { get; set; }
+        public string ExportReportCode { get; set; } = null!;
+
         public string Status { get; set; } = null!;
         public DateTime ReportDate { get; set; }
         public int ReportedBy { get; set; }

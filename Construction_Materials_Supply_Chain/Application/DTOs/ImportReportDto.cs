@@ -21,6 +21,7 @@ public class CreateImportReportDto
 public class ImportReportResponseDto
 {
     public int ImportReportId { get; set; }
+    public string ImportReportCode { get; set; } = null!;
     public string Status { get; set; } = null!;
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -61,7 +62,6 @@ public class ImportReportDetailDto
     public string? Comment { get; set; }
 }
 
-// Request duyệt báo cáo
 public class ReviewImportReportDto
 {
     public string Status { get; set; } = "Approved"; // Approved / Rejected

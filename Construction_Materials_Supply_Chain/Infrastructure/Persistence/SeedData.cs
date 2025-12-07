@@ -105,7 +105,6 @@ namespace Infrastructure.Persistence
 
                 for (int i = 1; i <= 10; i++)
                 {
-                    // Chọn 1–3 tỉnh ngẫu nhiên
                     var randomRegions = allRegions
                         .OrderBy(_ => rnd.Next())
                         .Take(rnd.Next(1, 4))
@@ -668,6 +667,105 @@ namespace Infrastructure.Persistence
                     new ExportDetail { ExportId = context.Exports.First(e => e.ExportCode == "EXP-PENDING-001").ExportId, MaterialId = glass.MaterialId, MaterialCode = glass.MaterialCode ?? "", MaterialName = glass.MaterialName, Unit = glass.Unit, UnitPrice = 200000, Quantity = 25, LineTotal = 200000 * 25 }
                 );
                 context.SaveChanges();
+                // Lấy manager và các vật liệu
+                var managerUser = context.Users.First(u => u.UserName == "manager1");
+                var managerUserId = managerUser.UserId;
+
+                var materials = context.Materials.Take(5).ToList(); // Lấy 5 nguyên vật liệu mẫu
+
+                // ==================== ImportReport ====================
+                if (!context.ImportReports.Any())
+                {
+                    var imports = context.Imports.Take(10).ToList(); // Lấy 10 import đầu tiên
+                    int importReportCounter = 1;
+
+                    foreach (var import in imports)
+                    {
+                        var report = new ImportReport
+                        {
+                            ImportId = import.ImportId,
+                            CreatedBy = managerUserId,
+                            Notes = $"Báo cáo nhập số {importReportCounter}",
+                            CreatedAt = DateTime.Now,
+                            Status = "Pending",
+                            ImportReportCode = $"IR-{importReportCounter:D3}" // Tạo code tăng dần
+                        };
+                        context.ImportReports.Add(report);
+                        context.SaveChanges();
+
+                        // Thêm 2 chi tiết cho mỗi report
+                        context.ImportReportDetails.AddRange(
+                            new ImportReportDetail
+                            {
+                                ImportReportId = report.ImportReportId,
+                                MaterialId = materials[0].MaterialId,
+                                TotalQuantity = 50,
+                                GoodQuantity = 45,
+                                DamagedQuantity = 5,
+                                Comment = "Kiểm tra chất lượng"
+                            },
+                            new ImportReportDetail
+                            {
+                                ImportReportId = report.ImportReportId,
+                                MaterialId = materials[1].MaterialId,
+                                TotalQuantity = 30,
+                                GoodQuantity = 30,
+                                DamagedQuantity = 0,
+                                Comment = "Chất lượng tốt"
+                            }
+                        );
+                        context.SaveChanges();
+                        importReportCounter++;
+                    }
+                }
+
+                // ==================== ExportReport ====================
+                if (!context.ExportReports.Any())
+                {
+                    var exports = context.Exports.Take(10).ToList(); // Lấy 10 export đầu tiên
+                    int exportReportCounter = 1;
+
+                    foreach (var export in exports)
+                    {
+                        // Tạo ExportReport
+                        var report = new ExportReport
+                        {
+                            ExportId = export.ExportId,              // Bắt buộc liên kết ExportId
+                            ReportedBy = managerUserId,
+                            Notes = $"Báo cáo xuất số {exportReportCounter}",
+                            ReportDate = DateTime.Now,
+                            Status = "Pending",
+                            ExportReportCode = $"ER-{exportReportCounter:D3}"
+                        };
+                        context.ExportReports.Add(report);
+                        context.SaveChanges(); // Save để có ExportReportId
+
+                        // Lấy 2 material đầu tiên để làm detail
+                        var reportMaterials = materials.Take(2).ToList();
+
+                        context.ExportReportDetails.AddRange(
+                            new ExportReportDetail
+                            {
+                                ExportReportId = report.ExportReportId, // Bắt buộc
+                                MaterialId = reportMaterials[0].MaterialId,
+                                QuantityDamaged = 2,
+                                Reason = "Hư hỏng trong vận chuyển",
+                                Keep = false
+                            },
+                            new ExportReportDetail
+                            {
+                                ExportReportId = report.ExportReportId,
+                                MaterialId = reportMaterials[1].MaterialId,
+                                QuantityDamaged = 0,
+                                Reason = "",
+                                Keep = true
+                            }
+                        );
+                        context.SaveChanges();
+                        exportReportCounter++;
+                    }
+                }
+
 
                 //material check
 

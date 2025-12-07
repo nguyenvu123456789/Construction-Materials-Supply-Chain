@@ -4,6 +4,7 @@
     {
         public int ImportReportId { get; set; }
         public int? ImportId { get; set; }
+        public string ImportReportCode { get; set; } = string.Empty;
         public int? InvoiceId { get; set; }
         public int CreatedBy { get; set; }
         public string? Notes { get; set; }

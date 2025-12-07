@@ -61,6 +61,7 @@ namespace Services.Implementations
             // 🔹 Tạo ImportReport
             var report = new ImportReport
             {
+                ImportReportCode = GenerateImportReportCode(),
                 ImportId = import.ImportId,
                 InvoiceId = invoice.InvoiceId,
                 CreatedBy = dto.CreatedBy,
@@ -97,17 +98,34 @@ namespace Services.Implementations
             return _reports.GetByIdWithDetails(report.ImportReportId)
                    ?? throw new Exception(ImportMessages.MSG_FAILED_LOAD_REPORT);
         }
+        private string GenerateImportReportCode()
+        {
+            var lastReport = _reports.GetAll()
+                                     .OrderByDescending(r => r.ImportReportId)
+                                     .FirstOrDefault();
+
+            int nextNumber = 1;
+            if (lastReport != null)
+            {
+                var parts = lastReport.ImportReportCode?.Split('-');
+                if (parts != null && parts.Length == 2 && int.TryParse(parts[1], out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            return $"IRP-{nextNumber:000}"; 
+        }
 
         public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
                          ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
 
-            // 🔹 Cập nhật trạng thái ImportReport
             report.Status = dto.Status;
             _reports.Update(report);
 
-            // 🔹 Lưu lịch sử xử lý
+            // Lưu lịch sử xử lý
             var handle = new HandleRequest
             {
                 RequestType = StatusEnum.ImportReport.ToStatusString(),
@@ -119,7 +137,6 @@ namespace Services.Implementations
             };
             _handleRequests.Add(handle);
 
-            // 🔹 Nếu được duyệt
             if (dto.Status == StatusEnum.Success.ToStatusString())
             {
                 var import = report.Import ?? new Import
@@ -138,7 +155,7 @@ namespace Services.Implementations
                     _reports.Update(report);
                 }
 
-                // 🔹 Cập nhật tồn kho
+                //  Cập nhật tồn kho
                 foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
                 {
                     var material = _materials.GetById(detail.MaterialId)
@@ -185,10 +202,11 @@ namespace Services.Implementations
                 }
             }
 
-            // 🔹 Trả về DTO
+            //  Trả về DTO
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
+                ImportReportCode = report.ImportReportCode,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 ReviewedAt = DateTime.Now,
@@ -261,6 +279,7 @@ namespace Services.Implementations
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
+                ImportReportCode = report.ImportReportCode,
                 Notes = report.Notes,
                 CreatedAt = report.CreatedAt,
                 CreatedBy = report.CreatedBy,
@@ -280,7 +299,7 @@ namespace Services.Implementations
             };
         }
 
-        // 🔹 Lấy tất cả báo cáo theo Partner hoặc người tạo
+        //  Lấy tất cả báo cáo theo Partner hoặc người tạo
         public List<ImportReportResponseDto> GetAllByPartner(int? partnerId = null, int? createdByUserId = null)
         {
             var reports = _reports.GetAllWithDetails()
@@ -330,6 +349,7 @@ namespace Services.Implementations
                 result.Add(new ImportReportResponseDto
                 {
                     ImportReportId = report.ImportReportId,
+                    ImportReportCode = report.ImportReportCode,
                     CreatedBy = report.CreatedBy,
                     CreatedByName = createdByName,
                     Notes = report.Notes,
@@ -352,7 +372,6 @@ namespace Services.Implementations
             return result;
         }
 
-        // 🔹 Đánh dấu báo cáo là "Đã xem"
         public void MarkAsViewed(int reportId)
         {
             var report = _reports.GetById(reportId)

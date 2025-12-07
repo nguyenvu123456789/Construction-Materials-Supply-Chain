@@ -38,6 +38,7 @@ namespace Application.Services.Implements
             var report = new ExportReport
             {
                 ExportId = export.ExportId,
+                ExportReportCode = GenerateReportCode(),
                 ReportedBy = dto.ReportedBy,
                 Notes = dto.Notes,
                 Status = StatusEnum.Pending.ToStatusString(),
@@ -57,6 +58,25 @@ namespace Application.Services.Implements
 
             _reportRepo.Add(report);
             return report;
+        }
+
+        private string GenerateReportCode()
+        {
+            var lastReport = _reportRepo.GetAll()
+                                .OrderByDescending(r => r.ExportReportId)
+                                .FirstOrDefault();
+
+            int nextNumber = 1; 
+            if (lastReport != null)
+            {
+                var parts = lastReport.ExportReportCode?.Split('-');
+                if (parts != null && parts.Length == 2 && int.TryParse(parts[1], out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            return $"ERP-{nextNumber:000}"; 
         }
 
 
@@ -169,6 +189,7 @@ namespace Application.Services.Implements
             {
                 ExportReportId = report.ExportReportId,
                 ExportId = report.ExportId,
+                ExportReportCode = report.ExportReportCode,
                 Status = report.Status,
                 ReportedBy = report.ReportedBy,
                 ReportedByName = reporter?.FullName ?? "",
@@ -245,6 +266,7 @@ namespace Application.Services.Implements
                     ExportReportId = report.ExportReportId,
                     ExportId = report.ExportId,
                     Status = report.Status,
+                    ExportReportCode = report.ExportReportCode,
                     ReportedBy = report.ReportedBy,
                     ReportedByName = _userRepo.GetById(report.ReportedBy)?.FullName ?? "",
                     ReportDate = report.ReportDate,

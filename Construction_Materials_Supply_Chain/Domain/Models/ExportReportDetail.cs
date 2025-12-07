@@ -10,7 +10,7 @@
 
         public decimal QuantityDamaged { get; set; }
 
-        public string Reason { get; set; } = null!; // Lý do hư hỏng
+        public string Reason { get; set; } = null!; 
 
         public bool? Keep { get; set; } = false;
 

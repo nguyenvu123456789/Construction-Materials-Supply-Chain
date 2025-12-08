@@ -42,12 +42,18 @@
 
     public class OrderDetailDto
     {
+        public int OrderDetailId { get; set; }
         public int MaterialId { get; set; }
-        public string MaterialName { get; set; } = null!;
+        public string MaterialName { get; set; } = "";
         public int Quantity { get; set; }
+        public int DeliveredQuantity { get; set; }
+        public string? Status { get; set; }
         public decimal? UnitPrice { get; set; }
-        public string Status { get; set; } = null!;
+        public decimal DiscountPercent { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal FinalPrice { get; set; }
     }
+
 
     public class OrderWithDetailsDto
     {

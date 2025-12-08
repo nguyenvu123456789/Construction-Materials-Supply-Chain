@@ -214,16 +214,24 @@ namespace Application.Services.Implements
                 Note = order.Note,
                 WarehouseId = order.WarehouseId,
                 WarehouseName = order.Warehouse?.WarehouseName,
+
                 OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {
+                    OrderDetailId = od.OrderDetailId,
                     MaterialId = od.MaterialId,
                     MaterialName = od.Material?.MaterialName ?? "",
                     Quantity = od.Quantity,
+                    DeliveredQuantity = od.DeliveredQuantity,
+                    Status = od.Status,
                     UnitPrice = od.UnitPrice,
-                    Status = od.Status
+                    DiscountPercent = od.DiscountPercent,
+                    DiscountAmount = od.DiscountAmount,
+                    FinalPrice = od.FinalPrice
                 }).ToList()
             };
         }
+
+
         public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
             var orders = _orderRepository.GetAllWithWarehouseAndSupplier()

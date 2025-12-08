@@ -224,14 +224,40 @@ namespace Application.Services.Implements
                 }).ToList()
             };
         }
-        public List<Order> GetPurchaseOrders(int partnerId)
+        public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
-            return _orderRepository
-                .GetAllWithDetails()
-                .Where(o => o.CreatedByNavigation != null
-                            && o.CreatedByNavigation.PartnerId == partnerId)
+            var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
+                .Where(o => o.Supplier != null && o.Supplier.PartnerId == partnerId)
                 .ToList();
+
+            foreach (var order in orders)
+            {
+                order.OrderDetails = _orderDetailRepository.GetByOrderId(order.OrderId);
+            }
+
+            return orders.Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                OrderCode = o.OrderCode,
+                SupplierName = o.Supplier?.PartnerName ?? "",
+                CustomerName = o.CreatedByNavigation?.FullName ?? "",
+                Status = o.Status,
+                DeliveryAddress = o.DeliveryAddress,
+                PhoneNumber = o.PhoneNumber,
+                WarehouseId = o.WarehouseId,
+                WarehouseName = o.Warehouse?.WarehouseName ?? "",
+                Note = o.Note,
+                CreatedAt = o.CreatedAt ?? DateTime.Now,
+                Materials = o.OrderDetails.Select(d => new OrderMaterialResponseDto
+                {
+                    MaterialId = d.MaterialId,
+                    Quantity = d.Quantity,
+                    Status = d.Status
+                }).ToList()
+
+            }).ToList();
         }
+
 
         public List<OrderResponseDto> GetSalesOrders(int partnerId)
 {

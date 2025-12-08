@@ -8,7 +8,7 @@ namespace Application.Interfaces
         OrderResponseDto CreatePurchaseOrder(CreateOrderDto dto);
         Order HandleOrder(HandleOrderRequestDto dto);
         OrderWithDetailsDto? GetOrderWithDetails(string orderCode);
-        List<Order> GetPurchaseOrders(int partnerId);
+        List<OrderResponseDto> GetPurchaseOrders(int partnerId);
         List<OrderResponseDto> GetSalesOrders(int supplierPartnerId);
 
     }

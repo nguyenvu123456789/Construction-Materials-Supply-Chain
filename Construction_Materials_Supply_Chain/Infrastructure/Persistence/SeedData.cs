@@ -405,7 +405,13 @@ namespace Infrastructure.Persistence
 
             if (!context.Orders.Any())
             {
-                var customer = context.Users.First(u => u.UserName == "customer1");
+                var user1 = context.Users.First(u => u.UserName == "customer1");
+                var user2 = context.Users.First(u => u.UserName == "collaborator1");
+                var user3 = context.Users.First(u => u.UserName == "collaborator1");
+
+                var supplier1 = context.Partners.First(p => p.PartnerCode == "P001");
+                var supplier2 = context.Partners.First(p => p.PartnerCode == "P002");
+                var supplier3 = context.Partners.First(p => p.PartnerCode == "P003");
 
                 var wood = context.Materials.First(m => m.MaterialCode == "W001");
                 var brick = context.Materials.First(m => m.MaterialCode == "B001");
@@ -415,66 +421,85 @@ namespace Infrastructure.Persistence
                 var paint = context.Materials.First(m => m.MaterialCode == "S001");
                 var glass = context.Materials.First(m => m.MaterialCode == "G001");
 
-                var supplier = context.Partners.First(p => p.PartnerCode == "P001");
-
                 var wh1 = context.Warehouses.First(w => w.WarehouseId == 1);
                 var wh2 = context.Warehouses.First(w => w.WarehouseId == 2);
                 var wh3 = context.Warehouses.First(w => w.WarehouseId == 3);
 
                 var orders = new List<Order>
-    {
-        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
-
-        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
-
-        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
-
-        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
-
-        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
-
-        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
-
-        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
-
-        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
-
-        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
-
-        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = customer.UserId, SupplierId = supplier.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) }
-    };
+                    {
+                        new Order { OrderCode = "ORD-001", CustomerName = "Lê Văn A", PhoneNumber = "0123456789", DeliveryAddress = "123 Đường Láng, Hà Nội", Status = "Pending", Note = "Urgent delivery", CreatedBy = user1.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-10), UpdatedAt = DateTime.Now.AddDays(-10) },
+                        new Order { OrderCode = "ORD-002", CustomerName = "Công ty xây dựng Sài Gòn", PhoneNumber = "0987654321", DeliveryAddress = "456 Nguyễn Trãi, TP.HCM", Status = "Approved", Note = "Bulk order", CreatedBy = user1.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-9), UpdatedAt = DateTime.Now.AddDays(-9) },
+                        new Order { OrderCode = "ORD-003", CustomerName = "Nguyễn Thị B", PhoneNumber = "0912345678", DeliveryAddress = "789 Lê Lợi, Đà Nẵng", Status = "Pending", Note = "Check quality", CreatedBy = user2.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-8), UpdatedAt = DateTime.Now.AddDays(-8) },
+                        new Order { OrderCode = "ORD-004", CustomerName = "Đại lý Minh Tâm", PhoneNumber = "0945678901", DeliveryAddress = "101 Trần Phú, Cần Thơ", Status = "Approved", Note = "Regular client", CreatedBy = user2.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-7), UpdatedAt = DateTime.Now.AddDays(-7) },
+                        new Order { OrderCode = "ORD-005", CustomerName = "Trần Văn C", PhoneNumber = "0967890123", DeliveryAddress = "202 Hai Bà Trưng, Hà Nội", Status = "Success", Note = "Completed", CreatedBy = user3.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-6), UpdatedAt = DateTime.Now.AddDays(-6) },
+                        new Order { OrderCode = "ORD-006", CustomerName = "Phạm Thị D", PhoneNumber = "0932109876", DeliveryAddress = "303 Phạm Văn Đồng, TP.HCM", Status = "Pending", Note = "Partial delivery", CreatedBy = user3.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-5), UpdatedAt = DateTime.Now.AddDays(-5) },
+                        new Order { OrderCode = "ORD-007", CustomerName = "Công ty Gỗ Việt", PhoneNumber = "0976543210", DeliveryAddress = "404 Nguyễn Huệ, Huế", Status = "Approved", Note = "Wood-specific", CreatedBy = user1.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-4), UpdatedAt = DateTime.Now.AddDays(-4) },
+                        new Order { OrderCode = "ORD-008", CustomerName = "Ngô Văn E", PhoneNumber = "0923456789", DeliveryAddress = "505 Lê Văn Sỹ, TP.HCM", Status = "Success", Note = "Fast delivery", CreatedBy = user2.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-3), UpdatedAt = DateTime.Now.AddDays(-3) },
+                        new Order { OrderCode = "ORD-009", CustomerName = "Vũ Thị F", PhoneNumber = "0956789012", DeliveryAddress = "606 Nguyễn Văn Cừ, Hà Nội", Status = "Pending", Note = "Customer review", CreatedBy = user3.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-2), UpdatedAt = DateTime.Now.AddDays(-2) },
+                        new Order { OrderCode = "ORD-010", CustomerName = "Đỗ Văn G", PhoneNumber = "0990123456", DeliveryAddress = "707 Tô Hiến Thành, Đà Nẵng", Status = "Approved", Note = "Final order", CreatedBy = user1.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-1), UpdatedAt = DateTime.Now.AddDays(-1) },
+                        new Order { OrderCode = "ORD-011", CustomerName = "Công ty Thép Việt", PhoneNumber = "0812345678", DeliveryAddress = "808 Xa Lộ Hà Nội, TP.HCM", Status = "Pending", Note = "Steel delivery", CreatedBy = user1.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-11), UpdatedAt = DateTime.Now.AddDays(-11)},
+    new Order { OrderCode = "ORD-012", CustomerName = "Cửa hàng VLXD Hạnh Phúc", PhoneNumber = "0823456789", DeliveryAddress = "909 Hà Huy Giáp, Cần Thơ", Status = "Approved", Note = "High priority", CreatedBy = user2.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-12), UpdatedAt = DateTime.Now.AddDays(-12)},
+    new Order { OrderCode = "ORD-013", CustomerName = "Nguyễn Văn Long", PhoneNumber = "0834567890", DeliveryAddress = "1010 Điện Biên Phủ, Hà Nội", Status = "Pending", Note = "Check stock", CreatedBy = user3.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-13), UpdatedAt = DateTime.Now.AddDays(-13)},
+    new Order { OrderCode = "ORD-014", CustomerName = "Công ty Tân Phước", PhoneNumber = "0845678901", DeliveryAddress = "1111 Hoàng Hoa Thám, Hải Phòng", Status = "Approved", Note = "Monthly order", CreatedBy = user1.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-14), UpdatedAt = DateTime.Now.AddDays(-14)},
+    new Order { OrderCode = "ORD-015", CustomerName = "Nhà máy Xi Măng Nam Định", PhoneNumber = "0856789012", DeliveryAddress = "1212 Lý Thường Kiệt, Nam Định", Status = "Success", Note = "Completed", CreatedBy = user2.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-15), UpdatedAt = DateTime.Now.AddDays(-15)},
+    new Order { OrderCode = "ORD-016", CustomerName = "Trần Quốc Huy", PhoneNumber = "0867890123", DeliveryAddress = "1313 Nguyễn Thượng Hiền, TP.HCM", Status = "Pending", Note = "Delay shipping", CreatedBy = user3.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-16), UpdatedAt = DateTime.Now.AddDays(-16)},
+    new Order { OrderCode = "ORD-017", CustomerName = "Công ty Xây dựng Phát Đạt", PhoneNumber = "0878901234", DeliveryAddress = "1414 Nguyễn Văn Linh, Hà Nội", Status = "Approved", Note = "Concrete needed", CreatedBy = user1.UserId, SupplierId = supplier2.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-17), UpdatedAt = DateTime.Now.AddDays(-17)},
+    new Order { OrderCode = "ORD-018", CustomerName = "Cửa hàng VLXD Thiên An", PhoneNumber = "0889012345", DeliveryAddress = "1515 Lê Hồng Phong, Hải Phòng", Status = "Pending", Note = "Material return", CreatedBy = user2.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh1.WarehouseId, CreatedAt = DateTime.Now.AddDays(-18), UpdatedAt = DateTime.Now.AddDays(-18)},
+    new Order { OrderCode = "ORD-019", CustomerName = "Phạm Thị Thu", PhoneNumber = "0890123456", DeliveryAddress = "1616 Trần Hưng Đạo, Đà Nẵng", Status = "Approved", Note = "Extra delivery", CreatedBy = user3.UserId, SupplierId = supplier1.PartnerId, WarehouseId = wh2.WarehouseId, CreatedAt = DateTime.Now.AddDays(-19), UpdatedAt = DateTime.Now.AddDays(-19)},
+    new Order { OrderCode = "ORD-020", CustomerName = "Công ty Tư Vấn An Bình", PhoneNumber = "0901234567", DeliveryAddress = "1717 Cách Mạng Tháng 8, TP.HCM", Status = "Success", Note = "Fast processing", CreatedBy = user1.UserId, SupplierId = supplier3.PartnerId, WarehouseId = wh3.WarehouseId, CreatedAt = DateTime.Now.AddDays(-20), UpdatedAt = DateTime.Now.AddDays(-20)}
+                    };
 
                 context.Orders.AddRange(orders);
                 context.SaveChanges();
 
-                // ----- ORDER DETAIL -----
-
+                // ORDER DETAILS
                 context.OrderDetails.AddRange(
-    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 600 },
-    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Delivered", DeliveredQuantity = 12 },
-    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Delivered", DeliveredQuantity = 22 },
-    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 400 },
-    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Approved", DeliveredQuantity = 0 },
-    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 }
-);
+                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = wood.MaterialId, Quantity = 20, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[0].OrderId, MaterialId = brick.MaterialId, Quantity = 500, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = metal.MaterialId, Quantity = 15, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[1].OrderId, MaterialId = cement.MaterialId, Quantity = 30, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = plastic.MaterialId, Quantity = 25, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[2].OrderId, MaterialId = paint.MaterialId, Quantity = 5, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = glass.MaterialId, Quantity = 10, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[3].OrderId, MaterialId = wood.MaterialId, Quantity = 18, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = brick.MaterialId, Quantity = 600, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 600 },
+                    new OrderDetail { OrderId = orders[4].OrderId, MaterialId = metal.MaterialId, Quantity = 12, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Delivered", DeliveredQuantity = 12 },
+                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = cement.MaterialId, Quantity = 40, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[5].OrderId, MaterialId = plastic.MaterialId, Quantity = 20, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = paint.MaterialId, Quantity = 8, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[6].OrderId, MaterialId = glass.MaterialId, Quantity = 15, UnitPrice = 200000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = wood.MaterialId, Quantity = 22, UnitPrice = 255000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 255000m, Status = "Delivered", DeliveredQuantity = 22 },
+                    new OrderDetail { OrderId = orders[7].OrderId, MaterialId = brick.MaterialId, Quantity = 400, UnitPrice = 1200m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1200m, Status = "Delivered", DeliveredQuantity = 400 },
+                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = metal.MaterialId, Quantity = 10, UnitPrice = 320000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 320000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[8].OrderId, MaterialId = cement.MaterialId, Quantity = 35, UnitPrice = 90000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 180000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[9].OrderId, MaterialId = paint.MaterialId, Quantity = 6, UnitPrice = 1500000m, DiscountPercent = 0, DiscountAmount = 0, FinalPrice = 1500000m, Status = "Approved", DeliveredQuantity = 0 },
+                    new OrderDetail { OrderId = orders[10].OrderId, MaterialId = metal.MaterialId, Quantity = 20, UnitPrice = 320000m, FinalPrice = 320000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[10].OrderId, MaterialId = cement.MaterialId, Quantity = 50, UnitPrice = 90000m, FinalPrice = 90000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[11].OrderId, MaterialId = wood.MaterialId, Quantity = 25, UnitPrice = 255000m, FinalPrice = 255000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[11].OrderId, MaterialId = glass.MaterialId, Quantity = 12, UnitPrice = 200000m, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[12].OrderId, MaterialId = paint.MaterialId, Quantity = 7, UnitPrice = 1500000m, FinalPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[12].OrderId, MaterialId = plastic.MaterialId, Quantity = 30, UnitPrice = 180000m, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[13].OrderId, MaterialId = brick.MaterialId, Quantity = 700, UnitPrice = 1200m, FinalPrice = 1200m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[13].OrderId, MaterialId = cement.MaterialId, Quantity = 60, UnitPrice = 90000m, FinalPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[14].OrderId, MaterialId = wood.MaterialId, Quantity = 28, UnitPrice = 255000m, FinalPrice = 255000m, Status = "Delivered", DeliveredQuantity = 28 },
+    new OrderDetail { OrderId = orders[14].OrderId, MaterialId = metal.MaterialId, Quantity = 14, UnitPrice = 320000m, FinalPrice = 320000m, Status = "Delivered", DeliveredQuantity = 14 },
+    new OrderDetail { OrderId = orders[15].OrderId, MaterialId = plastic.MaterialId, Quantity = 35, UnitPrice = 180000m, FinalPrice = 180000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[15].OrderId, MaterialId = glass.MaterialId, Quantity = 8, UnitPrice = 200000m, FinalPrice = 200000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[16].OrderId, MaterialId = metal.MaterialId, Quantity = 18, UnitPrice = 320000m, FinalPrice = 320000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[16].OrderId, MaterialId = cement.MaterialId, Quantity = 55, UnitPrice = 90000m, FinalPrice = 90000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[17].OrderId, MaterialId = wood.MaterialId, Quantity = 32, UnitPrice = 255000m, FinalPrice = 255000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[17].OrderId, MaterialId = paint.MaterialId, Quantity = 9, UnitPrice = 1500000m, FinalPrice = 1500000m, Status = "Pending", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[18].OrderId, MaterialId = brick.MaterialId, Quantity = 850, UnitPrice = 1200m, FinalPrice = 1200m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[18].OrderId, MaterialId = glass.MaterialId, Quantity = 11, UnitPrice = 200000m, FinalPrice = 200000m, Status = "Approved", DeliveredQuantity = 0 },
+    new OrderDetail { OrderId = orders[19].OrderId, MaterialId = metal.MaterialId, Quantity = 16, UnitPrice = 320000m, FinalPrice = 320000m, Status = "Delivered", DeliveredQuantity = 16 },
+    new OrderDetail { OrderId = orders[19].OrderId, MaterialId = cement.MaterialId, Quantity = 45, UnitPrice = 90000m, FinalPrice = 90000m, Status = "Delivered", DeliveredQuantity = 45 }
+                );
 
                 context.SaveChanges();
-
             }
+
+
 
             // 9️ Seed Invoices & InvoiceDetails
 
@@ -667,11 +692,10 @@ namespace Infrastructure.Persistence
                     new ExportDetail { ExportId = context.Exports.First(e => e.ExportCode == "EXP-PENDING-001").ExportId, MaterialId = glass.MaterialId, MaterialCode = glass.MaterialCode ?? "", MaterialName = glass.MaterialName, Unit = glass.Unit, UnitPrice = 200000, Quantity = 25, LineTotal = 200000 * 25 }
                 );
                 context.SaveChanges();
-                // Lấy manager và các vật liệu
                 var managerUser = context.Users.First(u => u.UserName == "manager1");
                 var managerUserId = managerUser.UserId;
 
-                var materials = context.Materials.Take(5).ToList(); // Lấy 5 nguyên vật liệu mẫu
+                var materials = context.Materials.Take(5).ToList(); 
 
                 // ==================== ImportReport ====================
                 if (!context.ImportReports.Any())
@@ -688,12 +712,11 @@ namespace Infrastructure.Persistence
                             Notes = $"Báo cáo nhập số {importReportCounter}",
                             CreatedAt = DateTime.Now,
                             Status = "Pending",
-                            ImportReportCode = $"IR-{importReportCounter:D3}" // Tạo code tăng dần
+                            ImportReportCode = $"IR-{importReportCounter:D3}" 
                         };
                         context.ImportReports.Add(report);
                         context.SaveChanges();
 
-                        // Thêm 2 chi tiết cho mỗi report
                         context.ImportReportDetails.AddRange(
                             new ImportReportDetail
                             {

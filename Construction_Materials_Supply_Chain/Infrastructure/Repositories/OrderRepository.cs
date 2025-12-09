@@ -49,7 +49,6 @@
                 .Include(o => o.Supplier)
                 .Include(o => o.CreatedByNavigation)
                 .ThenInclude(u => u.Partner)
-                .ThenInclude(u => u.Partner)
                 .Include(o => o.OrderDetails)
                 .ToList();
         }

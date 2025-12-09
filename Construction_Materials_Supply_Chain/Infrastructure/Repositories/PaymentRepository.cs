@@ -1,5 +1,4 @@
-﻿using Domain.Interface.Base;
-using Domain.Interfaces;
+﻿using Domain.Interfaces;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
@@ -7,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
@@ -45,6 +42,19 @@ namespace Infrastructure.Repositories
                 .Where(x => x.DateCreated >= from && x.DateCreated <= to)
                 .OrderBy(x => x.DateCreated)
                 .ToList();
+        }
+
+        public List<Payment> GetByDateRangeAndPartner(DateTime from, DateTime to, int? partnerId)
+        {
+            var query = _context.Payments
+                .Where(x => x.DateCreated >= from && x.DateCreated <= to);
+
+            if (partnerId.HasValue)
+            {
+                query = query.Where(x => x.PartnerId == partnerId.Value);
+            }
+
+            return query.OrderBy(x => x.DateCreated).ToList();
         }
     }
 }

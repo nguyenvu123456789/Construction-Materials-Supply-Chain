@@ -27,9 +27,15 @@ namespace Application.Services.Implements
             _paymentRepo = paymentRepo;
         }
 
-        public List<LedgerEntryDto> GetLedger(DateTime from, DateTime to)
+        public List<LedgerEntryDto> GetLedger(DateTime from, DateTime to, int? partnerId)
         {
             var entries = _entryRepo.GetEntries(from, to);
+
+            if (partnerId.HasValue)
+            {
+                entries = entries.Where(e => e.PartnerId == partnerId.Value).ToList();
+            }
+
             var result = new List<LedgerEntryDto>();
 
             decimal runningBalance = 0;
@@ -47,7 +53,7 @@ namespace Application.Services.Implements
                     DocumentType = e.DocumentType,
                     DocumentNumber = e.DocumentNumber,
                     ContraAccount = $"{e.DebitAccount}/{e.CreditAccount}",
-                    PartnerName = e.Description,
+                    PartnerName = e.PartnerName,
                     Description = e.Description,
                     Debit = e.DebitAmount,
                     Credit = e.CreditAmount,
@@ -59,19 +65,29 @@ namespace Application.Services.Implements
             return result;
         }
 
-        public List<APAgingDto> GetAPAging()
+        public List<APAgingDto> GetAPAging(int? partnerId)
         {
             var invoices = _invoiceRepo.GetAll()
                 .Where(i => i.InvoiceType == "Import")
                 .ToList();
 
+            if (partnerId.HasValue)
+            {
+                invoices = invoices.Where(i => i.PartnerId == partnerId.Value).ToList();
+            }
+
             var list = new List<APAgingDto>();
 
             foreach (var inv in invoices)
             {
-                var paid = _paymentRepo.GetPaymentsByInvoice(inv.InvoiceCode)
-                                       .Sum(x => x.Amount);
+                var payments = _paymentRepo.GetPaymentsByInvoice(inv.InvoiceCode);
 
+                if (partnerId.HasValue)
+                {
+                    payments = payments.Where(p => p.PartnerId == partnerId.Value).ToList();
+                }
+
+                var paid = payments.Sum(x => x.Amount);
                 var remaining = inv.PayableAmount - paid;
 
                 int overdue = 0;
@@ -88,18 +104,18 @@ namespace Application.Services.Implements
                     PaidAmount = paid,
                     RemainingAmount = remaining,
                     Status = remaining <= 0 ? "Đã thanh toán"
-                           : overdue > 0 ? "Quá hạn"
-                           : "Chưa đến hạn"
+                            : overdue > 0 ? "Quá hạn"
+                            : "Chưa đến hạn"
                 });
             }
 
             return list;
         }
 
-        public List<CashBookDto> GetCashBook(DateTime from, DateTime to)
+        public List<CashBookDto> GetCashBook(DateTime from, DateTime to, int? partnerId)
         {
-            var receipts = _receiptRepo.GetByDateRange(from, to);
-            var payments = _paymentRepo.GetByDateRange(from, to);
+            var receipts = _receiptRepo.GetByDateRangeAndPartner(from, to, partnerId);
+            var payments = _paymentRepo.GetByDateRangeAndPartner(from, to, partnerId);
 
             var entries = new List<CashBookDto>();
             int no = 1;
@@ -113,12 +129,12 @@ namespace Application.Services.Implements
                 {
                     No = no++,
                     DocumentDate = r.DateCreated,
-                    PostingDate = r.DateCreated,
+                    PostingDate = r.AccountingDate != DateTime.MinValue ? r.AccountingDate : r.DateCreated,
                     Type = "PT",
                     DocumentNumber = r.ReceiptNumber,
-                    Partner = r.CreatedBy,
-                    ContraAccount = r.DebitAccount,
-                    Description = r.Notes,
+                    Partner = r.PartnerName,
+                    ContraAccount = r.CreditAccount,
+                    Description = r.Reason,
                     InAmount = r.Amount,
                     OutAmount = 0,
                     Balance = balance,
@@ -134,12 +150,12 @@ namespace Application.Services.Implements
                 {
                     No = no++,
                     DocumentDate = p.DateCreated,
-                    PostingDate = p.DateCreated,
+                    PostingDate = p.AccountingDate != DateTime.MinValue ? p.AccountingDate : p.DateCreated,
                     Type = "PC",
                     DocumentNumber = p.PaymentNumber,
-                    Partner = p.CreatedBy,
+                    Partner = p.PartnerName,
                     ContraAccount = p.DebitAccount,
-                    Description = p.Notes,
+                    Description = p.Reason,
                     InAmount = 0,
                     OutAmount = p.Amount,
                     Balance = balance,
@@ -148,7 +164,7 @@ namespace Application.Services.Implements
             }
 
             return entries
-                .OrderBy(x => x.DocumentDate)
+                .OrderBy(x => x.PostingDate)
                 .ThenBy(x => x.No)
                 .ToList();
         }

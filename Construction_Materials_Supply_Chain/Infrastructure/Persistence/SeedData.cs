@@ -1292,12 +1292,6 @@ namespace Infrastructure.Persistence
                 context.Transports.Add(t1);
                 context.SaveChanges();
 
-                var stop0 = new TransportStop { TransportId = t1.TransportId, Seq = 0, StopType = TransportStopType.Depot, AddressId = depot.AddressId, ServiceTimeMin = 0, Status = TransportStopStatus.Planned };
-                var stop1 = new TransportStop { TransportId = t1.TransportId, Seq = 1, StopType = TransportStopType.Dropoff, AddressId = whA.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
-                var stop2 = new TransportStop { TransportId = t1.TransportId, Seq = 2, StopType = TransportStopType.Dropoff, AddressId = whB.AddressId, ServiceTimeMin = 15, Status = TransportStopStatus.Planned };
-                context.TransportStops.AddRange(stop0, stop1, stop2);
-                context.SaveChanges();
-
                 var inv1 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-001") ?? context.Invoices.OrderBy(i => i.InvoiceId).First();
                 var inv2 = context.Invoices.FirstOrDefault(i => i.InvoiceCode == "INV-002") ?? context.Invoices.OrderBy(i => i.InvoiceId).Skip(1).FirstOrDefault() ?? inv1;
 

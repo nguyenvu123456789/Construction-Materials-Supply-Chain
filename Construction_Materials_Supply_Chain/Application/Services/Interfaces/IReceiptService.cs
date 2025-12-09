@@ -1,14 +1,19 @@
 ﻿using Application.DTOs;
+using Domain.Models;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Application.Services.Interfaces
 {
     public interface IReceiptService
     {
-        string GenerateReceiptNumber();
-        void CreateReceipt(ReceiptDTO receiptDto, IFormFile file);
+        void CreateReceipt(ReceiptDTO dto);
         Receipt GetReceiptById(int id);
-        List<Receipt> GetReceiptsByPartnerId(int partnerId);
         List<Receipt> GetAllReceipts();
+        List<Receipt> GetReceiptsByPartnerId(int partnerId);
+        string GenerateReceiptNumber();
+        Task<byte[]> ExportReceiptsToExcelAsync();
+        Task ImportReceiptsFromExcelAsync(IFormFile file);
     }
 }

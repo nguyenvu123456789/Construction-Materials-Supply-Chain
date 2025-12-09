@@ -17,5 +17,8 @@ namespace Domain.Models
         public decimal DebitAmount { get; set; }
         public decimal CreditAmount { get; set; }
         public string Description { get; set; }
+
+        public int? PartnerId { get; set; }
+        public string PartnerName { get; set; }
     }
 }

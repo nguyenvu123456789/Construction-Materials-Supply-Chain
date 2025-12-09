@@ -29,7 +29,7 @@
     {
         public int Seq { get; set; }
         public string StopType { get; set; } = "Dropoff";
-        public int AddressId { get; set; }
+        public List<int> InvoiceIds { get; set; } = new();
         public int ServiceTimeMin { get; set; }
     }
 
@@ -66,12 +66,7 @@
         public int TransportStopId { get; set; }
         public int Seq { get; set; }
         public string StopType { get; set; } = default!;
-        public int AddressId { get; set; }
-        public string AddressName { get; set; } = default!;
-        public string? AddressLine1 { get; set; }
-        public string? City { get; set; }
-        public double? Lat { get; set; }
-        public double? Lng { get; set; }
+        public string Address { get; set; } = default!;
         public int ServiceTimeMin { get; set; }
         public string Status { get; set; } = default!;
         public DateTimeOffset? ETA { get; set; }
@@ -137,8 +132,7 @@
     {
         public int StopId { get; set; }
         public string StopType { get; set; }
-        public string AddressName { get; set; }
-        public string City { get; set; }
+        public string Address { get; set; }
 
         public DateTimeOffset? ETA { get; set; }
         public DateTimeOffset? ATA { get; set; }

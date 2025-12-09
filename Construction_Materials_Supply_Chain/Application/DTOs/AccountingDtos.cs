@@ -52,18 +52,6 @@ namespace Application.DTOs
         public string Account { get; set; }
     }
 
-    public class CreateReceiptRequest
-    {
-        public ReceiptDTO Receipt { get; set; }
-        public IFormFile? AttachmentFile { get; set; }
-    }
-
-    public class CreatePaymentRequest
-    {
-        public PaymentDTO Payment { get; set; }
-        public IFormFile? AttachmentFile { get; set; }
-    }
-
     public class LedgerEntryDto
     {
         public int No { get; set; }

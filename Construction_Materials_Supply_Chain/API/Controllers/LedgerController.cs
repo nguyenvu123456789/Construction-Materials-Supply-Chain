@@ -15,21 +15,21 @@ namespace API.Controllers
         }
 
         [HttpGet("general-ledger")]
-        public IActionResult GetLedger(DateTime from, DateTime to)
+        public IActionResult GetLedger(DateTime from, DateTime to, int? partnerId)
         {
-            return Ok(_accountingService.GetLedger(from, to));
+            return Ok(_accountingService.GetLedger(from, to, partnerId));
         }
 
         [HttpGet("ap-aging")]
-        public IActionResult GetAging()
+        public IActionResult GetAging(int? partnerId)
         {
-            return Ok(_accountingService.GetAPAging());
+            return Ok(_accountingService.GetAPAging(partnerId));
         }
 
         [HttpGet("cashbook")]
-        public IActionResult GetCashBook(DateTime from, DateTime to)
+        public IActionResult GetCashBook(DateTime from, DateTime to, int? partnerId)
         {
-            return Ok(_accountingService.GetCashBook(from, to));
+            return Ok(_accountingService.GetCashBook(from, to, partnerId));
         }
     }
 }

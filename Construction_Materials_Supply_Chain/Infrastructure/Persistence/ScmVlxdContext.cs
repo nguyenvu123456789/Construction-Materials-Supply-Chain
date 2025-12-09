@@ -778,7 +778,6 @@ public partial class ScmVlxdContext : DbContext
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.ProofImageBase64);
             e.HasOne(x => x.Transport).WithMany(t => t.Stops).HasForeignKey(x => x.TransportId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Address).WithMany().HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
             e.HasMany(x => x.TransportInvoices).WithOne(ti => ti.TransportStop).HasForeignKey(ti => ti.TransportStopId).OnDelete(DeleteBehavior.Cascade);
         });
 

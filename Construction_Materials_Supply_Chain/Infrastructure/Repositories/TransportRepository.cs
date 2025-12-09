@@ -21,7 +21,7 @@ namespace Infrastructure.Implementations
             _context.Transports
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
-                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .Include(t => t.Vehicle)
@@ -33,7 +33,7 @@ namespace Infrastructure.Implementations
             var q = _context.Transports
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
-                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .AsQueryable();
@@ -298,7 +298,7 @@ namespace Infrastructure.Implementations
             return _context.Transports
                 .Include(t => t.ProviderPartner)
                 .Include(t => t.Depot)
-                .Include(t => t.Stops).ThenInclude(s => s.Address)
+                .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
                 .Include(t => t.Vehicle)
@@ -314,7 +314,6 @@ namespace Infrastructure.Implementations
                     .ThenInclude(t => t.Vehicle)
                 .Include(s => s.Transport)
                     .ThenInclude(t => t.Driver)
-                .Include(s => s.Address)
                 .Include(s => s.TransportInvoices)
                 .FirstOrDefault(s => s.TransportInvoices.Any(ti => ti.InvoiceId == invoiceId));
         }

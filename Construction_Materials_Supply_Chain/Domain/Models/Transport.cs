@@ -42,7 +42,7 @@
         public int TransportId { get; set; }
         public int Seq { get; set; }
         public TransportStopType StopType { get; set; }
-        public int AddressId { get; set; }
+        public string Address { get; set; } = default!;
         public int ServiceTimeMin { get; set; }
         public TransportStopStatus Status { get; set; }
         public DateTimeOffset? ETA { get; set; }
@@ -52,7 +52,6 @@
         public string? ProofImageBase64 { get; set; }
 
         public virtual Transport Transport { get; set; } = null!;
-        public virtual Address Address { get; set; } = null!;
         public virtual ICollection<TransportInvoice> TransportInvoices { get; set; } = new List<TransportInvoice>();
     }
 

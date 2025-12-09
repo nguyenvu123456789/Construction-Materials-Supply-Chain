@@ -78,17 +78,17 @@ namespace Application.Services.Implements
                 Status = TransportStatus.Planned,
                 StartTimePlanned = dto.StartTimePlanned,
                 Notes = dto.Notes,
-                Stops = new List<TransportStop>
-                {
-                    new TransportStop
-                    {
-                        Seq = 0,
-                        StopType = TransportStopType.Depot,
-                        AddressId = dto.DepotId,
-                        Status = TransportStopStatus.Planned,
-                        ServiceTimeMin = 0
-                    }
-                }
+                //Stops = new List<TransportStop>
+                //{
+                //    new TransportStop
+                //    {
+                //        Seq = 0,
+                //        StopType = TransportStopType.Depot,
+                //        Address = dto.DepotId,
+                //        Status = TransportStopStatus.Planned,
+                //        ServiceTimeMin = 0
+                //    }
+                //}
             };
 
             _transportRepo.Add(t);
@@ -157,19 +157,57 @@ namespace Application.Services.Implements
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.Now });
         }
 
-        public void AddStops(int transportId, TransportAddStopsRequestDto dto)
+        public void AddStops(int transportId, TransportAddStopsRequestDto request)
         {
-            var stops = dto.Stops.Select(s => new TransportStop
+            var transport = _transportRepo.GetDetail(transportId);
+            if (transport == null)
+                throw new Exception("Transport not found");
+
+            if (transport.Status != TransportStatus.Planned && transport.Status != TransportStatus.Assigned)
+                throw new Exception("Cannot add stops to a transport that is already in progress or completed.");
+
+            foreach (var item in request.Stops)
             {
-                TransportId = transportId,
-                Seq = s.Seq,
-                StopType = Enum.Parse<TransportStopType>(s.StopType, true),
-                AddressId = s.AddressId,
-                ServiceTimeMin = s.ServiceTimeMin,
-                Status = TransportStopStatus.Planned
-            }).ToList();
-            _transportRepo.AddStops(transportId, stops);
-            _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.StopsUpdated", CreatedAt = DateTime.Now });
+                if (item.InvoiceIds == null || !item.InvoiceIds.Any())
+                    throw new Exception("A stop must have at least one invoice assigned.");
+
+                var invoices = _invoiceRepo.GetAll()
+                                           .Where(i => item.InvoiceIds.Contains(i.InvoiceId))
+                                           .ToList();
+
+                if (invoices.Count != item.InvoiceIds.Count)
+                    throw new Exception("One or more Invoice IDs provided do not exist.");
+
+                var addresses = invoices.Select(i => i.Address?.Trim().ToLower()).Distinct().ToList();
+                if (addresses.Count > 1)
+                {
+                    throw new Exception($"Cannot create a single stop for Invoices {string.Join(", ", item.InvoiceIds)} because they have different delivery addresses.");
+                }
+
+                string targetAddressStr = invoices.First().Address;
+                if (string.IsNullOrEmpty(targetAddressStr))
+                    throw new Exception($"Invoice {invoices.First().InvoiceCode} does not have a valid address.");
+
+                var stop = new TransportStop
+                {
+                    TransportId = transportId,
+                    Seq = item.Seq,
+                    StopType = Enum.Parse<TransportStopType>(item.StopType),
+
+                    Address = targetAddressStr,
+
+                    ServiceTimeMin = item.ServiceTimeMin,
+                    Status = TransportStopStatus.Planned,
+                    TransportInvoices = invoices.Select(inv => new TransportInvoice
+                    {
+                        InvoiceId = inv.InvoiceId
+                    }).ToList()
+                };
+
+                transport.Stops.Add(stop);
+            }
+
+            _transportRepo.Update(transport);
         }
 
         public void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds)
@@ -298,11 +336,12 @@ namespace Application.Services.Implements
                 {
                     StopId = stop.TransportStopId,
                     StopType = stop.StopType.ToString(),
-                    AddressName = stop.Address.Name,
-                    City = stop.Address.City,
+                    Address = stop.Address,
+
                     ETA = stop.ETA,
                     ATA = stop.ATA,
-                    ATD = stop.ATD
+                    ATD = stop.ATD,
+                    DeliveryPhotoBase64 = stop.ProofImageBase64
                 }
             };
 

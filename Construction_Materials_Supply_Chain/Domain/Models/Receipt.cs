@@ -20,6 +20,5 @@ public class Receipt
     public string Status { get; set; }
     public string CreatedBy { get; set; }
     public string Payee { get; set; }
-    public string AttachmentFile { get; set; }
     public string Notes { get; set; }
 }

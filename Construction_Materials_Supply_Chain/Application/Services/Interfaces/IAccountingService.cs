@@ -9,8 +9,8 @@ namespace Application.Services.Interfaces
 {
     public interface IAccountingService
     {
-        List<LedgerEntryDto> GetLedger(DateTime from, DateTime to);
-        List<APAgingDto> GetAPAging();
-        List<CashBookDto> GetCashBook(DateTime from, DateTime to);
+        List<LedgerEntryDto> GetLedger(DateTime from, DateTime to, int? partnerId);
+        List<APAgingDto> GetAPAging(int? partnerId);
+        List<CashBookDto> GetCashBook(DateTime from, DateTime to, int? partnerId);
     }
 }

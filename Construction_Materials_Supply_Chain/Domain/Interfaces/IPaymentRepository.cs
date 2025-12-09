@@ -14,5 +14,6 @@ namespace Domain.Interfaces
         Payment GetLastPaymentByPrefix(string prefix);
         List<Payment> GetByDateRange(DateTime from, DateTime to);
         List<Payment> GetPaymentsByInvoice(string code);
+        List<Payment> GetByDateRangeAndPartner(DateTime from, DateTime to, int? partnerId);
     }
 }

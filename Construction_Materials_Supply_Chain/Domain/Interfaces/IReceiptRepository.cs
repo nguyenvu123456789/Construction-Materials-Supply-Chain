@@ -13,5 +13,6 @@ namespace Domain.Interfaces
         List<Receipt> GetReceiptsByPartnerId(int partnerId);
         Receipt GetLastReceiptByPrefix(string prefix);
         List<Receipt> GetByDateRange(DateTime from, DateTime to);
+        List<Receipt> GetByDateRangeAndPartner(DateTime from, DateTime to, int? partnerId);
     }
 }

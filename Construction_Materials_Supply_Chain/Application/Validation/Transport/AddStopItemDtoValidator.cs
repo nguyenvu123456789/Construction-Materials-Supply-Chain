@@ -13,7 +13,6 @@ namespace Application.Validation.Transport
             RuleFor(x => x.StopType)
                 .NotEmpty()
                 .Must(v => AllowedTypes.Contains(v, StringComparer.OrdinalIgnoreCase));
-            RuleFor(x => x.AddressId).GreaterThan(0);
             RuleFor(x => x.ServiceTimeMin).GreaterThanOrEqualTo(0);
         }
     }

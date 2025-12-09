@@ -27,7 +27,6 @@ public class Payment
     public DateTime? ApprovalDate { get; set; }
     public string PaidBy { get; set; }
     public string Recipient { get; set; }
-    public string AttachmentFile { get; set; }
 
     public string CreatedBy { get; set; }
     public string Notes { get; set; }

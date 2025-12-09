@@ -196,7 +196,6 @@ namespace Application.Services.Implements
             }
         }
 
-
         public OrderWithDetailsDto? GetOrderWithDetails(string orderCode)
         {
             var order = _orderRepository.GetByCodeWithDetails(orderCode);
@@ -231,12 +230,12 @@ namespace Application.Services.Implements
             };
         }
 
-
         public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
             var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
-                .Where(o => o.Supplier != null && o.Supplier.PartnerId == partnerId)
-                .ToList();
+    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
+    .ToList();
+
 
             foreach (var order in orders)
             {
@@ -247,7 +246,7 @@ namespace Application.Services.Implements
             {
                 OrderId = o.OrderId,
                 OrderCode = o.OrderCode,
-                SupplierName = o.Supplier?.PartnerName ?? "",
+                SupplierName = o.CreatedByNavigation?.Partner?.PartnerName ?? "",
                 CustomerName = o.CreatedByNavigation?.FullName ?? "",
                 Status = o.Status,
                 DeliveryAddress = o.DeliveryAddress,

@@ -196,7 +196,6 @@ namespace Application.Services.Implements
             }
         }
 
-
         public OrderWithDetailsDto? GetOrderWithDetails(string orderCode)
         {
             var order = _orderRepository.GetByCodeWithDetails(orderCode);
@@ -214,24 +213,58 @@ namespace Application.Services.Implements
                 Note = order.Note,
                 WarehouseId = order.WarehouseId,
                 WarehouseName = order.Warehouse?.WarehouseName,
+
                 OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {
+                    OrderDetailId = od.OrderDetailId,
                     MaterialId = od.MaterialId,
                     MaterialName = od.Material?.MaterialName ?? "",
                     Quantity = od.Quantity,
+                    DeliveredQuantity = od.DeliveredQuantity,
+                    Status = od.Status,
                     UnitPrice = od.UnitPrice,
-                    Status = od.Status
+                    DiscountPercent = od.DiscountPercent,
+                    DiscountAmount = od.DiscountAmount,
+                    FinalPrice = od.FinalPrice
                 }).ToList()
             };
         }
-        public List<Order> GetPurchaseOrders(int partnerId)
+
+        public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
-            return _orderRepository
-                .GetAllWithDetails()
-                .Where(o => o.CreatedByNavigation != null
-                            && o.CreatedByNavigation.PartnerId == partnerId)
-                .ToList();
+            var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
+    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
+    .ToList();
+
+
+            foreach (var order in orders)
+            {
+                order.OrderDetails = _orderDetailRepository.GetByOrderId(order.OrderId);
+            }
+
+            return orders.Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                OrderCode = o.OrderCode,
+                SupplierName = o.CreatedByNavigation?.Partner?.PartnerName ?? "",
+                CustomerName = o.CreatedByNavigation?.FullName ?? "",
+                Status = o.Status,
+                DeliveryAddress = o.DeliveryAddress,
+                PhoneNumber = o.PhoneNumber,
+                WarehouseId = o.WarehouseId,
+                WarehouseName = o.Warehouse?.WarehouseName ?? "",
+                Note = o.Note,
+                CreatedAt = o.CreatedAt ?? DateTime.Now,
+                Materials = o.OrderDetails.Select(d => new OrderMaterialResponseDto
+                {
+                    MaterialId = d.MaterialId,
+                    Quantity = d.Quantity,
+                    Status = d.Status
+                }).ToList()
+
+            }).ToList();
         }
+
 
         public List<OrderResponseDto> GetSalesOrders(int partnerId)
 {

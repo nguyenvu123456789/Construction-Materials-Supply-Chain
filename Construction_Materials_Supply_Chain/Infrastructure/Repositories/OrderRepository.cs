@@ -48,6 +48,8 @@
                 .Include(o => o.Warehouse)
                 .Include(o => o.Supplier)
                 .Include(o => o.CreatedByNavigation)
+                .ThenInclude(u => u.Partner)
+                .ThenInclude(u => u.Partner)
                 .Include(o => o.OrderDetails)
                 .ToList();
         }
@@ -58,7 +60,7 @@
                 .Include(o => o.Warehouse)
                 .Include(o => o.Supplier)
                 .Include(o => o.CreatedByNavigation)
-                .Include(o => o.OrderDetails)
+                .Include(o => o.OrderDetails)   
                 .Where(o => o.WarehouseId == warehouseId)
                 .ToList();
         }

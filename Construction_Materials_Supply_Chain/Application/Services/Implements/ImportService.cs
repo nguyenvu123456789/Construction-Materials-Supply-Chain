@@ -103,9 +103,9 @@ namespace Services.Implementations
                     }
 
                     var existingRelation = _materialPartners.GetAll()
-                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
-                                              mp.BuyerId == invoice.CreatedBy &&
-                                              mp.PartnerId == invoice.PartnerId);
+    .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
+                          mp.PartnerId == invoice.PartnerId);
+
                     if (existingRelation == null)
                     {
                         _materialPartners.Add(new MaterialPartner

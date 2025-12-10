@@ -152,7 +152,7 @@ namespace Services.Implementations
         // Tạo phiếu xuất từ hóa đơn (Invoice)
 
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
-    {
+            {
         var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
         if (invoice == null)
             throw new Exception(ExportMessages.MSG_INVOICE_NOT_FOUND);
@@ -213,11 +213,11 @@ namespace Services.Implementations
         _invoiceRepository.Update(invoice);
 
         return export;
-    }
+            }
 
 
     // Sinh mã phiếu xuất tăng dần
-    private string GenerateNextExportCode()
+        private string GenerateNextExportCode()
         {
             int nextNumber = 1;
 

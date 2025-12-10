@@ -51,7 +51,7 @@ namespace Services.Implementations
             var import = new Import
             {
                 ImportCode = $"IMP-{DateTime.Now:yyyyMMddHHmmss}",
-                WarehouseId = invoice.PartnerId,
+                WarehouseId = invoice.WarehouseId.Value,
                 CreatedBy = dto.CreatedBy,
                 CreatedAt = DateTime.Now,
                 Status = StatusEnum.Pending.ToStatusString()

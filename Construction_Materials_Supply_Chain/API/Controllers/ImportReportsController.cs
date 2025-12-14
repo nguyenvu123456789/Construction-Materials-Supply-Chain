@@ -96,5 +96,28 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("{importId:int}/review")]
+        public IActionResult ReviewReturnImport(
+            int importId,
+            [FromBody] ReviewImportReportDto dto)
+        {
+            try
+            {
+                var result = _service.ReviewReturnImport(importId, dto);
+
+                return Ok(new
+                {
+                    message = ImportMessages.MSG_IMPORT_REVIEWED_SUCCESS,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

@@ -201,6 +201,7 @@ namespace Services.Implementations
                     report.Invoice.ExportStatus = StatusEnum.Cancelled.ToStatusString();
                     _invoices.Update(report.Invoice);
                 }
+                CreateReturnImportForSeller(report.ImportReportId, dto.ReviewedBy);
             }
 
             return new ImportReportResponseDto
@@ -241,6 +242,105 @@ namespace Services.Implementations
                 }).ToList()
             };
         }
+
+        public Import CreateReturnImportForSeller(int importReportId, int createdBy)
+        {
+            var report = _reports.GetByIdWithDetails(importReportId)
+                ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+
+            if (report.Status != StatusEnum.Rejected.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_REJECTED_REPORT_CAN_RETURN);
+
+            if (report.Invoice == null)
+                throw new Exception(ImportMessages.MSG_INVOICE_REQUIRED_FOR_RETURN);
+
+            var sellerWarehouseId = report.Invoice.WarehouseId
+                ?? throw new Exception(ImportMessages.MSG_SELLER_WAREHOUSE_NOT_FOUND);
+
+            var import = new Import
+            {
+                ImportCode = $"RET-{DateTime.Now:yyyyMMddHHmmss}",
+                WarehouseId = sellerWarehouseId,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.Now,
+                Notes = string.Format(
+                    ImportMessages.MSG_RETURN_IMPORT_NOTE,
+                    report.ImportReportCode)
+            };
+
+            _imports.Add(import);
+
+            foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
+            {
+                var material = _materials.GetById(detail.MaterialId)
+                    ?? throw new Exception(string.Format(
+                        ImportMessages.MSG_MATERIAL_NOT_FOUND,
+                        detail.MaterialId));
+
+                _importDetails.Add(new ImportDetail
+                {
+                    ImportId = import.ImportId,
+                    MaterialId = material.MaterialId,
+                    MaterialCode = material.MaterialCode ?? "",
+                    MaterialName = material.MaterialName,
+                    Unit = material.Unit,
+                    Quantity = detail.GoodQuantity,
+                    UnitPrice = 0,
+                    LineTotal = 0
+                });
+            }
+
+            return import;
+        }
+
+
+        public Import ReviewReturnImport(int importId, ReviewImportReportDto dto)
+        {
+            var import = _imports.GetByIdWithDetails(importId)
+                ?? throw new Exception(ImportMessages.MSG_IMPORT_PENDING_NOT_FOUND);
+
+            if (import.Status != StatusEnum.Pending.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
+
+            // ===== Reject =====
+            if (dto.Status == StatusEnum.Rejected.ToStatusString())
+            {
+                import.Status = StatusEnum.Rejected.ToStatusString();
+                _imports.Update(import);
+                return import;
+            }
+
+            // ===== Approve =====
+            import.Status = StatusEnum.Success.ToStatusString();
+            _imports.Update(import);
+
+            foreach (var detail in import.ImportDetails)
+            {
+                var inventory = _inventories.GetByWarehouseAndMaterial(
+                    import.WarehouseId, detail.MaterialId);
+
+                if (inventory == null)
+                {
+                    _inventories.Add(new Inventory
+                    {
+                        WarehouseId = import.WarehouseId,
+                        MaterialId = detail.MaterialId,
+                        Quantity = detail.Quantity,
+                        UpdatedAt = DateTime.Now
+                    });
+                }
+                else
+                {
+                    inventory.Quantity += detail.Quantity;
+                    inventory.UpdatedAt = DateTime.Now;
+                    _inventories.Update(inventory);
+                }
+            }
+
+            return import;
+        }
+
+
 
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {

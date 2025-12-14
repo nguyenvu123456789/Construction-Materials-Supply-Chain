@@ -19,5 +19,6 @@ namespace Domain.Interface
         List<Invoice> GetExportInvoicesByOrderIds(List<int> orderIds);
         Invoice? GetByIdNoTracking(int id);
         Invoice? GetByCodeNoTracking(string invoiceCode);
+        bool Exists(string invoiceCode);
     }
 }

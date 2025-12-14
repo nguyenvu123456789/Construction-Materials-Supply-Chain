@@ -198,11 +198,11 @@ namespace Services.Implementations
                 if (report.Invoice != null)
                 {
                     report.Invoice.ImportStatus = StatusEnum.Rejected.ToStatusString();
+                    report.Invoice.ExportStatus = StatusEnum.Cancelled.ToStatusString();
                     _invoices.Update(report.Invoice);
                 }
             }
 
-            //  Trả về DTO
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,

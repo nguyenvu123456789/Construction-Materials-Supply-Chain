@@ -154,8 +154,6 @@ namespace Services.Implementations
 
             _orderRepository.Update(order);
 
-            _orderRepository.Update(order);
-
             return createdInvoices;
         }
 

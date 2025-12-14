@@ -9,6 +9,7 @@ namespace Application.Interfaces
         ImportReportResponseDto GetByIdResponse(int id);
         ImportReportResponseDto ReviewReport(int id, ReviewImportReportDto dto);
         void MarkAsViewed(int reportId);
+        Import ReviewReturnImport(int importId, ReviewImportReportDto dto);
 
     }
 }

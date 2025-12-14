@@ -66,7 +66,6 @@ namespace Services.Implementations
             return invoice;
         }
 
-
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
@@ -141,8 +140,19 @@ namespace Services.Implementations
             _invoices.Add(invoice);
             createdInvoices.Add(invoice);
 
+            // 1. Update status cho các OrderDetail đã được invoiced
+            foreach (var detail in selectedDetails)
+            {
+                detail.Status = StatusEnum.Invoiced.ToStatusString();
+            }
+
+            // 2. Nếu tất cả OrderDetail đều invoiced → update Order
             if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
+            {
                 order.Status = StatusEnum.Invoiced.ToStatusString();
+            }
+
+            _orderRepository.Update(order);
 
             _orderRepository.Update(order);
 

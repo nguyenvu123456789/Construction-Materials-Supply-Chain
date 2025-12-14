@@ -13,6 +13,8 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
+        private static int _invoiceCounter = 99;
+
 
 
         public InvoiceService(
@@ -112,11 +114,9 @@ namespace Services.Implementations
             decimal discountPercent = relation?.RelationType.DiscountPercent ?? 0;
             decimal discountAmount = relation?.RelationType.DiscountAmount ?? 0;
 
-            var newCode = $"INV-{nextNumber:D3}";
-
             var invoice = new Invoice
             {
-                InvoiceCode = newCode,
+                InvoiceCode = GenerateInvoiceCode(),
                 InvoiceType = StatusEnum.Export.ToStatusString(),
                 PartnerId = partnerId.Value,
                 WarehouseId = order.WarehouseId,
@@ -203,6 +203,11 @@ namespace Services.Implementations
             }
 
             return (totalAmount, totalDiscount);
+        }
+        private string GenerateInvoiceCode()
+        {
+            int next = Interlocked.Increment(ref _invoiceCounter);
+            return $"INV-{next}";
         }
 
         public Invoice? UpdateExportStatus(int id, string newStatus)

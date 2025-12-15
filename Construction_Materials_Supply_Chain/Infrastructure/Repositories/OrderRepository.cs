@@ -10,7 +10,7 @@
         {
             public OrderRepository(ScmVlxdContext context) : base(context)
             {
-            }
+            } 
 
             public Order? GetByCode(string orderCode)
             {

@@ -392,9 +392,9 @@ namespace Services.Implementations
             var creatorHandle = _handleRequests.GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
                                                .OrderBy(h => h.HandledAt)
                                                .FirstOrDefault();
-            var createdByName = creatorHandle?.HandledByNavigation?.FullName
-                                ?? creatorHandle?.HandledByNavigation?.UserName
-                                ?? ImportMessages.MSG_UNKNOWN_CREATOR;
+            var createdByName = report.CreatedByNavigation?.FullName
+                    ?? report.CreatedByNavigation?.UserName
+                    ?? ImportMessages.MSG_UNKNOWN_USER;
 
             return new ImportReportResponseDto
             {
@@ -462,9 +462,10 @@ namespace Services.Implementations
                     : new List<HandleRequestDto>();
 
                 // Tên người tạo
-                var createdByName = lastHandle?.HandledByNavigation?.FullName
-                                    ?? lastHandle?.HandledByNavigation?.UserName
+                var createdByName = report.CreatedByNavigation?.FullName
+                                    ?? report.CreatedByNavigation?.UserName
                                     ?? ImportMessages.MSG_UNKNOWN_USER;
+
 
                 result.Add(new ImportReportResponseDto
                 {

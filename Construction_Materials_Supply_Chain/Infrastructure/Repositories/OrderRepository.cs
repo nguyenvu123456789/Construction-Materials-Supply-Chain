@@ -26,7 +26,7 @@
             {
                 return _context.Orders
                     .Include(o => o.Warehouse)
-                    .Include(o => o.Warehouse)
+                    .Include(o => o.Supplier)
                     .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Material)
                     .FirstOrDefault(o => o.OrderCode == orderCode);

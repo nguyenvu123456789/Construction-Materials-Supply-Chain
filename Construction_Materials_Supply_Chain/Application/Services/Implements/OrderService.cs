@@ -211,6 +211,7 @@ namespace Application.Services.Implements
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,
+                OrderStatus = order.Status,
                 WarehouseId = order.WarehouseId,
                 WarehouseName = order.Warehouse?.WarehouseName,
 
@@ -233,8 +234,8 @@ namespace Application.Services.Implements
         public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
             var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
-    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
-    .ToList();
+                    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
+                    .ToList();
 
 
             foreach (var order in orders)

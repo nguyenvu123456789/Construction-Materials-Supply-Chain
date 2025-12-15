@@ -26,6 +26,9 @@
         public const string MSG_INVOICE_REQUIRED_FOR_RETURN ="Không tìm thấy hóa đơn liên quan để tạo phiếu nhập lại.";
         public const string MSG_SELLER_WAREHOUSE_NOT_FOUND ="Không xác định được kho của bên bán.";
         public const string MSG_RETURN_IMPORT_NOTE ="Nhập lại vật tư không bị hư hỏng từ báo cáo nhập kho {0}.";
+        public const string MSG_ONLY_PENDING_CAN_BE_REVIEWED =
+    "Chỉ báo cáo nhập kho ở trạng thái Pending mới được duyệt.";
+
     }
 
 }

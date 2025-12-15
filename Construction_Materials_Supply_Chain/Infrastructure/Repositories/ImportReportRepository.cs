@@ -13,6 +13,7 @@ namespace Infrastructure.Implementations
         public ImportReport? GetByIdWithDetails(int id)
         {
             return _context.ImportReports
+                .Include(r => r.CreatedByNavigation)
                 .Include(r => r.ImportReportDetails)
                     .ThenInclude(d => d.Material)
                 .Include(r => r.Import)
@@ -26,6 +27,7 @@ namespace Infrastructure.Implementations
         {
             return _context.ImportReports
                 .AsNoTracking()
+                .Include(r => r.CreatedByNavigation)
                 .Include(r => r.ImportReportDetails)
                     .ThenInclude(d => d.Material)
                 .Include(r => r.Import)
@@ -36,6 +38,7 @@ namespace Infrastructure.Implementations
         public List<ImportReport> GetAllWithIncludes()
         {
             return _context.ImportReports
+                .Include(r => r.CreatedByNavigation)
                 .Include(r => r.ImportReportDetails)
                     .ThenInclude(d => d.Material)
                 .Include(r => r.Import)

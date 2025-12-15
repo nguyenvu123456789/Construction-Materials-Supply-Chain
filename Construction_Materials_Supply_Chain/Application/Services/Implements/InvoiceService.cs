@@ -74,8 +74,11 @@ namespace Services.Implementations
             if (order == null)
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
-            if (order.Status != StatusEnum.Approved.ToStatusString())
+            if (order.Status != StatusEnum.Approved.ToStatusString()
+                && order.Status != StatusEnum.Invoiced.ToStatusString())
+            {
                 throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
+            }
 
             var partnerId = order.CreatedByNavigation?.PartnerId;
             if (partnerId == null || partnerId == 0)
@@ -131,7 +134,6 @@ namespace Services.Implementations
             };
 
             var (totalAmount, totalDiscount) = CalculateTotals(selectedDetails, dto, invoice);
-
 
             invoice.TotalAmount = totalAmount;
             invoice.DiscountAmount = totalDiscount;

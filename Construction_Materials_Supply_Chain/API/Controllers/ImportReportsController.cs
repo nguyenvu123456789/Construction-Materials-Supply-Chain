@@ -79,8 +79,11 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("{reportId}/review")]
-        public IActionResult ReviewReport(int reportId, [FromBody] ReviewImportReportDto dto)
+        // ✅ Review IMPORT REPORT
+        [HttpPost("{reportId:int}/review-report")]
+        public IActionResult ReviewReport(
+            int reportId,
+            [FromBody] ReviewImportReportDto dto)
         {
             try
             {
@@ -96,7 +99,10 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-        [HttpPost("{importId:int}/review")]
+
+
+        // ✅ Review RETURN IMPORT
+        [HttpPost("return-imports/{importId:int}/review")]
         public IActionResult ReviewReturnImport(
             int importId,
             [FromBody] ReviewImportReportDto dto)
@@ -104,7 +110,6 @@ namespace API.Controllers
             try
             {
                 var result = _service.ReviewReturnImport(importId, dto);
-
                 return Ok(new
                 {
                     message = ImportMessages.MSG_IMPORT_REVIEWED_SUCCESS,
@@ -113,11 +118,9 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
+                return BadRequest(new { message = ex.Message });
             }
         }
+
     }
 }

@@ -25,6 +25,7 @@ namespace Infrastructure.Implementations
         public IEnumerable<ImportReport> GetAllWithDetails()
         {
             return _context.ImportReports
+                .AsNoTracking()
                 .Include(r => r.ImportReportDetails)
                     .ThenInclude(d => d.Material)
                 .Include(r => r.Import)

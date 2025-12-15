@@ -120,7 +120,10 @@ namespace Services.Implementations
         public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
-                         ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+    ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+
+            if (report.Status != StatusEnum.Pending.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REVIEWED);
 
             report.Status = dto.Status;
             _reports.Update(report);
@@ -195,14 +198,30 @@ namespace Services.Implementations
             }
             else if (dto.Status == StatusEnum.Rejected.ToStatusString())
             {
+                // 1. Update ImportReport (rõ ràng)
+                report.Status = StatusEnum.Rejected.ToStatusString();
+                _reports.Update(report);
+
+                // 2. Nếu đã có Import → HỦY Import gốc
+                if (report.Import != null)
+                {
+                    report.Import.Status = StatusEnum.Cancelled.ToStatusString();
+                    report.Import.UpdatedAt = DateTime.Now;
+                    _imports.Update(report.Import);
+                }
+
+                // 3. Update Invoice nếu có
                 if (report.Invoice != null)
                 {
                     report.Invoice.ImportStatus = StatusEnum.Rejected.ToStatusString();
                     report.Invoice.ExportStatus = StatusEnum.Cancelled.ToStatusString();
                     _invoices.Update(report.Invoice);
                 }
+
+                // 4. Tạo Return Import
                 CreateReturnImportForSeller(report.ImportReportId, dto.ReviewedBy);
             }
+
 
             return new ImportReportResponseDto
             {
@@ -262,6 +281,7 @@ namespace Services.Implementations
                 ImportCode = $"RET-{DateTime.Now:yyyyMMddHHmmss}",
                 WarehouseId = sellerWarehouseId,
                 CreatedBy = createdBy,
+                Status = StatusEnum.Pending.ToStatusString(),
                 CreatedAt = DateTime.Now,
                 Notes = string.Format(
                     ImportMessages.MSG_RETURN_IMPORT_NOTE,

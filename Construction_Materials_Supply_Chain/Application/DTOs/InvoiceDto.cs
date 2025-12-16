@@ -57,4 +57,8 @@
         public decimal PayableAmount { get; set; }
     }
 
+    public class UpdateInvoiceStatusDto
+    {
+        public List<int> InvoiceIds { get; set; } = new();
+    }
 }

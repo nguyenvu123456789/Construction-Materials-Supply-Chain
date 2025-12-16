@@ -236,6 +236,26 @@ namespace Services.Implementations
             return invoice;
         }
 
+
+        public void MarkInvoicesAsDelivered(List<int> invoiceIds)
+        {
+            if (invoiceIds == null || !invoiceIds.Any())
+                throw new Exception("Danh sách hóa đơn rỗng");
+
+            foreach (var invoiceId in invoiceIds)
+            {
+                var invoice = _invoices.GetById(invoiceId);
+                if (invoice == null)
+                    throw new Exception($"Không tìm thấy hóa đơn ID = {invoiceId}");
+
+                invoice.ExportStatus = StatusEnum.Completed.ToStatusString(); // Delivered
+                invoice.UpdatedAt = DateTime.Now;
+
+                _invoices.Update(invoice);
+            }
+        }
+
+
         //  Lấy hóa đơn theo Partner 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
         {

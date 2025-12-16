@@ -23,6 +23,7 @@ namespace Application.Constants.Enums
         Viewed=17,
         Order= 18,
         Cancelled = 19,
+        Delivered = 20,
     }
 
     public static class StatusEnumExtensions

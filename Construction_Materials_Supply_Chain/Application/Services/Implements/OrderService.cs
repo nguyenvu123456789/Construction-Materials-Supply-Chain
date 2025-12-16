@@ -203,7 +203,7 @@ namespace Application.Services.Implements
             return new OrderWithDetailsDto
             {
                 OrderCode = order.OrderCode,
-                PartnerId = order.CreatedBy ?? 0,
+                PartnerId = order.SupplierId ?? 0,
                 SupplierName = supplierName,
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,

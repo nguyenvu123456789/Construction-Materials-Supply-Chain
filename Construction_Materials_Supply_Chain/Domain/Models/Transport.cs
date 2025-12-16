@@ -9,7 +9,7 @@
         public int TransportId { get; set; }
         public string TransportCode { get; set; } = default!;
         public TransportStatus Status { get; set; }
-        public int DepotId { get; set; }
+        public int WarehouseId { get; set; }
         public int ProviderPartnerId { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
         public DateTimeOffset? EndTimePlanned { get; set; }
@@ -18,7 +18,7 @@
         public string? Notes { get; set; }
         public int? VehicleId { get; set; }
         public int? DriverId { get; set; }
-        public virtual Address Depot { get; set; } = default!;
+        public virtual Warehouse Warehouse { get; set; } = default!;
         public virtual Partner ProviderPartner { get; set; } = default!;
         public virtual Vehicle Vehicle { get; set; } = default!;
         public virtual Driver Driver { get; set; } = default!;

@@ -20,7 +20,7 @@ namespace Infrastructure.Implementations
         public Transport? GetDetail(int transportId) =>
             _context.Transports
                 .Include(t => t.ProviderPartner)
-                .Include(t => t.Depot)
+                .Include(t => t.Warehouse)
                 .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
@@ -32,7 +32,7 @@ namespace Infrastructure.Implementations
         {
             var q = _context.Transports
                 .Include(t => t.ProviderPartner)
-                .Include(t => t.Depot)
+                .Include(t => t.Warehouse)
                 .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)
@@ -297,7 +297,7 @@ namespace Infrastructure.Implementations
         {
             return _context.Transports
                 .Include(t => t.ProviderPartner)
-                .Include(t => t.Depot)
+                .Include(t => t.Warehouse)
                 .Include(t => t.Stops)
                 .Include(t => t.Stops).ThenInclude(s => s.TransportInvoices).ThenInclude(ti => ti.Invoice)
                 .Include(t => t.TransportPorters).ThenInclude(tp => tp.Porter)

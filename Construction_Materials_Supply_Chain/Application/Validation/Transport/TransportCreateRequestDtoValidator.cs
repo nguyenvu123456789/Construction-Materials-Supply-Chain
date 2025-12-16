@@ -7,7 +7,7 @@ namespace Application.Validation.Transport
     {
         public TransportCreateRequestDtoValidator()
         {
-            RuleFor(x => x.DepotId).GreaterThan(0);
+            RuleFor(x => x.WarehouseId).GreaterThan(0);
             RuleFor(x => x.ProviderPartnerId).GreaterThan(0);
         }
     }

@@ -39,6 +39,7 @@ namespace Infrastructure.Repositories
             _context.Warehouses.Remove(warehouse);
             _context.SaveChanges();
         }
+
         public List<Warehouse> GetByPartnerId(int partnerId)
         {
             return _context.Warehouses

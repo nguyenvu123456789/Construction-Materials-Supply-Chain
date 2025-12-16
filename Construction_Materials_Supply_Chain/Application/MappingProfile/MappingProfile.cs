@@ -160,7 +160,7 @@ namespace Application.MappingProfile
 
             CreateMap<Transport, TransportResponseDto>()
                  .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
-                 .ForMember(d => d.DepotName, o => o.MapFrom(s => s.Depot.Name))
+                 .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Warehouse.WarehouseName))
                  .ForMember(d => d.ProviderPartnerName, o => o.MapFrom(s => s.ProviderPartner.PartnerName))
                  .ForMember(d => d.Stops, o => o.MapFrom(s => s.Stops.OrderBy(x => x.Seq)))
                  .ForMember(d => d.Porters, o => o.MapFrom(s => s.TransportPorters));
@@ -244,6 +244,11 @@ namespace Application.MappingProfile
 
             CreateMap<Receipt, ReceiptDTO>();
             CreateMap<Payment, PaymentDTO>();
+
+            CreateMap<Warehouse, WarehouseSelectionDto>()
+                .ForMember(dest => dest.WarehouseId, opt => opt.MapFrom(src => src.WarehouseId))
+                .ForMember(dest => dest.WarehouseName, opt => opt.MapFrom(src => src.WarehouseName))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location));
 
             CreateMap<PaymentDTO, Payment>()
                 .ForMember(dest => dest.PaymentNumber, opt => opt.Ignore())

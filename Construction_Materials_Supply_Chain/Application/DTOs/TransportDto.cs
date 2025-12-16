@@ -12,7 +12,7 @@
 
     public class TransportCreateRequestDto
     {
-        public int DepotId { get; set; }
+        public int WarehouseId { get; set; }
         public int ProviderPartnerId { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
         public string? Notes { get; set; }
@@ -90,8 +90,8 @@
         public int TransportId { get; set; }
         public string TransportCode { get; set; } = default!;
         public string Status { get; set; } = default!;
-        public int DepotId { get; set; }
-        public string DepotName { get; set; } = "";
+        public int WarehouseId { get; set; }
+        public string WarehouseName { get; set; } = "";
         public int ProviderPartnerId { get; set; }
         public string ProviderPartnerName { get; set; } = "";
         public int? VehicleId { get; set; }

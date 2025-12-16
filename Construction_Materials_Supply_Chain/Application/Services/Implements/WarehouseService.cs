@@ -1,6 +1,7 @@
 ﻿using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 
@@ -9,12 +10,13 @@ namespace Application.Services.Implements
     public class WarehouseService : IWarehouseService
     {
         private readonly IWarehouseRepository _warehouses;
+        private readonly IMapper _mapper;
 
 
-        public WarehouseService(IWarehouseRepository warehouses)
+        public WarehouseService(IWarehouseRepository warehouses, IMapper mapper)
         {
             _warehouses = warehouses;
-
+            _mapper = mapper;
         }
 
         public List<Warehouse> GetAll(int? managerId = null, int? partnerId = null)
@@ -69,5 +71,11 @@ namespace Application.Services.Implements
             return _warehouses.GetByPartnerId(partnerId);
         }
 
+        public List<WarehouseSelectionDto> GetByPartner(int partnerId)
+        {
+            var entities = _warehouses.GetByPartnerId(partnerId);
+
+            return _mapper.Map<List<WarehouseSelectionDto>>(entities);
+        }
     }
 }

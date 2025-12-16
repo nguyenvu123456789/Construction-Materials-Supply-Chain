@@ -11,5 +11,6 @@ namespace Application.Interfaces
         Warehouse Create(WarehouseCreateDto dto);
         Warehouse Update(int id, WarehouseUpdateDto dto);
         bool Delete(int id);
+        List<WarehouseSelectionDto> GetByPartner(int partnerId);
     }
 }

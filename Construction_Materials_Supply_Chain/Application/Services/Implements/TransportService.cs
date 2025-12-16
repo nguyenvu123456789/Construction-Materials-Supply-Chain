@@ -17,6 +17,7 @@ namespace Application.Services.Implements
         private readonly IPorterRepository _porterRepo;
         private readonly IVehicleRepository _vehicleRepo;
         private readonly IPartnerRepository _partnerRepo;
+        private readonly IWarehouseRepository _warehouseRepo;
         private readonly IMapper _mapper;
         private readonly INotificationService _event;
 
@@ -28,6 +29,7 @@ namespace Application.Services.Implements
             IPorterRepository porterRepo,
             IVehicleRepository vehicleRepo,
             IPartnerRepository partnerRepo,
+            IWarehouseRepository warehouseRepo,
             IMapper mapper,
             INotificationService eventSvc)
         {
@@ -38,6 +40,7 @@ namespace Application.Services.Implements
             _porterRepo = porterRepo;
             _vehicleRepo = vehicleRepo;
             _partnerRepo = partnerRepo;
+            _warehouseRepo = warehouseRepo;
             _mapper = mapper;
             _event = eventSvc;
         }
@@ -70,25 +73,17 @@ namespace Application.Services.Implements
             var partner = _partnerRepo.GetById(dto.ProviderPartnerId);
             if (partner == null) throw new InvalidOperationException("ProviderPartner not found");
 
+            var warehouse = _warehouseRepo.GetById(dto.WarehouseId);
+            if (warehouse == null) throw new InvalidOperationException("Warehouse not found");
+
             var t = new Transport
             {
                 TransportCode = $"T-{DateTime.Now:yyyyMMddHHmmss}",
-                DepotId = dto.DepotId,
+                WarehouseId = dto.WarehouseId,
                 ProviderPartnerId = dto.ProviderPartnerId,
                 Status = TransportStatus.Planned,
                 StartTimePlanned = dto.StartTimePlanned,
                 Notes = dto.Notes,
-                //Stops = new List<TransportStop>
-                //{
-                //    new TransportStop
-                //    {
-                //        Seq = 0,
-                //        StopType = TransportStopType.Depot,
-                //        Address = dto.DepotId,
-                //        Status = TransportStopStatus.Planned,
-                //        ServiceTimeMin = 0
-                //    }
-                //}
             };
 
             _transportRepo.Add(t);

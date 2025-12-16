@@ -771,7 +771,7 @@ public partial class ScmVlxdContext : DbContext
         modelBuilder.Entity<Transport>(e =>
         {
             e.HasKey(x => x.TransportId);
-            e.HasOne(x => x.Depot).WithMany().HasForeignKey(x => x.DepotId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.ProviderPartner).WithMany().HasForeignKey(x => x.ProviderPartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Vehicle).WithMany(v => v.Transports).HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(x => x.Driver).WithMany(d => d.Transports).HasForeignKey(x => x.DriverId).OnDelete(DeleteBehavior.SetNull);

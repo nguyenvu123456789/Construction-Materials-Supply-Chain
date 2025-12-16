@@ -1,6 +1,7 @@
 ﻿using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Services.Implements;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -98,6 +99,14 @@ namespace API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpGet("my-warehouses")]
+        public IActionResult GetMyWarehouses(int partnerId)
+        {
+            var result = _service.GetByPartner(partnerId);
+
+            return Ok(result);
         }
     }
 }

@@ -21,4 +21,11 @@
         public string? Location { get; set; }
         public int? ManagerId { get; set; }
     }
+
+    public class WarehouseSelectionDto
+    {
+        public int WarehouseId { get; set; }
+        public string WarehouseName { get; set; } = default!;
+        public string? Location { get; set; }
+    }
 }

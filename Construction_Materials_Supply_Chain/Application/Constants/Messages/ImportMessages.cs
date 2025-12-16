@@ -22,6 +22,13 @@
         public const string MSG_IMPORT_REVIEWED_SUCCESS = "Báo cáo nhập kho đã được duyệt/từ chối.";
         public const string MSG_IMPORT_DETAIL_MISSING = "Thiếu chi tiết báo cáo nhập kho.";
         public const string MSG_NOT_ENOUGH_STOCK = "Không đủ tồn kho cho vật tư {0}.";
+        public const string MSG_ONLY_REJECTED_REPORT_CAN_RETURN ="Chỉ có thể tạo phiếu nhập lại khi báo cáo nhập kho bị từ chối.";
+        public const string MSG_INVOICE_REQUIRED_FOR_RETURN ="Không tìm thấy hóa đơn liên quan để tạo phiếu nhập lại.";
+        public const string MSG_SELLER_WAREHOUSE_NOT_FOUND ="Không xác định được kho của bên bán.";
+        public const string MSG_RETURN_IMPORT_NOTE ="Nhập lại vật tư không bị hư hỏng từ báo cáo nhập kho {0}.";
+        public const string MSG_ONLY_PENDING_CAN_BE_REVIEWED =
+    "Chỉ báo cáo nhập kho ở trạng thái Pending mới được duyệt.";
+
     }
 
 }

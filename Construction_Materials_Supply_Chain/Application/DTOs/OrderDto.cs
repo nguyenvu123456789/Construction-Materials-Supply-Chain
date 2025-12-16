@@ -61,6 +61,7 @@
         public int PartnerId { get; set; }
         public string? DeliveryAddress { get; set; }
         public string? SupplierName { get; set; }
+        public string? OrderStatus { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Note { get; set; }
         public int? WarehouseId { get; set; }

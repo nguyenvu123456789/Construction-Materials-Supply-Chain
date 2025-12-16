@@ -16,6 +16,8 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materialRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IMaterialPartnerRepository _materialPartners;
+        private static int _importCounter = 99;
+
 
         public ImportService(
             IImportRepository imports,
@@ -51,7 +53,7 @@ namespace Services.Implementations
 
                 var import = new Import
                 {
-                    ImportCode = importCode ?? $"IMP-{Guid.NewGuid():N}".Substring(0, 8),
+                    ImportCode = importCode ?? GenerateImportCode(),
                     ImportDate = DateTime.Now,
                     WarehouseId = warehouseId,
                     CreatedBy = createdBy,
@@ -103,9 +105,9 @@ namespace Services.Implementations
                     }
 
                     var existingRelation = _materialPartners.GetAll()
-                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
-                                              mp.BuyerId == invoice.CreatedBy &&
-                                              mp.PartnerId == invoice.PartnerId);
+    .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
+                          mp.PartnerId == invoice.PartnerId);
+
                     if (existingRelation == null)
                     {
                         _materialPartners.Add(new MaterialPartner
@@ -307,23 +309,8 @@ namespace Services.Implementations
         }
         private string GenerateImportCode()
         {
-            var lastImport = _imports
-                .GetAll()
-                .OrderByDescending(i => i.ImportId)
-                .FirstOrDefault();
-
-            int nextNumber = 1;
-
-            if (lastImport != null && !string.IsNullOrEmpty(lastImport.ImportCode))
-            {
-                var parts = lastImport.ImportCode.Split('_');
-                if (parts.Length == 2 && int.TryParse(parts[1], out int currentNumber))
-                {
-                    nextNumber = currentNumber + 1;
-                }
-            }
-
-            return $"INV_{nextNumber:D3}";
+            int next = Interlocked.Increment(ref _importCounter);
+            return $"IMP-{next}";
         }
 
     }

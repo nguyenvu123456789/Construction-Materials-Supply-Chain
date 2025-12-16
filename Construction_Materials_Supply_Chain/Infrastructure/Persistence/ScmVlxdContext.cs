@@ -134,13 +134,21 @@ public partial class ScmVlxdContext : DbContext
             entity.ToTable("ImportReport");
 
             entity.Property(e => e.ImportReportId).HasColumnName("ImportReportID");
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("datetime")
+                  .HasDefaultValueSql("(getdate())");
+
             entity.Property(e => e.Notes).HasMaxLength(500);
 
             entity.HasOne(e => e.Import)
                   .WithMany(i => i.ImportReports)
                   .HasForeignKey(e => e.ImportId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CreatedByNavigation)
+                  .WithMany() 
+                  .HasForeignKey(e => e.CreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ImportReportDetail>(entity =>

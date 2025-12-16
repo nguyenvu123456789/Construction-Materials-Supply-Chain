@@ -15,7 +15,6 @@ namespace Application.Services.Implements
         private readonly IUserRepository _userRepository;
         private readonly IHandleRequestRepository _handleRequestRepository;
         private readonly IPartnerRepository _partnerRepository;
-        private readonly IVietnamGeoService _vietnamGeoService;
         private readonly IRegionService _regionService;
 
         public OrderService(
@@ -23,7 +22,6 @@ namespace Application.Services.Implements
             IUserRepository userRepository,
             IHandleRequestRepository handleRequestRepository,
             IPartnerRepository partnerRepository,
-            IVietnamGeoService vietnamGeoService,
             IRegionService regionService,
             IOrderDetailRepository orderDetailRepository)
         {
@@ -31,7 +29,6 @@ namespace Application.Services.Implements
             _userRepository = userRepository;
             _handleRequestRepository = handleRequestRepository;
             _partnerRepository = partnerRepository;
-            _vietnamGeoService = vietnamGeoService;
             _regionService = regionService;
             _orderDetailRepository = orderDetailRepository;
         }
@@ -211,6 +208,7 @@ namespace Application.Services.Implements
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,
+                OrderStatus = order.Status,
                 WarehouseId = order.WarehouseId,
                 WarehouseName = order.Warehouse?.WarehouseName,
 
@@ -233,8 +231,8 @@ namespace Application.Services.Implements
         public List<OrderResponseDto> GetPurchaseOrders(int partnerId)
         {
             var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
-    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
-    .ToList();
+                    .Where(o => o.CreatedByNavigation?.Partner?.PartnerId == partnerId)
+                    .ToList();
 
 
             foreach (var order in orders)
@@ -246,8 +244,8 @@ namespace Application.Services.Implements
             {
                 OrderId = o.OrderId,
                 OrderCode = o.OrderCode,
-                SupplierName = o.CreatedByNavigation?.Partner?.PartnerName ?? "",
-                CustomerName = o.CreatedByNavigation?.FullName ?? "",
+                SupplierName = o.Supplier?.PartnerName ?? "",
+                CustomerName = o.Supplier?.PartnerName ?? "",
                 Status = o.Status,
                 DeliveryAddress = o.DeliveryAddress,
                 PhoneNumber = o.PhoneNumber,
@@ -281,7 +279,7 @@ namespace Application.Services.Implements
             {
                 OrderId = o.OrderId,
                 OrderCode = o.OrderCode,
-                SupplierName = o.Supplier?.PartnerName ?? "",
+                SupplierName = o.CreatedByNavigation?.Partner?.PartnerName ?? "",
                 CustomerName = o.CreatedByNavigation?.FullName ?? "",
                 Status = o.Status,
                 DeliveryAddress = o.DeliveryAddress,

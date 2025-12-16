@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories.Base
             _dbSet = context.Set<T>();
         }
 
-        public virtual List<T> GetAll() => _dbSet.ToList();
+        public virtual List<T> GetAll() => _dbSet.AsNoTracking().ToList();
 
         public T GetById(int id) => _dbSet.Find(id);
 

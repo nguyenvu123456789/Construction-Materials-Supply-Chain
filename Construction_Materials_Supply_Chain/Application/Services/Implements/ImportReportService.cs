@@ -51,7 +51,7 @@ namespace Services.Implementations
             var import = new Import
             {
                 ImportCode = $"IMP-{DateTime.Now:yyyyMMddHHmmss}",
-                WarehouseId = invoice.PartnerId,
+                WarehouseId = invoice.WarehouseId.Value,
                 CreatedBy = dto.CreatedBy,
                 CreatedAt = DateTime.Now,
                 Status = StatusEnum.Pending.ToStatusString()
@@ -120,7 +120,10 @@ namespace Services.Implementations
         public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
-                         ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+    ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+
+            if (report.Status != StatusEnum.Pending.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REVIEWED);
 
             report.Status = dto.Status;
             _reports.Update(report);
@@ -195,14 +198,31 @@ namespace Services.Implementations
             }
             else if (dto.Status == StatusEnum.Rejected.ToStatusString())
             {
+                // 1. Update ImportReport (rõ ràng)
+                report.Status = StatusEnum.Rejected.ToStatusString();
+                _reports.Update(report);
+
+                // 2. Nếu đã có Import → HỦY Import gốc
+                if (report.Import != null)
+                {
+                    report.Import.Status = StatusEnum.Cancelled.ToStatusString();
+                    report.Import.UpdatedAt = DateTime.Now;
+                    _imports.Update(report.Import);
+                }
+
+                // 3. Update Invoice nếu có
                 if (report.Invoice != null)
                 {
                     report.Invoice.ImportStatus = StatusEnum.Rejected.ToStatusString();
+                    report.Invoice.ExportStatus = StatusEnum.Cancelled.ToStatusString();
                     _invoices.Update(report.Invoice);
                 }
+
+                // 4. Tạo Return Import
+                CreateReturnImportForSeller(report.ImportReportId, dto.ReviewedBy);
             }
 
-            //  Trả về DTO
+
             return new ImportReportResponseDto
             {
                 ImportReportId = report.ImportReportId,
@@ -242,6 +262,106 @@ namespace Services.Implementations
             };
         }
 
+        public Import CreateReturnImportForSeller(int importReportId, int createdBy)
+        {
+            var report = _reports.GetByIdWithDetails(importReportId)
+                ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+
+            if (report.Status != StatusEnum.Rejected.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_REJECTED_REPORT_CAN_RETURN);
+
+            if (report.Invoice == null)
+                throw new Exception(ImportMessages.MSG_INVOICE_REQUIRED_FOR_RETURN);
+
+            var sellerWarehouseId = report.Invoice.WarehouseId
+                ?? throw new Exception(ImportMessages.MSG_SELLER_WAREHOUSE_NOT_FOUND);
+
+            var import = new Import
+            {
+                ImportCode = $"RET-{DateTime.Now:yyyyMMddHHmmss}",
+                WarehouseId = sellerWarehouseId,
+                CreatedBy = createdBy,
+                Status = StatusEnum.Pending.ToStatusString(),
+                CreatedAt = DateTime.Now,
+                Notes = string.Format(
+                    ImportMessages.MSG_RETURN_IMPORT_NOTE,
+                    report.ImportReportCode)
+            };
+
+            _imports.Add(import);
+
+            foreach (var detail in report.ImportReportDetails.Where(d => d.GoodQuantity > 0))
+            {
+                var material = _materials.GetById(detail.MaterialId)
+                    ?? throw new Exception(string.Format(
+                        ImportMessages.MSG_MATERIAL_NOT_FOUND,
+                        detail.MaterialId));
+
+                _importDetails.Add(new ImportDetail
+                {
+                    ImportId = import.ImportId,
+                    MaterialId = material.MaterialId,
+                    MaterialCode = material.MaterialCode ?? "",
+                    MaterialName = material.MaterialName,
+                    Unit = material.Unit,
+                    Quantity = detail.GoodQuantity,
+                    UnitPrice = 0,
+                    LineTotal = 0
+                });
+            }
+
+            return import;
+        }
+
+
+        public Import ReviewReturnImport(int importId, ReviewImportReportDto dto)
+        {
+            var import = _imports.GetByIdWithDetails(importId)
+                ?? throw new Exception(ImportMessages.MSG_IMPORT_PENDING_NOT_FOUND);
+
+            if (import.Status != StatusEnum.Pending.ToStatusString())
+                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
+
+            // ===== Reject =====
+            if (dto.Status == StatusEnum.Rejected.ToStatusString())
+            {
+                import.Status = StatusEnum.Rejected.ToStatusString();
+                _imports.Update(import);
+                return import;
+            }
+
+            // ===== Approve =====
+            import.Status = StatusEnum.Success.ToStatusString();
+            _imports.Update(import);
+
+            foreach (var detail in import.ImportDetails)
+            {
+                var inventory = _inventories.GetByWarehouseAndMaterial(
+                    import.WarehouseId, detail.MaterialId);
+
+                if (inventory == null)
+                {
+                    _inventories.Add(new Inventory
+                    {
+                        WarehouseId = import.WarehouseId,
+                        MaterialId = detail.MaterialId,
+                        Quantity = detail.Quantity,
+                        UpdatedAt = DateTime.Now
+                    });
+                }
+                else
+                {
+                    inventory.Quantity += detail.Quantity;
+                    inventory.UpdatedAt = DateTime.Now;
+                    _inventories.Update(inventory);
+                }
+            }
+
+            return import;
+        }
+
+
+
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {
             var report = _reports.GetByIdWithDetails(reportId)
@@ -272,9 +392,9 @@ namespace Services.Implementations
             var creatorHandle = _handleRequests.GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
                                                .OrderBy(h => h.HandledAt)
                                                .FirstOrDefault();
-            var createdByName = creatorHandle?.HandledByNavigation?.FullName
-                                ?? creatorHandle?.HandledByNavigation?.UserName
-                                ?? ImportMessages.MSG_UNKNOWN_CREATOR;
+            var createdByName = report.CreatedByNavigation?.FullName
+                    ?? report.CreatedByNavigation?.UserName
+                    ?? ImportMessages.MSG_UNKNOWN_USER;
 
             return new ImportReportResponseDto
             {
@@ -342,9 +462,10 @@ namespace Services.Implementations
                     : new List<HandleRequestDto>();
 
                 // Tên người tạo
-                var createdByName = lastHandle?.HandledByNavigation?.FullName
-                                    ?? lastHandle?.HandledByNavigation?.UserName
+                var createdByName = report.CreatedByNavigation?.FullName
+                                    ?? report.CreatedByNavigation?.UserName
                                     ?? ImportMessages.MSG_UNKNOWN_USER;
+
 
                 result.Add(new ImportReportResponseDto
                 {

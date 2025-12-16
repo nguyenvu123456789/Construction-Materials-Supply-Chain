@@ -103,5 +103,12 @@ namespace Infrastructure.Implementations
                     .ThenInclude(d => d.Material)
                 .FirstOrDefault(i => i.InvoiceId == id);
         }
+
+        public bool Exists(string invoiceCode)
+        {
+            return _dbSet.Any(i =>
+                i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
+        }
+
     }
 }

@@ -13,6 +13,8 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
+        private static int _invoiceCounter = 99;
+
 
 
         public InvoiceService(
@@ -66,15 +68,17 @@ namespace Services.Implementations
             return invoice;
         }
 
-
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
             if (order == null)
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
-            if (order.Status != StatusEnum.Approved.ToStatusString())
+            if (order.Status != StatusEnum.Approved.ToStatusString()
+                && order.Status != StatusEnum.Invoiced.ToStatusString())
+            {
                 throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
+            }
 
             var partnerId = order.CreatedByNavigation?.PartnerId;
             if (partnerId == null || partnerId == 0)
@@ -113,11 +117,9 @@ namespace Services.Implementations
             decimal discountPercent = relation?.RelationType.DiscountPercent ?? 0;
             decimal discountAmount = relation?.RelationType.DiscountAmount ?? 0;
 
-            var newCode = $"INV-{nextNumber:D3}";
-
             var invoice = new Invoice
             {
-                InvoiceCode = newCode,
+                InvoiceCode = GenerateInvoiceCode(),
                 InvoiceType = StatusEnum.Export.ToStatusString(),
                 PartnerId = partnerId.Value,
                 WarehouseId = order.WarehouseId,
@@ -133,7 +135,6 @@ namespace Services.Implementations
 
             var (totalAmount, totalDiscount) = CalculateTotals(selectedDetails, dto, invoice);
 
-
             invoice.TotalAmount = totalAmount;
             invoice.DiscountAmount = totalDiscount;
             invoice.PayableAmount = totalAmount - totalDiscount;
@@ -141,8 +142,17 @@ namespace Services.Implementations
             _invoices.Add(invoice);
             createdInvoices.Add(invoice);
 
+            // 1. Update status cho các OrderDetail đã được invoiced
+            foreach (var detail in selectedDetails)
+            {
+                detail.Status = StatusEnum.Invoiced.ToStatusString();
+            }
+
+            // 2. Nếu tất cả OrderDetail đều invoiced → update Order
             if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
+            {
                 order.Status = StatusEnum.Invoiced.ToStatusString();
+            }
 
             _orderRepository.Update(order);
 
@@ -195,6 +205,11 @@ namespace Services.Implementations
             }
 
             return (totalAmount, totalDiscount);
+        }
+        private string GenerateInvoiceCode()
+        {
+            int next = Interlocked.Increment(ref _invoiceCounter);
+            return $"INV-{next}";
         }
 
         public Invoice? UpdateExportStatus(int id, string newStatus)

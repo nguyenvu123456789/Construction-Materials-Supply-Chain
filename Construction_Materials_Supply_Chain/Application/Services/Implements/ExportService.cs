@@ -183,6 +183,7 @@ namespace Services.Implementations
         var export = new Export
         {
             ExportCode = exportCode,
+            InvoiceId = invoice.InvoiceId,
             WarehouseId = dto.WarehouseId,
             CreatedBy = dto.CreatedBy,
             Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",

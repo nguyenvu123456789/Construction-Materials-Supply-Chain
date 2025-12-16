@@ -82,5 +82,14 @@ namespace API.Controllers
             return Ok(invoices);
         }
 
+        [HttpPut("mark-delivered")]
+        public IActionResult MarkDelivered([FromBody] UpdateInvoiceStatusDto dto)
+        {
+            _invoiceService.MarkInvoicesAsDelivered(dto.InvoiceIds);
+            return Ok(new
+            {
+                message = "Cập nhật trạng thái Delivered thành công"
+            });
+        }
     }
 }

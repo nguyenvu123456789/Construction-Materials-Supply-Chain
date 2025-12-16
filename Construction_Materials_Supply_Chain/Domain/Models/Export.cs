@@ -5,7 +5,7 @@
         public int ExportId { get; set; }
         public string ExportCode { get; set; } = null!;
         public DateTime ExportDate { get; set; }
-
+        public int InvoiceId { get; set; }
         public int WarehouseId { get; set; }
 
         public string Status { get; set; } = "Pending";
@@ -18,6 +18,7 @@
 
         public DateTime? UpdatedAt { get; set; }
 
+        public virtual Invoice Invoice { get; set; } = null!;
         public virtual Warehouse Warehouse { get; set; } = null!;
         public virtual User ExportedByNavigation { get; set; } = null!;
         public virtual ICollection<ExportDetail> ExportDetails { get; set; } = new List<ExportDetail>();

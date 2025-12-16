@@ -8,6 +8,6 @@ namespace Domain.Interface
         Export GetExportById(int id);
         Export GetWithDetails(int id);
         List<Export> GetAllWithWarehouse();
-
+        Export? GetByInvoiceId(int invoiceId);
     }
 }

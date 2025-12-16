@@ -248,7 +248,7 @@ namespace Services.Implementations
                 if (invoice == null)
                     throw new Exception($"Không tìm thấy hóa đơn ID = {invoiceId}");
 
-                invoice.ExportStatus = StatusEnum.Completed.ToStatusString(); // Delivered
+                invoice.ImportStatus = StatusEnum.Delivered.ToStatusString(); 
                 invoice.UpdatedAt = DateTime.Now;
 
                 _invoices.Update(invoice);

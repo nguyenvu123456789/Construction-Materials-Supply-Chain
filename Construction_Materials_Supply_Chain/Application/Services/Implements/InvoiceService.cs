@@ -253,7 +253,7 @@ namespace Services.Implementations
         public List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId)
         {
             var invoicesQuery = _invoices.GetAllWithDetails()
-                .AsQueryable(); 
+                .AsQueryable();
 
             if (partnerId.HasValue || managerId.HasValue)
             {

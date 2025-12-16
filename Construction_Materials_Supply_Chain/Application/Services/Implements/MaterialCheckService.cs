@@ -220,7 +220,7 @@ namespace Application.Services.Implements
                 }).ToList()
             };
 
-            _checks.Add(check); 
+            _checks.Add(check);
 
             var response = new MaterialCheckResponseDto
             {
@@ -265,7 +265,7 @@ namespace Application.Services.Implements
             if (dto.Action != "Approved" && dto.Action != "Rejected")
                 return ApiResponse<MaterialCheckHandleResponseDto>.ErrorResponse("Action phải là 'Approved' hoặc 'Rejected'.");
 
-            check.Status = dto.Action;   
+            check.Status = dto.Action;
 
             var handle = new HandleRequest
             {

@@ -1,8 +1,5 @@
 ﻿using Application.DTOs;
-using Domain.Models;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Application.Services.Interfaces
 {

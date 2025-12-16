@@ -40,7 +40,7 @@ namespace Services.Implementations
             if (string.IsNullOrEmpty(invoiceCode) && string.IsNullOrEmpty(importCode))
                 throw new Exception(ImportMessages.MSG_MISSING_INVOICE_OR_IMPORT);
 
-                if (!string.IsNullOrEmpty(invoiceCode))
+            if (!string.IsNullOrEmpty(invoiceCode))
             {
                 var invoice = _invoices.GetByCodeNoTracking(invoiceCode);
                 if (invoice == null)
@@ -154,7 +154,7 @@ namespace Services.Implementations
             _imports.Add(newImport);
             return newImport;
 
-}
+        }
 
 
         public Import ConfirmPendingImport(string importCode, string? notes)

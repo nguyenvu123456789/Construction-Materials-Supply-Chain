@@ -45,7 +45,7 @@
         public string InvoiceType { get; set; } = null!;
         public string? Address { get; set; }
         public int PartnerId { get; set; }
-        public int? WarehouseId { get; set; }         
+        public int? WarehouseId { get; set; }
         public string? WarehouseName { get; set; }
         public string PartnerName { get; set; } = null!;
         public DateTime IssueDate { get; set; }
@@ -53,7 +53,7 @@
         public decimal TotalAmount { get; set; }
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public decimal DiscountAmount { get; set; }   
+        public decimal DiscountAmount { get; set; }
         public decimal PayableAmount { get; set; }
     }
 

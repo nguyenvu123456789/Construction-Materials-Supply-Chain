@@ -1,7 +1,4 @@
-﻿using Domain.Models;
-using Microsoft.AspNetCore.Http;
-
-namespace Application.DTOs
+﻿namespace Application.DTOs
 {
     public class ReceiptDTO
     {

@@ -16,7 +16,7 @@ namespace Infrastructure.Implementations
                 .AsNoTracking()
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
-                    .Include(i => i.Order)                  
+                    .Include(i => i.Order)
             .ThenInclude(o => o.Warehouse)
                 .FirstOrDefault(i => i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
         }
@@ -43,7 +43,7 @@ namespace Infrastructure.Implementations
             return _dbSet
                 .Include(i => i.Warehouse)
                 .Include(i => i.CreatedByNavigation)
-                .Include(i => i.Order)                  
+                .Include(i => i.Order)
             .ThenInclude(o => o.Warehouse)
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)

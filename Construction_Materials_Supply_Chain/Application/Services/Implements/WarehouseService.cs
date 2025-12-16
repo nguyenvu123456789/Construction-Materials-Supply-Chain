@@ -14,12 +14,12 @@ namespace Application.Services.Implements
         public WarehouseService(IWarehouseRepository warehouses)
         {
             _warehouses = warehouses;
-            
+
         }
 
         public List<Warehouse> GetAll(int? managerId = null, int? partnerId = null)
         {
-            var warehouses = _warehouses.GetAll(); 
+            var warehouses = _warehouses.GetAll();
 
             if (managerId.HasValue)
                 warehouses = warehouses.Where(w => w.ManagerId == managerId.Value).ToList();

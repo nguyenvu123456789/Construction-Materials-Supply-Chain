@@ -54,7 +54,7 @@ namespace Services.Implementations
                 WarehouseId = dto.WarehouseId,
                 CreatedBy = dto.CreatedBy,
                 Notes = dto.Notes,
-                Status = StatusEnum.Pending.ToStatusString(),   
+                Status = StatusEnum.Pending.ToStatusString(),
                 CreatedAt = DateTime.Now
             };
 
@@ -152,72 +152,72 @@ namespace Services.Implementations
         // Tạo phiếu xuất từ hóa đơn (Invoice)
 
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
-    {
-        var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
-        if (invoice == null)
-            throw new Exception(ExportMessages.MSG_INVOICE_NOT_FOUND);
-
-        if (invoice.InvoiceDetails == null || !invoice.InvoiceDetails.Any())
-            throw new Exception(ExportMessages.MSG_INVOICE_HAS_NO_DETAILS);
-
-        // Kiểm tra tồn kho
-        foreach (var item in invoice.InvoiceDetails)
         {
-            var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, item.MaterialId);
+            var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
+            if (invoice == null)
+                throw new Exception(ExportMessages.MSG_INVOICE_NOT_FOUND);
 
-            if (inventory == null)
-                throw new Exception(
-                    string.Format(ExportMessages.MSG_MATERIAL_NOT_IN_WAREHOUSE,
-                        item.Material?.MaterialName ?? item.MaterialId.ToString()));
+            if (invoice.InvoiceDetails == null || !invoice.InvoiceDetails.Any())
+                throw new Exception(ExportMessages.MSG_INVOICE_HAS_NO_DETAILS);
 
-            if ((inventory.Quantity ?? 0) < item.Quantity)
-                throw new Exception(
-                    string.Format(ExportMessages.MSG_NOT_ENOUGH_STOCK,
-                        item.Material?.MaterialName ?? item.MaterialId.ToString(),
-                        inventory.Quantity,
-                        item.Quantity));
-        }
-
-        var exportCode = GenerateNextExportCode();
-
-        var export = new Export
-        {
-            ExportCode = exportCode,
-            WarehouseId = dto.WarehouseId,
-            CreatedBy = dto.CreatedBy,
-            Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
-            Status = StatusEnum.Pending.ToStatusString(),
-            CreatedAt = DateTime.Now,
-        };
-        _exports.Add(export);
-
-        // Tạo chi tiết phiếu xuất
-        foreach (var item in invoice.InvoiceDetails)
-        {
-            var detail = new ExportDetail
+            // Kiểm tra tồn kho
+            foreach (var item in invoice.InvoiceDetails)
             {
-                ExportId = export.ExportId,
-                MaterialId = item.MaterialId,
-                MaterialCode = item.Material?.MaterialCode ?? "",
-                MaterialName = item.Material?.MaterialName ?? "",
-                Unit = item.Material?.Unit,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                LineTotal = item.Quantity * item.UnitPrice
+                var inventory = _inventories.GetByWarehouseAndMaterial(dto.WarehouseId, item.MaterialId);
+
+                if (inventory == null)
+                    throw new Exception(
+                        string.Format(ExportMessages.MSG_MATERIAL_NOT_IN_WAREHOUSE,
+                            item.Material?.MaterialName ?? item.MaterialId.ToString()));
+
+                if ((inventory.Quantity ?? 0) < item.Quantity)
+                    throw new Exception(
+                        string.Format(ExportMessages.MSG_NOT_ENOUGH_STOCK,
+                            item.Material?.MaterialName ?? item.MaterialId.ToString(),
+                            inventory.Quantity,
+                            item.Quantity));
+            }
+
+            var exportCode = GenerateNextExportCode();
+
+            var export = new Export
+            {
+                ExportCode = exportCode,
+                WarehouseId = dto.WarehouseId,
+                CreatedBy = dto.CreatedBy,
+                Notes = dto.Notes ?? $"Export from Invoice {dto.InvoiceCode}",
+                Status = StatusEnum.Pending.ToStatusString(),
+                CreatedAt = DateTime.Now,
             };
-            _exportDetails.Add(detail);
+            _exports.Add(export);
+
+            // Tạo chi tiết phiếu xuất
+            foreach (var item in invoice.InvoiceDetails)
+            {
+                var detail = new ExportDetail
+                {
+                    ExportId = export.ExportId,
+                    MaterialId = item.MaterialId,
+                    MaterialCode = item.Material?.MaterialCode ?? "",
+                    MaterialName = item.Material?.MaterialName ?? "",
+                    Unit = item.Material?.Unit,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    LineTotal = item.Quantity * item.UnitPrice
+                };
+                _exportDetails.Add(detail);
+            }
+
+            invoice.ExportStatus = StatusEnum.Success.ToStatusString();
+            invoice.UpdatedAt = DateTime.Now;
+            _invoiceRepository.Update(invoice);
+
+            return export;
         }
 
-        invoice.ExportStatus = StatusEnum.Success.ToStatusString();
-        invoice.UpdatedAt = DateTime.Now;
-        _invoiceRepository.Update(invoice);
 
-        return export;
-    }
-
-
-    // Sinh mã phiếu xuất tăng dần
-    private string GenerateNextExportCode()
+        // Sinh mã phiếu xuất tăng dần
+        private string GenerateNextExportCode()
         {
             int nextNumber = 1;
 

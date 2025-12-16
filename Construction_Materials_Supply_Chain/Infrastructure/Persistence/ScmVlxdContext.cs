@@ -54,7 +54,7 @@ public partial class ScmVlxdContext : DbContext
     public virtual DbSet<MaterialPartner> MaterialPartners { get; set; } = null!;
 
     public DbSet<Address> Addresses { get; set; }
-    public DbSet<Vehicle> Vehicles { get; set; } 
+    public DbSet<Vehicle> Vehicles { get; set; }
     public DbSet<Driver> Drivers { get; set; }
     public DbSet<Porter> Porters { get; set; }
 
@@ -122,9 +122,9 @@ public partial class ScmVlxdContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Material)
-                  .WithMany() 
+                  .WithMany()
                   .HasForeignKey(d => d.MaterialId)
-                  .OnDelete(DeleteBehavior.Restrict); 
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
 
@@ -620,7 +620,7 @@ public partial class ScmVlxdContext : DbContext
             .HasForeignKey(pr => pr.SellerPartnerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<RelationType>() 
+        modelBuilder.Entity<RelationType>()
             .HasMany(rt => rt.PartnerRelations)
             .WithOne(pr => pr.RelationType)
             .HasForeignKey(pr => pr.RelationTypeId)

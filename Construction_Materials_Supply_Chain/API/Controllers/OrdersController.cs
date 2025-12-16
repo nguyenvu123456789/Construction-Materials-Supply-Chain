@@ -1,7 +1,7 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Application.Constants.Messages;
 
 namespace API.Controllers
 {

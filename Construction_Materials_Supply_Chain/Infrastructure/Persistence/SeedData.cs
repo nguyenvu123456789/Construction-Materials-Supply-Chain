@@ -340,7 +340,7 @@ namespace Infrastructure.Persistence
                 {
                     foreach (var material in materials)
                     {
-                        var sellPrice = rnd.Next(50, 200) * 1000; 
+                        var sellPrice = rnd.Next(50, 200) * 1000;
 
                         list.Add(new PriceMaterialPartner
                         {
@@ -382,7 +382,7 @@ namespace Infrastructure.Persistence
                 {
                     for (int j = 0; j < partners.Count; j++)
                     {
-                        if (i == j) continue; 
+                        if (i == j) continue;
 
                         var buyer = partners[i];
                         var seller = partners[j];
@@ -393,7 +393,7 @@ namespace Infrastructure.Persistence
                             BuyerPartnerId = buyer.PartnerId,
                             SellerPartnerId = seller.PartnerId,
                             RelationTypeId = type.RelationTypeId,
-                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)), 
+                            CooperationDate = DateTime.Now.AddDays(-rnd.Next(0, 365)),
                             Status = "Active"
                         });
                     }
@@ -549,7 +549,7 @@ namespace Infrastructure.Persistence
                         InvoiceCode = data.Code,
                         InvoiceType = "Export",
                         PartnerId = partner.PartnerId,
-                        WarehouseId = order.WarehouseId,         
+                        WarehouseId = order.WarehouseId,
                         Warehouse = order.Warehouse,
                         CreatedBy = manager.UserId,
                         OrderId = order.OrderId,
@@ -695,7 +695,7 @@ namespace Infrastructure.Persistence
                 var managerUser = context.Users.First(u => u.UserName == "manager1");
                 var managerUserId = managerUser.UserId;
 
-                var materials = context.Materials.Take(5).ToList(); 
+                var materials = context.Materials.Take(5).ToList();
 
                 // ==================== ImportReport ====================
                 if (!context.ImportReports.Any())
@@ -712,7 +712,7 @@ namespace Infrastructure.Persistence
                             Notes = $"Báo cáo nhập số {importReportCounter}",
                             CreatedAt = DateTime.Now,
                             Status = "Pending",
-                            ImportReportCode = $"IR-{importReportCounter:D3}" 
+                            ImportReportCode = $"IR-{importReportCounter:D3}"
                         };
                         context.ImportReports.Add(report);
                         context.SaveChanges();

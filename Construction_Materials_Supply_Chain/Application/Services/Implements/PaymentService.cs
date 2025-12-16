@@ -6,10 +6,6 @@ using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {

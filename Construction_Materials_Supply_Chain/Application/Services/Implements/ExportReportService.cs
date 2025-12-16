@@ -66,7 +66,7 @@ namespace Application.Services.Implements
                                 .OrderByDescending(r => r.ExportReportId)
                                 .FirstOrDefault();
 
-            int nextNumber = 1; 
+            int nextNumber = 1;
             if (lastReport != null)
             {
                 var parts = lastReport.ExportReportCode?.Split('-');
@@ -76,7 +76,7 @@ namespace Application.Services.Implements
                 }
             }
 
-            return $"ERP-{nextNumber:000}"; 
+            return $"ERP-{nextNumber:000}";
         }
 
 

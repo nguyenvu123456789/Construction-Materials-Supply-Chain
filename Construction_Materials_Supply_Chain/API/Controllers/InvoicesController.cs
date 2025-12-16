@@ -1,6 +1,6 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
-using Application.Constants.Messages;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

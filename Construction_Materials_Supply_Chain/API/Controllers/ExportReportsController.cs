@@ -1,5 +1,5 @@
-﻿using Application.DTOs;
-using Application.Constants.Messages;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 

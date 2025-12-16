@@ -1,6 +1,4 @@
-﻿using Domain.Models;
-
-public class Receipt
+﻿public class Receipt
 {
     public int Id { get; set; }
     public string ReceiptNumber { get; set; }

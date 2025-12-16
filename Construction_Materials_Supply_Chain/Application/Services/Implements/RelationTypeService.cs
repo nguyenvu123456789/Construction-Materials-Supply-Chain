@@ -1,7 +1,6 @@
 ﻿using Application.Common.Pagination;
 using Application.Constants.Enums;
 using Application.Constants.Messages;
-using Application.DTOs;
 using Application.DTOs.RelationType;
 using Application.Interfaces;
 using AutoMapper;

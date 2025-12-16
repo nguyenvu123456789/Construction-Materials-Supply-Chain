@@ -3,10 +3,7 @@ using Application.DTOs.Application.DTOs;
 using Application.Services.Interfaces;
 using Domain.Interface;
 using Domain.Interfaces;
-using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -19,7 +16,7 @@ namespace Application.Services
         public PriceMaterialPartnerService(IPriceMaterialPartnerRepository repo, IPartnerRelationRepository partnerRelationRepo)
         {
             _repo = repo;
-                _partnerRelationRepo = partnerRelationRepo;
+            _partnerRelationRepo = partnerRelationRepo;
         }
 
         public async Task<PagedResultDto<PriceMaterialPartnerDto>> GetAllAsync(PriceCatalogQueryDto query)
@@ -82,7 +79,7 @@ namespace Application.Services
             if (!string.IsNullOrWhiteSpace(dto.Status))
                 entity.Status = dto.Status;
 
-            _repo.Update(entity); 
+            _repo.Update(entity);
         }
 
         public async Task<List<PriceMaterialPartnerDto>> GetPricesForPartnerAsync(int buyerPartnerId, int sellerPartnerId)

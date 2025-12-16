@@ -267,7 +267,7 @@ namespace Application.Services.Implements
 
 
         public List<OrderResponseDto> GetSalesOrders(int partnerId)
-{
+        {
             var orders = _orderRepository.GetAllWithWarehouseAndSupplier()
                 .Where(o => o.SupplierId == partnerId)
                 .ToList();

@@ -44,10 +44,10 @@
             public int MaterialId { get; set; }
             public string MaterialCode { get; set; } = null!;
             public string MaterialName { get; set; } = null!;
-            public decimal SellPrice { get; set; }         
-            public decimal DiscountPercent { get; set; }   
-            public decimal DiscountAmount { get; set; }    
-            public decimal PriceAfterDiscount { get; set; } 
+            public decimal SellPrice { get; set; }
+            public decimal DiscountPercent { get; set; }
+            public decimal DiscountAmount { get; set; }
+            public decimal PriceAfterDiscount { get; set; }
         }
 
     }

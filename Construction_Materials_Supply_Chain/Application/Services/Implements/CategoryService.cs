@@ -63,7 +63,7 @@ namespace Application.Services.Implements
             if (category == null || category.Status == StatusEnum.Deleted.ToStatusString())
                 throw new Exception(CategoryMessages.MSG_CATEGORY_NOT_FOUND);
 
-            category.Status = StatusEnum.Deleted.ToStatusString()   ;
+            category.Status = StatusEnum.Deleted.ToStatusString();
             _categories.Update(category);
 
             // Soft delete all related materials

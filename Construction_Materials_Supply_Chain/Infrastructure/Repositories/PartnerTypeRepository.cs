@@ -1,4 +1,4 @@
-﻿    using Domain.Interface;
+﻿using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;

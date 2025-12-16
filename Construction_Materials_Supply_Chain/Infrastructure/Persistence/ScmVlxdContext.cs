@@ -185,8 +185,10 @@ public partial class ScmVlxdContext : DbContext
                   .HasForeignKey(d => d.WarehouseId);
 
             entity.HasOne(d => d.ExportedByNavigation)
-                  .WithMany(p => p.Exports)
-                  .HasForeignKey(d => d.CreatedBy);
+      .WithMany(p => p.Exports)
+      .HasForeignKey(d => d.CreatedBy)
+      .OnDelete(DeleteBehavior.NoAction);
+
         });
 
         modelBuilder.Entity<ExportDetail>(entity =>

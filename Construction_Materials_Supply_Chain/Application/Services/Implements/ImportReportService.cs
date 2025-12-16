@@ -17,6 +17,8 @@ namespace Services.Implementations
         private readonly IImportRepository _imports;
         private readonly IImportDetailRepository _importDetails;
         private readonly IHandleRequestRepository _handleRequests;
+        private readonly IExportRepository _exports;
+
 
         public ImportReportService(
             IImportReportRepository reports,
@@ -26,7 +28,8 @@ namespace Services.Implementations
             IMaterialRepository materials,
             IImportRepository imports,
             IImportDetailRepository importDetails,
-            IHandleRequestRepository handleRequests)
+            IHandleRequestRepository handleRequests,
+            IExportRepository exports)
         {
             _reports = reports;
             _invoices = invoices;
@@ -36,6 +39,7 @@ namespace Services.Implementations
             _imports = imports;
             _importDetails = importDetails;
             _handleRequests = handleRequests;
+            _exports = exports;
         }
 
         public ImportReport CreateReport(CreateImportReportDto dto)
@@ -273,19 +277,19 @@ namespace Services.Implementations
             if (report.Invoice == null)
                 throw new Exception(ImportMessages.MSG_INVOICE_REQUIRED_FOR_RETURN);
 
-            var sellerWarehouseId = report.Invoice.WarehouseId
-                ?? throw new Exception(ImportMessages.MSG_SELLER_WAREHOUSE_NOT_FOUND);
+            var export = _exports.GetByInvoiceId(report.Invoice.InvoiceId)
+                ?? throw new Exception("Không tìm thấy phiếu xuất kho của hóa đơn");
 
             var import = new Import
             {
                 ImportCode = $"RET-{DateTime.Now:yyyyMMddHHmmss}",
-                WarehouseId = sellerWarehouseId,
-                CreatedBy = createdBy,
+                WarehouseId = export.WarehouseId,        
+                CreatedBy = report.Invoice.CreatedBy,  
                 Status = StatusEnum.Pending.ToStatusString(),
                 CreatedAt = DateTime.Now,
                 Notes = string.Format(
-                    ImportMessages.MSG_RETURN_IMPORT_NOTE,
-                    report.ImportReportCode)
+        ImportMessages.MSG_RETURN_IMPORT_NOTE,
+        report.ImportReportCode)
             };
 
             _imports.Add(import);

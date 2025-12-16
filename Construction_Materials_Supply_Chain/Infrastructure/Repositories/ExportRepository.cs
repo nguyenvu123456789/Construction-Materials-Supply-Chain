@@ -33,6 +33,13 @@ namespace Infrastructure.Implementations
                 .Include(e => e.ExportDetails)
                 .ToList();
         }
+        public Export? GetByInvoiceId(int invoiceId)
+        {
+            return _context.Exports
+                .Include(e => e.ExportDetails)
+                .FirstOrDefault(e => e.InvoiceId == invoiceId);
+        }
+
 
     }
 }

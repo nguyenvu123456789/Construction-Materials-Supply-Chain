@@ -105,7 +105,7 @@ namespace Services.Implementations
                     }
 
                     var existingRelation = _materialPartners.GetAll()
-    .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
+                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
                           mp.PartnerId == invoice.PartnerId);
 
                     if (existingRelation == null)
@@ -222,7 +222,11 @@ namespace Services.Implementations
             return imports;
         }
 
-        public Import CreatePendingImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials)
+        public Import CreateImport(
+            int warehouseId,
+            int createdBy,
+            string? notes,
+            List<PendingImportMaterialDto> materials)
         {
             if (materials == null || !materials.Any())
                 throw new Exception(ImportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL);
@@ -232,7 +236,7 @@ namespace Services.Implementations
                 ImportCode = GenerateImportCode(),
                 WarehouseId = warehouseId,
                 CreatedBy = createdBy,
-                Status = ImportStatus.Pending.ToString(),
+                Status = ImportStatus.Success.ToString(), 
                 Notes = notes,
                 CreatedAt = DateTime.Now
             };
@@ -242,7 +246,8 @@ namespace Services.Implementations
             {
                 var material = _materialRepository.GetById(m.MaterialId);
                 if (material == null)
-                    throw new Exception(string.Format(ImportMessages.MSG_MATERIAL_NOT_FOUND, m.MaterialId));
+                    throw new Exception(string.Format(
+                        ImportMessages.MSG_MATERIAL_NOT_FOUND, m.MaterialId));
 
                 var detail = new ImportDetail
                 {
@@ -251,11 +256,30 @@ namespace Services.Implementations
                     MaterialCode = material.MaterialCode ?? "",
                     MaterialName = material.MaterialName,
                     Unit = material.Unit,
-                    UnitPrice = m.UnitPrice,
                     Quantity = m.Quantity,
-                    LineTotal = m.UnitPrice * m.Quantity
                 };
                 _importDetails.Add(detail);
+
+                // ✅ CẬP NHẬT TỒN KHO NGAY
+                var inventory = _inventories.GetByWarehouseAndMaterial(
+                    warehouseId, material.MaterialId);
+
+                if (inventory == null)
+                {
+                    _inventories.Add(new Inventory
+                    {
+                        WarehouseId = warehouseId,
+                        MaterialId = material.MaterialId,
+                        Quantity = m.Quantity,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+                else
+                {
+                    inventory.Quantity = (inventory.Quantity ?? 0) + m.Quantity;
+                    inventory.UpdatedAt = DateTime.Now;
+                    _inventories.Update(inventory);
+                }
             }
 
             return import;
@@ -279,10 +303,8 @@ namespace Services.Implementations
 
         public List<Import> GetImports(int? partnerId = null, int? managerId = null)
         {
-            // Lấy tất cả import kèm warehouse và manager
             var imports = _imports.GetAllWithWarehouse();
 
-            // Filter theo partnerId nếu có
             if (partnerId.HasValue)
             {
                 imports = imports
@@ -291,7 +313,6 @@ namespace Services.Implementations
                     .ToList();
             }
 
-            // Filter theo managerId nếu có
             if (managerId.HasValue)
             {
                 imports = imports
@@ -299,7 +320,6 @@ namespace Services.Implementations
                     .ToList();
             }
 
-            // Load chi tiết import
             foreach (var import in imports)
             {
                 import.ImportDetails = _importDetails.GetByImportId(import.ImportId);

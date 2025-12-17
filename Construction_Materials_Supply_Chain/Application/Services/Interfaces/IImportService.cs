@@ -9,7 +9,7 @@ namespace Application.Interfaces
         Import ConfirmPendingImport(string importCode, string? notes);
         Import? GetById(int id);
         List<Import> GetAll();
-        Import CreatePendingImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials);
+        Import CreateDirectionImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials);
         Import? GetByIdWithDetails(int id);
         Import? RejectImport(int id);
         List<Import> GetImports(int? partnerId = null, int? managerId = null);

@@ -75,15 +75,15 @@ namespace API.Controllers
         }
 
 
-        [HttpPost("request")]
-        public IActionResult CreatePendingImport([FromBody] CreatePendingImportDto dto)
+        [HttpPost("direct-import")]
+        public IActionResult CreateDirectionImport([FromBody] CreatePendingImportDto dto)
         {
             if (dto == null)
                 return BadRequest("Invalid request data");
 
             try
             {
-                var import = _importService.CreatePendingImport(dto.WarehouseId, dto.CreatedBy, dto.Notes, dto.Materials);
+                var import = _importService.CreateDirectionImport(dto.WarehouseId, dto.CreatedBy, dto.Notes, dto.Materials);
                 var result = _mapper.Map<PendingImportResponseDto>(import);
                 return CreatedAtAction(nameof(GetImport), new { id = import.ImportId }, result);
             }

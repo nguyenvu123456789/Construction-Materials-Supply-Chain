@@ -810,114 +810,48 @@ new Export { ExportCode = "EXP-007", InvoiceId = 6, ExportDate = DateTime.Now, W
                 }
 
 
-
-                var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01")
-                    ?? throw new InvalidOperationException("User staff01 not found.");
-                var whHN = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Hà Nội")
-                    ?? throw new InvalidOperationException("Warehouse Kho Hà Nội not found.");
+                var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01") ?? throw new InvalidOperationException("User staff01 not found.");
+                var whHN = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Hà Nội") ?? throw new InvalidOperationException("Warehouse Kho Hà Nội not found.");
 
                 var prj1 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-001");
                 var prj2 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-002");
 
-                if (prj1 == null)
-                {
-                    prj1 = new Export
-                    {
-                        ExportCode = "PRJ-001",
-                        ExportDate = DateTime.Now.AddDays(-10),
-                        WarehouseId = whHN.WarehouseId,
-                        CreatedBy = staff.UserId,
-                        Notes = "Xuất công trình A",
-                        Status = "Success",
-                        CreatedAt = DateTime.Now.AddDays(-10)
-                    };
-                    context.Exports.Add(prj1);
-                    context.SaveChanges();
-                }
+                if (prj1 == null) { prj1 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-10), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10), InvoiceId = 1 }; context.Exports.Add(prj1); context.SaveChanges(); }
 
-                if (prj2 == null)
-                {
-                    prj2 = new Export
-                    {
-                        ExportCode = "PRJ-002",
-                        ExportDate = DateTime.Now.AddDays(-4),
-                        WarehouseId = whHN.WarehouseId,
-                        CreatedBy = staff.UserId,
-                        Notes = "Xuất công trình B",
-                        Status = "Success",
-                        CreatedAt = DateTime.Now.AddDays(-4)
-                    };
-                    context.Exports.Add(prj2);
-                    context.SaveChanges();
-                }
+                if (prj2 == null) { prj2 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-4), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4), InvoiceId = 2 }; context.Exports.Add(prj2); context.SaveChanges(); }
 
+                // ===== Update ExportDate =====
                 prj1.ExportDate = DateTime.Now.AddDays(-12);
                 prj2.ExportDate = DateTime.Now.AddDays(-6);
-                context.Exports.Update(prj1);
-                context.Exports.Update(prj2);
+                context.Exports.UpdateRange(prj1, prj2);
                 context.SaveChanges();
 
+
+                // ===== Seed ExportDetail cho PRJ-001 =====
                 if (!context.ExportDetails.Any(d => d.ExportId == prj1.ExportId))
                 {
                     context.ExportDetails.AddRange(
-                        new ExportDetail
-                        {
-                            ExportId = prj1.ExportId,
-                            MaterialId = wood.MaterialId,
-                            MaterialCode = wood.MaterialCode ?? "",
-                            MaterialName = wood.MaterialName,
-                            Unit = wood.Unit,
-                            UnitPrice = 250000m,
-                            Quantity = 18m,
-                            LineTotal = 18m * 250000m
-                        },
-                        new ExportDetail
-                        {
-                            ExportId = prj1.ExportId,
-                            MaterialId = cement.MaterialId,
-                            MaterialCode = cement.MaterialCode ?? "",
-                            MaterialName = cement.MaterialName,
-                            Unit = cement.Unit,
-                            UnitPrice = 90000m,
-                            Quantity = 35m,
-                            LineTotal = 35m * 90000m
-                        }
+                        new ExportDetail { ExportId = prj1.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode ?? "", MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 250000m, Quantity = 18m, LineTotal = 18m * 250000m },
+                        new ExportDetail { ExportId = prj1.ExportId, MaterialId = cement.MaterialId, MaterialCode = cement.MaterialCode ?? "", MaterialName = cement.MaterialName, Unit = cement.Unit, UnitPrice = 90000m, Quantity = 35m, LineTotal = 35m * 90000m }
                     );
                 }
 
+
+                // ===== Seed ExportDetail cho PRJ-002 =====
                 if (!context.ExportDetails.Any(d => d.ExportId == prj2.ExportId))
                 {
                     context.ExportDetails.AddRange(
-                        new ExportDetail
-                        {
-                            ExportId = prj2.ExportId,
-                            MaterialId = brick.MaterialId,
-                            MaterialCode = brick.MaterialCode ?? "",
-                            MaterialName = brick.MaterialName,
-                            Unit = brick.Unit,
-                            UnitPrice = 1200m,
-                            Quantity = 800m,
-                            LineTotal = 800m * 1200m
-                        },
-                        new ExportDetail
-                        {
-                            ExportId = prj2.ExportId,
-                            MaterialId = wood.MaterialId,
-                            MaterialCode = wood.MaterialCode ?? "",
-                            MaterialName = wood.MaterialName,
-                            Unit = wood.Unit,
-                            UnitPrice = 250000m,
-                            Quantity = 10m,
-                            LineTotal = 10m * 250000m
-                        }
+                        new ExportDetail { ExportId = prj2.ExportId, MaterialId = brick.MaterialId, MaterialCode = brick.MaterialCode ?? "", MaterialName = brick.MaterialName, Unit = brick.Unit, UnitPrice = 1200m, Quantity = 800m, LineTotal = 800m * 1200m },
+                        new ExportDetail { ExportId = prj2.ExportId, MaterialId = wood.MaterialId, MaterialCode = wood.MaterialCode ?? "", MaterialName = wood.MaterialName, Unit = wood.Unit, UnitPrice = 250000m, Quantity = 10m, LineTotal = 10m * 250000m }
                     );
                 }
+
                 context.SaveChanges();
             }
 
 
 
-            if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
+                if (!context.Invoices.Any(i => i.InvoiceType == "Import" || i.InvoiceType == "Export"))
             {
                 var manager = context.Users.First(u => u.UserName == "manager1");
                 var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");

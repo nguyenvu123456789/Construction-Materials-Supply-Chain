@@ -30,7 +30,9 @@ namespace Application.Services.Implements
                     FullName = dto.FullName,
                     Phone = dto.Phone,
                     Active = dto.Active,
-                    PartnerId = dto.PartnerId
+                    PartnerId = dto.PartnerId,
+                    Hometown = dto.Hometown,
+                    BirthDate = dto.BirthYear.HasValue ? new DateOnly(dto.BirthYear.Value, 1, 1) : null
                 };
                 _drivers.Add(d);
                 return new PersonResponseDto
@@ -40,7 +42,9 @@ namespace Application.Services.Implements
                     FullName = d.FullName,
                     Phone = d.Phone,
                     Active = d.Active,
-                    PartnerId = d.PartnerId
+                    PartnerId = d.PartnerId,
+                    Hometown = d.Hometown,
+                    BirthYear = d.BirthDate.HasValue ? d.BirthDate.Value.Year : (int?)null,
                 };
             }
             if (type == "porter")
@@ -50,7 +54,9 @@ namespace Application.Services.Implements
                     FullName = dto.FullName,
                     Phone = dto.Phone,
                     Active = dto.Active,
-                    PartnerId = dto.PartnerId
+                    PartnerId = dto.PartnerId,
+                    Hometown = dto.Hometown,
+                    BirthYear = dto.BirthYear
                 };
                 _porters.Add(p);
                 return new PersonResponseDto
@@ -60,7 +66,9 @@ namespace Application.Services.Implements
                     FullName = p.FullName,
                     Phone = p.Phone,
                     Active = p.Active,
-                    PartnerId = p.PartnerId
+                    PartnerId = p.PartnerId,
+                    Hometown = p.Hometown,
+                    BirthYear = p.BirthYear
                 };
             }
             if (type == "vehicle")

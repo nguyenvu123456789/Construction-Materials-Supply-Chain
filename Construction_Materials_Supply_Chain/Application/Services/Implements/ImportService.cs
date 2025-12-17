@@ -70,7 +70,7 @@ namespace Services.Implementations
                 foreach (var detail in invoice.InvoiceDetails)
                 {
                     if (!materials.TryGetValue(detail.MaterialId, out var material))
-                        throw new Exception($"Material Id {detail.MaterialId} not found.");
+                        throw new Exception(string.Format(ImportMessages.MSG_MATERIAL_NOT_FOUND_BY_ID, detail.MaterialId));
 
                     var importDetail = new ImportDetail
                     {
@@ -86,26 +86,11 @@ namespace Services.Implementations
                     _importDetails.Add(importDetail);
 
                     // Cập nhật tồn kho
-                    var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, detail.MaterialId);
-                    if (inventory == null)
-                    {
-                        _inventories.Add(new Inventory
-                        {
-                            WarehouseId = warehouseId,
-                            MaterialId = detail.MaterialId,
-                            Quantity = detail.Quantity,
-                            CreatedAt = DateTime.Now
-                        });
-                    }
-                    else
-                    {
-                        inventory.Quantity = (inventory.Quantity ?? 0) + detail.Quantity;
-                        inventory.UpdatedAt = DateTime.Now;
-                        _inventories.Update(inventory);
-                    }
+                    UpdateInventory(warehouseId, detail.MaterialId, detail.Quantity);
+
 
                     var existingRelation = _materialPartners.GetAll()
-    .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
+                        .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
                           mp.PartnerId == invoice.PartnerId);
 
                     if (existingRelation == null)
@@ -158,8 +143,7 @@ namespace Services.Implementations
 
         }
 
-
-        public Import ConfirmPendingImport(string importCode, string? notes)
+        public Import CreateImportFromImport(string importCode, string? notes)
         {
             var import = _imports.GetAll()
                 .FirstOrDefault(i => i.ImportCode == importCode && i.Status == ImportStatus.Pending.ToString());
@@ -200,6 +184,91 @@ namespace Services.Implementations
             return import;
         }
 
+        
+
+        public Import CreateDirectionImport(
+            int warehouseId,
+            int createdBy,
+            string? notes,
+            List<PendingImportMaterialDto> materials)
+        {
+            if (materials == null || !materials.Any())
+                throw new Exception(ImportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL);
+
+            var import = new Import
+            {
+                ImportCode = GenerateImportCode(),
+                WarehouseId = warehouseId,
+                CreatedBy = createdBy,
+                Status = ImportStatus.Success.ToString(), 
+                Notes = notes,
+                CreatedAt = DateTime.Now
+            };
+            _imports.Add(import);
+
+            foreach (var m in materials)
+            {
+                var material = _materialRepository.GetById(m.MaterialId);
+                if (material == null)
+                    throw new Exception(string.Format(
+                        ImportMessages.MSG_MATERIAL_NOT_FOUND, m.MaterialId));
+
+                var detail = new ImportDetail
+                {
+                    ImportId = import.ImportId,
+                    MaterialId = material.MaterialId,
+                    MaterialCode = material.MaterialCode ?? "",
+                    MaterialName = material.MaterialName,
+                    Unit = material.Unit,
+                    Quantity = m.Quantity,
+                };
+                _importDetails.Add(detail);
+
+                // CẬP NHẬT TỒN KHO 
+                UpdateInventory(warehouseId, material.MaterialId, m.Quantity);
+
+            }
+
+            return import;
+        }
+
+        private void UpdateInventory(int warehouseId, int materialId, decimal quantity)
+        {
+            var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, materialId);
+
+            if (inventory == null)
+            {
+                _inventories.Add(new Inventory
+                {
+                    WarehouseId = warehouseId,
+                    MaterialId = materialId,
+                    Quantity = quantity,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            else
+            {
+                inventory.Quantity = (inventory.Quantity ?? 0) + quantity;
+                inventory.UpdatedAt = DateTime.Now;
+                _inventories.Update(inventory);
+            }
+        }
+
+        public Import? RejectImport(int id)
+        {
+            var import = _imports.GetByIdWithDetails(id);
+            if (import == null)
+                return null;
+
+            if (import.Status != ImportStatus.Pending.ToString())
+                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
+
+            import.Status = ImportStatus.Rejected.ToString();
+            import.UpdatedAt = DateTime.Now;
+            _imports.Update(import);
+
+            return import;
+        }
         public Import? GetById(int id) => _imports.GetById(id);
 
         public Import? GetByIdWithDetails(int id)
@@ -221,68 +290,10 @@ namespace Services.Implementations
             }
             return imports;
         }
-
-        public Import CreatePendingImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials)
-        {
-            if (materials == null || !materials.Any())
-                throw new Exception(ImportMessages.MSG_REQUIRE_AT_LEAST_ONE_MATERIAL);
-
-            var import = new Import
-            {
-                ImportCode = GenerateImportCode(),
-                WarehouseId = warehouseId,
-                CreatedBy = createdBy,
-                Status = ImportStatus.Pending.ToString(),
-                Notes = notes,
-                CreatedAt = DateTime.Now
-            };
-            _imports.Add(import);
-
-            foreach (var m in materials)
-            {
-                var material = _materialRepository.GetById(m.MaterialId);
-                if (material == null)
-                    throw new Exception(string.Format(ImportMessages.MSG_MATERIAL_NOT_FOUND, m.MaterialId));
-
-                var detail = new ImportDetail
-                {
-                    ImportId = import.ImportId,
-                    MaterialId = material.MaterialId,
-                    MaterialCode = material.MaterialCode ?? "",
-                    MaterialName = material.MaterialName,
-                    Unit = material.Unit,
-                    UnitPrice = m.UnitPrice,
-                    Quantity = m.Quantity,
-                    LineTotal = m.UnitPrice * m.Quantity
-                };
-                _importDetails.Add(detail);
-            }
-
-            return import;
-        }
-
-        public Import? RejectImport(int id)
-        {
-            var import = _imports.GetByIdWithDetails(id);
-            if (import == null)
-                return null;
-
-            if (import.Status != ImportStatus.Pending.ToString())
-                throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REJECTED);
-
-            import.Status = ImportStatus.Rejected.ToString();
-            import.UpdatedAt = DateTime.Now;
-            _imports.Update(import);
-
-            return import;
-        }
-
         public List<Import> GetImports(int? partnerId = null, int? managerId = null)
         {
-            // Lấy tất cả import kèm warehouse và manager
             var imports = _imports.GetAllWithWarehouse();
 
-            // Filter theo partnerId nếu có
             if (partnerId.HasValue)
             {
                 imports = imports
@@ -291,7 +302,6 @@ namespace Services.Implementations
                     .ToList();
             }
 
-            // Filter theo managerId nếu có
             if (managerId.HasValue)
             {
                 imports = imports
@@ -299,7 +309,6 @@ namespace Services.Implementations
                     .ToList();
             }
 
-            // Load chi tiết import
             foreach (var import in imports)
             {
                 import.ImportDetails = _importDetails.GetByImportId(import.ImportId);

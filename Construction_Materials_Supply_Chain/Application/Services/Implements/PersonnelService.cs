@@ -71,7 +71,8 @@ namespace Application.Services.Implements
                     PlateNumber = dto.PlateNumber!,
                     VehicleClass = dto.VehicleClass,
                     Active = dto.Active,
-                    PartnerId = dto.PartnerId
+                    PartnerId = dto.PartnerId,
+                    PayloadTons = dto.CapacityTon.HasValue ? dto.CapacityTon.Value : 0m
                 };
                 _vehicles.Add(v);
                 return new PersonResponseDto
@@ -83,6 +84,7 @@ namespace Application.Services.Implements
                     Code = v.Code,
                     PlateNumber = v.PlateNumber,
                     VehicleClass = v.VehicleClass,
+                    CapacityTon = v.PayloadTons,
                     PartnerId = v.PartnerId
                 };
             }

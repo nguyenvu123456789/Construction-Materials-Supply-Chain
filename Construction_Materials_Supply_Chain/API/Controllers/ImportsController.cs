@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Models;
@@ -21,19 +22,17 @@ namespace API.Controllers
 
 
         [HttpPost]
-        public IActionResult CreateImport([FromBody] ImportRequestDto dto)
+        public IActionResult CreateImportFromInvoice([FromBody] ImportRequestDto dto)
         {
             if (dto == null)
-                return BadRequest("Invalid request data");
-
+                return BadRequest(ImportMessages.MSG_INVALID_REQUEST_DATA);
             try
             {
                 Import import;
-
                 if (!string.IsNullOrEmpty(dto.InvoiceCode))
                 {
                     if (dto.WarehouseId <= 0)
-                        return BadRequest("WarehouseId is required when importing from invoice.");
+                        return BadRequest(ImportMessages.MSG_WAREHOUSE_REQUIRED_FOR_INVOICE);
 
                     import = _importService.CreateImportFromInvoice(
                         importCode: "IMP-" + Guid.NewGuid().ToString("N").Substring(0, 8),
@@ -45,14 +44,14 @@ namespace API.Controllers
                 }
                 else if (!string.IsNullOrEmpty(dto.ImportCode))
                 {
-                    import = _importService.ConfirmPendingImport(
+                    import = _importService.CreateImportFromImport(
                         importCode: dto.ImportCode,
                         notes: dto.Notes
                     );
                 }
                 else
                 {
-                    return BadRequest("You must provide either ImportCode or InvoiceCode.");
+                    return BadRequest(ImportMessages.MSG_MISSING_INVOICE_OR_IMPORT);
                 }
 
                 var result = _mapper.Map<ImportResponseDto>(import);
@@ -79,8 +78,7 @@ namespace API.Controllers
         public IActionResult CreateDirectionImport([FromBody] CreatePendingImportDto dto)
         {
             if (dto == null)
-                return BadRequest("Invalid request data");
-
+                return BadRequest(ImportMessages.MSG_INVALID_REQUEST_DATA);
             try
             {
                 var import = _importService.CreateDirectionImport(dto.WarehouseId, dto.CreatedBy, dto.Notes, dto.Materials);
@@ -100,7 +98,7 @@ namespace API.Controllers
             {
                 var import = _importService.RejectImport(id);
                 if (import == null)
-                    return NotFound("Import not found.");
+                    return NotFound(ImportMessages.MSG_IMPORT_NOT_FOUND);
 
                 var result = _mapper.Map<ImportResponseDto>(import);
                 return Ok(result);

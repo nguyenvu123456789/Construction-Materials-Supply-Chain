@@ -70,7 +70,7 @@ namespace Services.Implementations
                 foreach (var detail in invoice.InvoiceDetails)
                 {
                     if (!materials.TryGetValue(detail.MaterialId, out var material))
-                        throw new Exception($"Material Id {detail.MaterialId} not found.");
+                        throw new Exception(string.Format(ImportMessages.MSG_MATERIAL_NOT_FOUND_BY_ID, detail.MaterialId));
 
                     var importDetail = new ImportDetail
                     {
@@ -86,23 +86,8 @@ namespace Services.Implementations
                     _importDetails.Add(importDetail);
 
                     // Cập nhật tồn kho
-                    var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, detail.MaterialId);
-                    if (inventory == null)
-                    {
-                        _inventories.Add(new Inventory
-                        {
-                            WarehouseId = warehouseId,
-                            MaterialId = detail.MaterialId,
-                            Quantity = detail.Quantity,
-                            CreatedAt = DateTime.Now
-                        });
-                    }
-                    else
-                    {
-                        inventory.Quantity = (inventory.Quantity ?? 0) + detail.Quantity;
-                        inventory.UpdatedAt = DateTime.Now;
-                        _inventories.Update(inventory);
-                    }
+                    UpdateInventory(warehouseId, detail.MaterialId, detail.Quantity);
+
 
                     var existingRelation = _materialPartners.GetAll()
                         .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
@@ -158,8 +143,7 @@ namespace Services.Implementations
 
         }
 
-
-        public Import ConfirmPendingImport(string importCode, string? notes)
+        public Import CreateImportFromImport(string importCode, string? notes)
         {
             var import = _imports.GetAll()
                 .FirstOrDefault(i => i.ImportCode == importCode && i.Status == ImportStatus.Pending.ToString());
@@ -200,29 +184,9 @@ namespace Services.Implementations
             return import;
         }
 
-        public Import? GetById(int id) => _imports.GetById(id);
+        
 
-        public Import? GetByIdWithDetails(int id)
-        {
-            var import = _imports.GetById(id);
-            if (import != null)
-            {
-                import.ImportDetails = _importDetails.GetByImportId(id);
-            }
-            return import;
-        }
-
-        public List<Import> GetAll()
-        {
-            var imports = _imports.GetAll();
-            foreach (var import in imports)
-            {
-                import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
-            }
-            return imports;
-        }
-
-        public Import CreateImport(
+        public Import CreateDirectionImport(
             int warehouseId,
             int createdBy,
             string? notes,
@@ -260,29 +224,34 @@ namespace Services.Implementations
                 };
                 _importDetails.Add(detail);
 
-                // ✅ CẬP NHẬT TỒN KHO NGAY
-                var inventory = _inventories.GetByWarehouseAndMaterial(
-                    warehouseId, material.MaterialId);
+                // CẬP NHẬT TỒN KHO 
+                UpdateInventory(warehouseId, material.MaterialId, m.Quantity);
 
-                if (inventory == null)
-                {
-                    _inventories.Add(new Inventory
-                    {
-                        WarehouseId = warehouseId,
-                        MaterialId = material.MaterialId,
-                        Quantity = m.Quantity,
-                        CreatedAt = DateTime.Now
-                    });
-                }
-                else
-                {
-                    inventory.Quantity = (inventory.Quantity ?? 0) + m.Quantity;
-                    inventory.UpdatedAt = DateTime.Now;
-                    _inventories.Update(inventory);
-                }
             }
 
             return import;
+        }
+
+        private void UpdateInventory(int warehouseId, int materialId, decimal quantity)
+        {
+            var inventory = _inventories.GetByWarehouseAndMaterial(warehouseId, materialId);
+
+            if (inventory == null)
+            {
+                _inventories.Add(new Inventory
+                {
+                    WarehouseId = warehouseId,
+                    MaterialId = materialId,
+                    Quantity = quantity,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            else
+            {
+                inventory.Quantity = (inventory.Quantity ?? 0) + quantity;
+                inventory.UpdatedAt = DateTime.Now;
+                _inventories.Update(inventory);
+            }
         }
 
         public Import? RejectImport(int id)
@@ -300,7 +269,27 @@ namespace Services.Implementations
 
             return import;
         }
+        public Import? GetById(int id) => _imports.GetById(id);
 
+        public Import? GetByIdWithDetails(int id)
+        {
+            var import = _imports.GetById(id);
+            if (import != null)
+            {
+                import.ImportDetails = _importDetails.GetByImportId(id);
+            }
+            return import;
+        }
+
+        public List<Import> GetAll()
+        {
+            var imports = _imports.GetAll();
+            foreach (var import in imports)
+            {
+                import.ImportDetails = _importDetails.GetByImportId(import.ImportId);
+            }
+            return imports;
+        }
         public List<Import> GetImports(int? partnerId = null, int? managerId = null)
         {
             var imports = _imports.GetAllWithWarehouse();

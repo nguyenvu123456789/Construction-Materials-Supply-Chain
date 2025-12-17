@@ -6,7 +6,7 @@ namespace Application.Interfaces
     public interface IImportService
     {
         Import CreateImportFromInvoice(string importCode, string invoiceCode, int warehouseId, int createdBy, string? notes);
-        Import ConfirmPendingImport(string importCode, string? notes);
+        Import CreateImportFromImport(string importCode, string? notes);
         Import? GetById(int id);
         List<Import> GetAll();
         Import CreateDirectionImport(int warehouseId, int createdBy, string? notes, List<PendingImportMaterialDto> materials);

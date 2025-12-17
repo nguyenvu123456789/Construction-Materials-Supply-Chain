@@ -84,6 +84,14 @@ namespace Infrastructure.Implementations
                 .ToList();
         }
 
+        public List<Invoice> GetCustomerExportInvoices(int customerPartnerId)
+        {
+            return _context.Invoices
+                .Where(i => i.InvoiceType == "Export" && i.PartnerId == customerPartnerId)
+                .OrderByDescending(i => i.IssueDate)
+                .ToList();
+        }
+
         public List<Invoice> GetExportInvoicesByOrderIds(List<int> orderIds)
         {
             if (orderIds == null || orderIds.Count == 0)

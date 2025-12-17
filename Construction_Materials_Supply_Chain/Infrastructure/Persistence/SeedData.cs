@@ -1154,40 +1154,40 @@ new Export { ExportCode = "EXP-007", InvoiceId = 6, ExportDate = DateTime.Now, W
 
             EnsureInvoiceDetails(invImp2, new[]
             {
-    (matWood.MaterialId, 18, 255000)
-});
+                (matWood.MaterialId, 18, 255000)
+            });
 
             EnsureInvoiceDetails(invExp1, new[]
             {
-    (matWood.MaterialId, 10, 300000)
-});
+                (matWood.MaterialId, 10, 300000)
+            });
 
             EnsureInvoiceDetails(invExp2, new[]
             {
-    (matBrick.MaterialId, 400, 2000)
-});
+                (matBrick.MaterialId, 400, 2000)
+            });
 
             // 3️⃣ Seed InvoiceDetails
             EnsureInvoiceDetails(invImp1, new[]
             {
-    (matWood.MaterialId, 30, 255000),
-    (matBrick.MaterialId, 500, 1200)
-});
+                (matWood.MaterialId, 30, 255000),
+                (matBrick.MaterialId, 500, 1200)
+            });
 
             EnsureInvoiceDetails(invImp2, new[]
             {
-    (matWood.MaterialId, 18, 255000)
-});
+                (matWood.MaterialId, 18, 255000)
+            });
 
             EnsureInvoiceDetails(invExp1, new[]
             {
-    (matWood.MaterialId, 10, 300000)
-});
+                (matWood.MaterialId, 10, 300000)
+            });
 
             EnsureInvoiceDetails(invExp2, new[]
             {
-    (matBrick.MaterialId, 400, 2000)
-});
+                (matBrick.MaterialId, 400, 2000)
+            });
 
             var transportType = context.PartnerTypes.FirstOrDefault(x => x.TypeName == "Đơn vị vận tải")
             ?? context.PartnerTypes.Add(new PartnerType { TypeName = "Đơn vị vận tải" }).Entity;

@@ -345,7 +345,7 @@ namespace Application.Services.Implements
 
         public List<CustomerOrderStatusDto> GetHistory(int customerPartnerId)
         {
-            var imports = _invoiceRepo.GetCustomerImportInvoices(customerPartnerId);
+            var imports = _invoiceRepo.GetCustomerExportInvoices(customerPartnerId);
 
             var orderIds = imports
                 .Select(i => i.OrderId)

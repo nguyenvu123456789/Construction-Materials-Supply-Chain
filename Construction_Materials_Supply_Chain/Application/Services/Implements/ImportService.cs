@@ -88,7 +88,6 @@ namespace Services.Implementations
                     // Cập nhật tồn kho
                     UpdateInventory(warehouseId, detail.MaterialId, detail.Quantity);
 
-
                     var existingRelation = _materialPartners.GetAll()
                         .FirstOrDefault(mp => mp.MaterialId == detail.MaterialId &&
                           mp.PartnerId == invoice.PartnerId);
@@ -102,23 +101,7 @@ namespace Services.Implementations
                             PartnerId = invoice.PartnerId
                         });
                     }
-
-                    var orderDetail = _orderDetailRepository
-                        .GetByOrderAndMaterial(invoice.OrderId, detail.MaterialId);
-
-                    if (orderDetail != null)
-                    {
-                        orderDetail.DeliveredQuantity += detail.Quantity;
-
-                        if (orderDetail.DeliveredQuantity >= orderDetail.Quantity)
-                        {
-                            orderDetail.DeliveredQuantity = orderDetail.Quantity;
-                            orderDetail.Status = OrderDetailStatus.Success.ToString();
-                        }
-
-                        _orderDetailRepository.Update(orderDetail);
-                    }
-
+                    UpdateDeliveredQuantity(invoice.OrderId, detail.MaterialId, detail.Quantity);
                 }
 
                 // Cập nhật trạng thái hóa đơn
@@ -194,8 +177,6 @@ namespace Services.Implementations
             return import;
         }
 
-        
-
         public Import CreateDirectionImport(
             int warehouseId,
             int createdBy,
@@ -240,6 +221,23 @@ namespace Services.Implementations
             }
 
             return import;
+        }
+        private void UpdateDeliveredQuantity(int orderId, int materialId, int deliveredQuantity)
+        {
+            var orderDetail = _orderDetailRepository
+                .GetByOrderAndMaterial(orderId, materialId);
+
+            if (orderDetail == null) return;
+
+            orderDetail.DeliveredQuantity += deliveredQuantity;
+
+            if (orderDetail.DeliveredQuantity >= orderDetail.Quantity)
+            {
+                orderDetail.DeliveredQuantity = orderDetail.Quantity;
+                orderDetail.Status = OrderDetailStatus.Success.ToString();
+            }
+
+            _orderDetailRepository.Update(orderDetail);
         }
 
         private void UpdateInventory(int warehouseId, int materialId, decimal quantity)

@@ -15,6 +15,8 @@
         public const string INVOICE_REJECTED_SUCCESS = "Hóa đơn đã được từ chối thành công.";
         public const string INVOICE_CREATED_SUCCESS = "{0} hóa đơn được tạo thành công.";
         public const string DELIVERED_QTY_EXCEEDS_ORDER = "Số lượng xuất cho vật tư {0} vượt quá số lượng trong đơn hàng.";
+        public const string INVOICE_MARK_DELIVERED_SUCCESS = "Cập nhật trạng thái Delivered thành công.";
+
 
     }
 }

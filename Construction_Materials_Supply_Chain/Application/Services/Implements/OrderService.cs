@@ -133,8 +133,6 @@ namespace Application.Services.Implements
             };
         }
 
-
-
         public Order HandleOrder(HandleOrderRequestDto dto)
         {
             var order = _orderRepository.GetById(dto.OrderId);
@@ -163,6 +161,8 @@ namespace Application.Services.Implements
             _handleRequestRepository.Add(handle);
             return order;
         }
+
+        //Caculate and save history price
         private void ApplyPricingForOrder(Order order, int buyerPartnerId, int supplierPartnerId)
         {
             var relation = _partnerRepository.GetRelation(buyerPartnerId, supplierPartnerId);
@@ -198,13 +198,15 @@ namespace Application.Services.Implements
             var order = _orderRepository.GetByCodeWithDetails(orderCode);
             if (order == null) return null;
 
-            var supplierName = order.Supplier?.PartnerName ?? "Không xác định";
+            var createByName = order.CreatedByNavigation?.Partner?.PartnerName
+                  ?? "Không xác định";
+
 
             return new OrderWithDetailsDto
             {
                 OrderCode = order.OrderCode,
                 PartnerId = order.SupplierId ?? 0,
-                SupplierName = supplierName,
+                SupplierName = createByName,
                 DeliveryAddress = order.DeliveryAddress,
                 PhoneNumber = order.PhoneNumber,
                 Note = order.Note,

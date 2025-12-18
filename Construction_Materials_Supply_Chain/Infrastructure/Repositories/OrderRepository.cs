@@ -26,9 +26,11 @@
             {
                 return _context.Orders
                     .Include(o => o.Warehouse)
+                    .Include(o => o.CreatedByNavigation)
+                        .ThenInclude(u => u.Partner)
                     .Include(o => o.Supplier)
                     .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Material)
+                        .ThenInclude(od => od.Material)
                     .FirstOrDefault(o => o.OrderCode == orderCode);
             }
             public List<Order> GetAllWithDetails()
@@ -59,6 +61,7 @@
                 .Include(o => o.Warehouse)
                 .Include(o => o.Supplier)
                 .Include(o => o.CreatedByNavigation)
+                    .ThenInclude(u => u.Partner)
                 .Include(o => o.OrderDetails)   
                 .Where(o => o.WarehouseId == warehouseId)
                 .ToList();

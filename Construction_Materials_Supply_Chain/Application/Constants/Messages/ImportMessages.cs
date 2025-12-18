@@ -5,7 +5,6 @@
         public const string MSG_INVALID_REQUEST_DATA = "Dữ liệu request không hợp lệ.";
         public const string MSG_WAREHOUSE_REQUIRED_FOR_INVOICE = "WarehouseId là bắt buộc khi nhập kho từ hóa đơn.";
         public const string MSG_IMPORT_NOT_FOUND = "Phiếu nhập không tồn tại.";
-        public const string MSG_IMPORT_OR_INVOICE_REQUIRED = "Bạn phải cung cấp ít nhất một mã: importCode hoặc invoiceCode.";
 
         public const string MSG_MISSING_INVOICE_OR_IMPORT = "Bạn phải cung cấp ít nhất một mã: invoiceCode hoặc importCode.";
         public const string MSG_INVOICE_NOT_FOUND = "Hóa đơn không tồn tại.";

@@ -14,9 +14,6 @@ namespace Services.Implementations
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
         private static int _invoiceCounter = 99;
-
-
-
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
@@ -158,7 +155,7 @@ namespace Services.Implementations
 
             return createdInvoices;
         }
-
+        // Caculate price
         private (decimal totalAmount, decimal totalDiscount) CalculateTotals(
             List<OrderDetail> selectedDetails,
             CreateInvoiceFromOrderDto dto,
@@ -206,6 +203,7 @@ namespace Services.Implementations
 
             return (totalAmount, totalDiscount);
         }
+
         private string GenerateInvoiceCode()
         {
             int next = Interlocked.Increment(ref _invoiceCounter);
@@ -236,25 +234,23 @@ namespace Services.Implementations
             return invoice;
         }
 
-
         public void MarkInvoicesAsDelivered(List<int> invoiceIds)
         {
             if (invoiceIds == null || !invoiceIds.Any())
-                throw new Exception("Danh sách hóa đơn rỗng");
+                throw new Exception(InvoiceMessages.INVALID_REQUEST);
 
             foreach (var invoiceId in invoiceIds)
             {
                 var invoice = _invoices.GetById(invoiceId);
                 if (invoice == null)
-                    throw new Exception($"Không tìm thấy hóa đơn ID = {invoiceId}");
+                    throw new Exception(InvoiceMessages.INVOICE_NOT_FOUND);
 
-                invoice.ImportStatus = StatusEnum.Delivered.ToStatusString(); 
+                invoice.ImportStatus = StatusEnum.Delivered.ToStatusString();
                 invoice.UpdatedAt = DateTime.Now;
 
                 _invoices.Update(invoice);
             }
         }
-
 
         //  Lấy hóa đơn theo Partner 
         public InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId)
@@ -324,8 +320,6 @@ namespace Services.Implementations
             return result;
         }
 
-
-
         public Invoice? RejectInvoice(int id)
         {
             var invoice = _invoices.GetByIdWithDetails(id);
@@ -339,7 +333,6 @@ namespace Services.Implementations
 
             return invoice;
         }
-
         public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
 

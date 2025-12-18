@@ -88,7 +88,7 @@ namespace API.Controllers
             _invoiceService.MarkInvoicesAsDelivered(dto.InvoiceIds);
             return Ok(new
             {
-                message = "Cập nhật trạng thái Delivered thành công"
+                message = InvoiceMessages.INVOICE_MARK_DELIVERED_SUCCESS
             });
         }
     }

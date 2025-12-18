@@ -102,6 +102,23 @@ namespace Services.Implementations
                         });
                     }
                     UpdateDeliveredQuantity(invoice.OrderId, detail.MaterialId, detail.Quantity);
+
+                    var orderDetail = _orderDetailRepository
+                        .GetByOrderAndMaterial(invoice.OrderId, detail.MaterialId);
+
+                    if (orderDetail != null)
+                    {
+                        orderDetail.DeliveredQuantity += detail.Quantity;
+
+                        if (orderDetail.DeliveredQuantity >= orderDetail.Quantity)
+                        {
+                            orderDetail.DeliveredQuantity = orderDetail.Quantity;
+                            orderDetail.Status = OrderDetailStatus.Success.ToString();
+                        }
+
+                        _orderDetailRepository.Update(orderDetail);
+                    }
+
                 }
 
                 // Cập nhật trạng thái hóa đơn

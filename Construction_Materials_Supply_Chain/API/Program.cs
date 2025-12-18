@@ -82,7 +82,7 @@ builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
 builder.Services.AddScoped<IPartnerRelationRepository, PartnerRelationRepository>();
 builder.Services.AddScoped<IRelationTypeRepository, RelationTypeRepository>();
-
+builder.Services.AddScoped<IPartnerRegionRepository, PartnerRegionRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IAccountingEntryRepository, AccountingEntryRepository>();

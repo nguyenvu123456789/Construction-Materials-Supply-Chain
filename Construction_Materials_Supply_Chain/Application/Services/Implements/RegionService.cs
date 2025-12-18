@@ -2,9 +2,11 @@
 using Application.DTOs;
 using Application.Services.Interfaces;
 using AutoMapper;
+using Domain.Interface;
 using Domain.Interfaces;
 using Domain.Models;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Application.Services.Implements
@@ -16,19 +18,27 @@ namespace Application.Services.Implements
         private readonly IValidator<RegionCreateDto> _createValidator;
         private readonly IValidator<RegionUpdateDto> _updateValidator;
         private readonly Dictionary<string, HashSet<string>> _map = new();
+        private readonly IOrderRepository _orders;
+        private readonly IPartnerRegionRepository _partnerRegions;
+
 
         public RegionService(
             IRegionRepository regions,
+            IOrderRepository orders,
+            IPartnerRegionRepository partnerRegions,
             IMapper mapper,
             IValidator<RegionCreateDto> createValidator,
             IValidator<RegionUpdateDto> updateValidator)
         {
             _regions = regions;
+            _orders = orders;
+            _partnerRegions = partnerRegions;
             _mapper = mapper;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             LoadVietnamMap();
         }
+
 
         private void LoadVietnamMap()
         {
@@ -145,6 +155,59 @@ namespace Application.Services.Implements
 
             _regions.Delete(entity);
         }
+
+        public IEnumerable<PartnerWithRegionsDto> GetBuyerRegions(int partnerId)
+        {
+            // Lấy các partner là người bán liên quan đến partnerId (người mua)
+            var sellerPartnerIds = _orders.GetSellerPartnerIds(partnerId);
+            if (!sellerPartnerIds.Any())
+                return Enumerable.Empty<PartnerWithRegionsDto>();
+
+            // Lấy partner cùng region
+            var partners = _partnerRegions.GetPartnersWithRegionsByIds(sellerPartnerIds);
+
+            // Map ra DTO theo partner -> region
+            var result = partners.Select(p => new PartnerWithRegionsDto
+            {
+                PartnerId = p.PartnerId,
+                PartnerName = p.PartnerName,
+                Regions = p.PartnerRegions
+                    .Select(pr => new RegionDto
+                    {
+                        RegionId = pr.Region.RegionId,
+                        RegionName = pr.Region.RegionName
+                    })
+                    .ToList()
+            });
+
+            return result;
+        }
+
+        public IEnumerable<PartnerWithRegionsDto> GetSellerRegions(int partnerId)
+        {
+            // Lấy các partner là người mua liên quan đến partnerId (người bán)
+            var buyerPartnerIds = _orders.GetBuyerPartnerIds(partnerId);
+            if (!buyerPartnerIds.Any())
+                return Enumerable.Empty<PartnerWithRegionsDto>();
+
+            var partners = _partnerRegions.GetPartnersWithRegionsByIds(buyerPartnerIds);
+
+            var result = partners.Select(p => new PartnerWithRegionsDto
+            {
+                PartnerId = p.PartnerId,
+                PartnerName = p.PartnerName,
+                Regions = p.PartnerRegions
+                    .Select(pr => new RegionDto
+                    {
+                        RegionId = pr.Region.RegionId,
+                        RegionName = pr.Region.RegionName
+                    })
+                    .ToList()
+            });
+
+            return result;
+        }
+
 
     }
 }

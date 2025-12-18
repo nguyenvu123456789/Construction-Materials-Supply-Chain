@@ -50,6 +50,8 @@ namespace Services.Implementations
 
                 if (invoice.ImportStatus == ImportStatus.Success.ToString())
                     throw new Exception(ImportMessages.MSG_INVOICE_ALREADY_IMPORTED);
+                if (invoice.ImportStatus != StatusEnum.Delivered.ToStatusString())
+                    throw new Exception(ImportMessages.MSG_INVOICE_NOT_DELIVERED);
 
                 var import = new Import
                 {
@@ -116,9 +118,7 @@ namespace Services.Implementations
                             orderDetail.Status = OrderDetailStatus.Success.ToString();
                         }
 
-                        _orderDetailRepository.Update(orderDetail);
                     }
-
                 }
 
                 // Cập nhật trạng thái hóa đơn

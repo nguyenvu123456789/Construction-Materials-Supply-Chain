@@ -33,7 +33,7 @@
         public const string MSG_ONLY_PENDING_CAN_BE_REVIEWED = "Chỉ báo cáo nhập kho ở trạng thái Pending mới được duyệt.";
         public const string MSG_MATERIAL_NOT_FOUND_BY_ID = "MaterialId {0} không tồn tại.";
         public const string MSG_EXPORT_NOT_FOUND_BY_INVOICE = "Không tìm thấy phiếu xuất kho tương ứng với hóa đơn.";
-
+        public const string MSG_INVOICE_NOT_DELIVERED = "Hóa đơn chưa ở trạng thái giao hàng (Delivered), không thể thực hiện nhập kho.";
 
     }
 

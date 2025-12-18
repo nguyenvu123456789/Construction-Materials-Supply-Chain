@@ -10,5 +10,7 @@ namespace Domain.Interface
         List<Order> GetAllWithDetails();
         List<Order> GetAllWithWarehouseAndSupplier();
         List<Order> GetSalesOrders(int warehouseId);
+        List<int> GetSellerPartnerIds(int buyerPartnerId);
+        List<int> GetBuyerPartnerIds(int sellerPartnerId);
     }
 }

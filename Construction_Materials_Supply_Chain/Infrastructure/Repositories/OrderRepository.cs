@@ -44,6 +44,7 @@
                     .Include(o => o.Supplier)
                     .ToList();
             }
+
         public List<Order> GetAllWithWarehouseAndSupplier()
         {
             return _context.Orders
@@ -66,6 +67,30 @@
                 .Where(o => o.WarehouseId == warehouseId)
                 .ToList();
         }
+        public List<int> GetSellerPartnerIds(int buyerPartnerId)
+        {
+            return _context.Orders
+                .Where(o =>
+                    o.CreatedByNavigation != null &&
+                    o.CreatedByNavigation.PartnerId == buyerPartnerId &&
+                    o.SupplierId != null
+                )
+                .Select(o => o.SupplierId!.Value)
+                .Distinct()
+                .ToList();
+        }
 
+        public List<int> GetBuyerPartnerIds(int sellerPartnerId)
+        {
+            return _context.Orders
+                .Where(o =>
+                    o.SupplierId == sellerPartnerId &&
+                    o.CreatedByNavigation != null &&
+                    o.CreatedByNavigation.PartnerId != null
+                )
+                .Select(o => o.CreatedByNavigation!.PartnerId!.Value)
+                .Distinct()
+                .ToList();
+        }
     }
-    }
+}

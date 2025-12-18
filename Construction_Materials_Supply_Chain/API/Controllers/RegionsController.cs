@@ -47,5 +47,18 @@ namespace API.Controllers
             _service.Delete(id);
             return NoContent();
         }
+
+        [HttpGet("buyer/{partnerId:int}")]
+        public ActionResult<IEnumerable<RegionDto>> GetBuyerRegions(int partnerId)
+        {
+            return Ok(_service.GetBuyerRegions(partnerId));
+        }
+
+        [HttpGet("seller/{partnerId:int}")]
+        public ActionResult<IEnumerable<RegionDto>> GetSellerRegions(int partnerId)
+        {
+            return Ok(_service.GetSellerRegions(partnerId));
+        }
+
     }
 }

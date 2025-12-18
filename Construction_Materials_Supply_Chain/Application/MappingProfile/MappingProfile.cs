@@ -291,6 +291,17 @@ namespace Application.MappingProfile
                 .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
                 .ForMember(dest => dest.PartnerId, opt => opt.MapFrom(src => src.PartnerId))
                 .ForMember(dest => dest.ReceiptNumber, opt => opt.Ignore());
+            CreateMap<Export, ExportResponseDto>()
+                .ForMember(d => d.InvoiceCode, o => o.MapFrom(s => s.Invoice != null ? s.Invoice.InvoiceCode : null))
+                .ForMember(d => d.Details, o => o.MapFrom(s => s.ExportDetails))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.MinValue));
+
+            CreateMap<ExportDetail, ExportDetailResponseDto>()
+                .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.Material.MaterialCode))
+                .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName))
+                .ForMember(d => d.LineTotal, o => o.MapFrom(s => s.Quantity * s.UnitPrice));
+
         }
+
     }
 }

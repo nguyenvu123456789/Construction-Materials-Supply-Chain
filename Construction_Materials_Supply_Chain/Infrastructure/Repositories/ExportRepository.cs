@@ -21,8 +21,14 @@ namespace Infrastructure.Implementations
 
         public override List<Export> GetAll()
         {
-            return _dbSet.Include(e => e.ExportDetails).ToList();
+            return _dbSet
+                .Include(e => e.Invoice)
+                .Include(e => e.ExportDetails)
+                    .ThenInclude(d => d.Material)
+                .ToList();
         }
+
+
 
         public Export GetWithDetails(int id) => _dbSet.Include(e => e.ExportDetails).First(x => x.ExportId == id);
         public List<Export> GetAllWithWarehouse()

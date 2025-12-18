@@ -2,6 +2,7 @@
 using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 
@@ -14,19 +15,22 @@ namespace Services.Implementations
         private readonly IInventoryRepository _inventories;
         private readonly IMaterialRepository _materialRepository;
         private readonly IInvoiceRepository _invoiceRepository;
+        private readonly IMapper _mapper;
 
         public ExportService(
             IExportRepository exports,
             IExportDetailRepository exportDetails,
             IInventoryRepository inventories,
             IMaterialRepository materialRepository,
-            IInvoiceRepository invoiceRepository)
+            IInvoiceRepository invoiceRepository,
+            IMapper mapper)
         {
             _exports = exports;
             _exportDetails = exportDetails;
             _inventories = inventories;
             _materialRepository = materialRepository;
             _invoiceRepository = invoiceRepository;
+            _mapper = mapper;
         }
 
         // Tạo phiếu xuất Pending, kiểm tra tồn kho
@@ -202,7 +206,7 @@ namespace Services.Implementations
         _invoiceRepository.Update(invoice);
 
         return export;
-            }
+    }
 
 
         // Sinh mã phiếu xuất tăng dần
@@ -228,30 +232,20 @@ namespace Services.Implementations
             return $"EXP-{nextNumber:000}";
         }
 
-        // Lấy phiếu xuất theo Id
+        public List<ExportResponseDto> GetAllExports()
+        {
+            var exports = _exports.GetAll();
+            return _mapper.Map<List<ExportResponseDto>>(exports);
+        }
+
         public ExportResponseDto? GetById(int id)
         {
             var export = _exports.GetExportById(id);
             if (export == null) return null;
-
-            return new ExportResponseDto
-            {
-                ExportId = export.ExportId,
-                ExportCode = export.ExportCode,
-                ExportDate = export.ExportDate,
-                Status = export.Status,
-                InvoiceCode = export.Invoice?.InvoiceCode
-            };
+            return _mapper.Map<ExportResponseDto>(export);
         }
 
-
-        // Lấy tất cả phiếu xuất
-        public List<Export> GetAll()
-        {
-            return _exports.GetAll();
-        }
-        // Lấy phiếu xuất theo Partner
-        public List<Export> GetByPartnerOrManager(int? partnerId = null, int? managerId = null)
+        public List<ExportResponseDto> GetExportsByPartnerOrManager(int? partnerId = null, int? managerId = null)
         {
             var exports = _exports.GetAllWithWarehouse().AsQueryable();
 
@@ -279,7 +273,7 @@ namespace Services.Implementations
                 export.ExportDetails = _exportDetails.GetByExportId(export.ExportId);
             }
 
-            return filtered;
+            return _mapper.Map<List<ExportResponseDto>>(filtered);
         }
     }
 }

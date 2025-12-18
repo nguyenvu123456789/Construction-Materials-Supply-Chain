@@ -8,7 +8,7 @@ namespace Application.Services.Interfaces
         RegionDto? GetById(int id);
         RegionDto Create(RegionCreateDto dto);
         void Update(int id, RegionUpdateDto dto);
-        void Delete(int id);
+        void Delete(int id);    
         bool CanTrade(string regionNameA, string regionNameB);
         public interface IRegionService;
         IEnumerable<PartnerWithRegionsDto> GetBuyerRegions(int partnerId);

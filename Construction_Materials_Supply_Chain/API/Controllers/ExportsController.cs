@@ -35,12 +35,18 @@ namespace API.Controllers
         {
             try
             {
-                var exports = (partnerId.HasValue || managerId.HasValue)
-                    ? _exportService.GetByPartnerOrManager(partnerId, managerId)
-                    : _exportService.GetAll();
+                List<ExportResponseDto> exports;
 
-                var result = _mapper.Map<IEnumerable<ExportResponseDto>>(exports);
-                return Ok(result);
+                if (partnerId.HasValue || managerId.HasValue)
+                {
+                    exports = _exportService.GetExportsByPartnerOrManager(partnerId, managerId);
+                }
+                else
+                {
+                    exports = _exportService.GetAllExports();
+                }
+
+                return Ok(exports); 
             }
             catch (Exception ex)
             {
@@ -48,7 +54,8 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Tạo Pending Export
+
+        //  Tạo Pending Export
         [HttpPost("request")]
         public IActionResult CreatePendingExport([FromBody] ExportRequestDto dto)
         {
@@ -67,7 +74,7 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Tạo Export thực tế (trừ kho)
+        //  Tạo Export thực tế (trừ kho)
         [HttpPost]
         public IActionResult ConfirmExport([FromBody] ExportConfirmDto dto)
         {
@@ -86,7 +93,7 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Cập nhật trạng thái sang Rejected
+        //  Cập nhật trạng thái sang Rejected
         [HttpPut("reject/{id}")]
         public IActionResult RejectExport(int id)
         {
@@ -105,7 +112,7 @@ namespace API.Controllers
             }
         }
 
-        // 🔹 Tạo Export từ Invoice
+        //  Tạo Export từ Invoice
         [HttpPost("from-invoice")]
         public IActionResult CreateExportFromInvoice([FromBody] ExportFromInvoiceDto dto)
         {

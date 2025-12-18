@@ -85,7 +85,6 @@ namespace Services.Implementations
             return export;
         }
 
-
         // Xác nhận phiếu xuất Pending
         public Export ConfirmExport(string exportCode, string? notes)
         {
@@ -137,17 +136,6 @@ namespace Services.Implementations
             return export;
         }
 
-        // Lấy phiếu xuất theo Id
-        public Export? GetById(int id)
-        {
-            return _exports.GetExportById(id);
-        }
-
-        // Lấy tất cả phiếu xuất
-        public List<Export> GetAll()
-        {
-            return _exports.GetAll();
-        }
 
         // Tạo phiếu xuất từ hóa đơn (Invoice)
 
@@ -217,7 +205,7 @@ namespace Services.Implementations
             }
 
 
-    // Sinh mã phiếu xuất tăng dần
+        // Sinh mã phiếu xuất tăng dần
         private string GenerateNextExportCode()
         {
             int nextNumber = 1;
@@ -240,6 +228,28 @@ namespace Services.Implementations
             return $"EXP-{nextNumber:000}";
         }
 
+        // Lấy phiếu xuất theo Id
+        public ExportResponseDto? GetById(int id)
+        {
+            var export = _exports.GetExportById(id);
+            if (export == null) return null;
+
+            return new ExportResponseDto
+            {
+                ExportId = export.ExportId,
+                ExportCode = export.ExportCode,
+                ExportDate = export.ExportDate,
+                Status = export.Status,
+                InvoiceCode = export.Invoice?.InvoiceCode
+            };
+        }
+
+
+        // Lấy tất cả phiếu xuất
+        public List<Export> GetAll()
+        {
+            return _exports.GetAll();
+        }
         // Lấy phiếu xuất theo Partner
         public List<Export> GetByPartnerOrManager(int? partnerId = null, int? managerId = null)
         {

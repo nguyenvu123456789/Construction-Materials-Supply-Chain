@@ -13,11 +13,11 @@ namespace Infrastructure.Implementations
         public Export GetExportById(int id)
         {
             return _dbSet
+                .Include(e => e.Invoice)
                 .Include(e => e.ExportDetails)
                     .ThenInclude(d => d.Material)
                 .FirstOrDefault(e => e.ExportId == id);
         }
-
 
         public override List<Export> GetAll()
         {
@@ -28,6 +28,7 @@ namespace Infrastructure.Implementations
         public List<Export> GetAllWithWarehouse()
         {
             return _context.Exports
+                .Include(e => e.Invoice)
                 .Include(e => e.Warehouse)
                     .ThenInclude(w => w.Manager)
                 .Include(e => e.ExportDetails)
@@ -37,7 +38,8 @@ namespace Infrastructure.Implementations
         {
             return _context.Exports
                 .Include(e => e.ExportDetails)
-                .FirstOrDefault(e => e.InvoiceId == invoiceId);
+                .Include(e => e.Invoice)
+                    .FirstOrDefault(e => e.InvoiceId == invoiceId);
         }
 
 

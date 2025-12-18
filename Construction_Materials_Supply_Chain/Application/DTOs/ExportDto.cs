@@ -25,6 +25,7 @@
     {
         public int ExportId { get; set; }
         public string ExportCode { get; set; } = null!;
+        public string? InvoiceCode { get; set; }
         public int WarehouseId { get; set; }
         public int CreatedBy { get; set; }
         public string Status { get; set; } = null!;

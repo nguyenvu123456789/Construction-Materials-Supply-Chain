@@ -21,5 +21,11 @@ public class MaterialCheckRepository : GenericRepository<MaterialCheck>, IMateri
             .Include(c => c.Warehouse)
             .Include(c => c.User);
     }
+    public MaterialCheck? GetByIdWithDetails(int checkId)
+    {
+        return _context.MaterialChecks
+            .Include(c => c.Details)
+            .FirstOrDefault(c => c.CheckId == checkId);
+    }
 
 }

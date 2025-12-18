@@ -24,6 +24,7 @@ namespace Application.Constants.Enums
         Order= 18,
         Cancelled = 19,
         Delivered = 20,
+        Processing = 21,
     }
 
     public static class StatusEnumExtensions

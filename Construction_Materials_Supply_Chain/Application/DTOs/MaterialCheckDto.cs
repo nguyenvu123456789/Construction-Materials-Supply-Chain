@@ -25,15 +25,12 @@ namespace Application.DTOs
         public int WarehouseId { get; set; }
         public int UserId { get; set; }
         public string? Notes { get; set; }
-        public string? Status { get; set; }
-
         public List<MaterialCheckDetailDto> Details { get; set; } = new List<MaterialCheckDetailDto>();
     }
 
     public class MaterialCheckDetailDto
     {
         public int MaterialId { get; set; }
-        public decimal SystemQty { get; set; }
         public decimal ActualQty { get; set; }
         public string? Reason { get; set; }
     }

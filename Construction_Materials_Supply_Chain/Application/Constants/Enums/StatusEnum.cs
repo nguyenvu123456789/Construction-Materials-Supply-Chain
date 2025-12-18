@@ -25,6 +25,7 @@ namespace Application.Constants.Enums
         Cancelled = 19,
         Delivered = 20,
         Processing = 21,
+        MaterialCheck = 22,
     }
 
     public static class StatusEnumExtensions

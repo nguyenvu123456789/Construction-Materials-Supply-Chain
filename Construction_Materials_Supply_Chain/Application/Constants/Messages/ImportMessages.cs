@@ -32,6 +32,8 @@
         public const string MSG_RETURN_IMPORT_NOTE ="Nhập lại vật tư không bị hư hỏng từ báo cáo nhập kho {0}.";
         public const string MSG_ONLY_PENDING_CAN_BE_REVIEWED = "Chỉ báo cáo nhập kho ở trạng thái Pending mới được duyệt.";
         public const string MSG_MATERIAL_NOT_FOUND_BY_ID = "MaterialId {0} không tồn tại.";
+        public const string MSG_EXPORT_NOT_FOUND_BY_INVOICE = "Không tìm thấy phiếu xuất kho tương ứng với hóa đơn.";
+
 
     }
 

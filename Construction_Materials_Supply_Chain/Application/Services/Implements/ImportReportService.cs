@@ -51,7 +51,7 @@ namespace Services.Implementations
             var invoice = _invoices.GetByCode(dto.InvoiceCode)
                           ?? throw new Exception(ImportMessages.MSG_INVOICE_NOT_FOUND);
 
-            // 🔹 Tạo Import tạm thời (Pending)
+            // Tạo Import tạm thời để nếu đồng ý thì nhập
             var import = new Import
             {
                 ImportCode = $"IMP-{DateTime.Now:yyyyMMddHHmmss}",
@@ -62,7 +62,7 @@ namespace Services.Implementations
             };
             _imports.Add(import);
 
-            // 🔹 Tạo ImportReport
+            //  Tạo ImportReport
             var report = new ImportReport
             {
                 ImportReportCode = GenerateImportReportCode(),
@@ -124,7 +124,7 @@ namespace Services.Implementations
         public ImportReportResponseDto ReviewReport(int reportId, ReviewImportReportDto dto)
         {
             var report = _reports.GetByIdWithDetails(reportId)
-    ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
+                ?? throw new Exception(ImportMessages.MSG_IMPORT_REPORT_NOT_FOUND);
 
             if (report.Status != StatusEnum.Pending.ToStatusString())
                 throw new Exception(ImportMessages.MSG_ONLY_PENDING_CAN_BE_REVIEWED);
@@ -244,7 +244,7 @@ namespace Services.Implementations
                         Status = report.Import.Status
                     }
                     : new SimpleImportDto(),
-                Invoice = report.Invoice != null
+                        Invoice = report.Invoice != null
                     ? new SimpleInvoiceDto
                     {
                         InvoiceId = report.Invoice.InvoiceId,
@@ -278,18 +278,16 @@ namespace Services.Implementations
                 throw new Exception(ImportMessages.MSG_INVOICE_REQUIRED_FOR_RETURN);
 
             var export = _exports.GetByInvoiceId(report.Invoice.InvoiceId)
-                ?? throw new Exception("Không tìm thấy phiếu xuất kho của hóa đơn");
+                ?? throw new Exception(ImportMessages.MSG_EXPORT_NOT_FOUND_BY_INVOICE);
 
             var import = new Import
             {
-                ImportCode = $"RET-{DateTime.Now:yyyyMMddHHmmss}",
+                ImportCode = $"IRT-{DateTime.Now:yyyyMMddHHmmss}",
                 WarehouseId = export.WarehouseId,        
                 CreatedBy = report.Invoice.CreatedBy,  
                 Status = StatusEnum.Pending.ToStatusString(),
                 CreatedAt = DateTime.Now,
-                Notes = string.Format(
-        ImportMessages.MSG_RETURN_IMPORT_NOTE,
-        report.ImportReportCode)
+                Notes = string.Format(ImportMessages.MSG_RETURN_IMPORT_NOTE,report.ImportReportCode)
             };
 
             _imports.Add(import);
@@ -364,8 +362,6 @@ namespace Services.Implementations
             return import;
         }
 
-
-
         public ImportReportResponseDto GetByIdResponse(int reportId)
         {
             var report = _reports.GetByIdWithDetails(reportId)
@@ -381,17 +377,17 @@ namespace Services.Implementations
 
             var handleHistory = lastHandle != null
                 ? new List<HandleRequestDto>
-                {
-            new HandleRequestDto
-            {
-                HandledBy = lastHandle.HandledBy,
-                HandledByName = reviewerName,
-                ActionType = lastHandle.ActionType,
-                Note = lastHandle.Note,
-                HandledAt = lastHandle.HandledAt
-            }
-                }
-                : new List<HandleRequestDto>();
+                    {
+                    new HandleRequestDto
+                        {
+                            HandledBy = lastHandle.HandledBy,
+                            HandledByName = reviewerName,
+                            ActionType = lastHandle.ActionType,
+                            Note = lastHandle.Note,
+                            HandledAt = lastHandle.HandledAt
+                        }
+                    }
+                    : new List<HandleRequestDto>();
 
             var creatorHandle = _handleRequests.GetByRequest(StatusEnum.ImportReport.ToStatusString(), report.ImportReportId)
                                                .OrderBy(h => h.HandledAt)

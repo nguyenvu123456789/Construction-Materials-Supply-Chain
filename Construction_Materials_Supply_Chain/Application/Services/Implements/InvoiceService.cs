@@ -148,7 +148,7 @@ namespace Services.Implementations
             // 2. Nếu tất cả OrderDetail đều invoiced → update Order
             if (order.OrderDetails.All(od => od.Status == StatusEnum.Invoiced.ToStatusString()))
             {
-                order.Status = StatusEnum.Invoiced.ToStatusString();
+                order.Status = StatusEnum.Processing.ToStatusString();
             }
 
             _orderRepository.Update(order);

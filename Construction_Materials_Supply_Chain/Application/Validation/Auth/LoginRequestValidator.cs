@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Messages;
+using Application.DTOs;
 using FluentValidation;
 
 namespace Application.Validation.Auth
@@ -7,8 +8,8 @@ namespace Application.Validation.Auth
     {
         public LoginRequestValidator()
         {
-            RuleFor(x => x.UserName).NotEmpty();
-            RuleFor(x => x.Password).NotEmpty();
+            RuleFor(x => x.UserName).NotEmpty().WithMessage(AuthMessages.USERNAME_REQUIRED);
+            RuleFor(x => x.Password).NotEmpty().WithMessage(AuthMessages.PASSWORD_REQUIRED);
         }
     }
 }

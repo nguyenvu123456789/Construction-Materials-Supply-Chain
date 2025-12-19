@@ -1,4 +1,5 @@
 ﻿using Application.Constants.Enums;
+using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Services.Auth;
@@ -15,67 +16,286 @@ namespace Application.Services.Implements
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IUserRepository _users;
-        private readonly IActivityLogRepository _activityLogs;
+        private readonly IUserRepository _userRepo;
+        private readonly IActivityLogRepository _logRepo;
+        private readonly IUserOtpRepository _otpRepo;
         private readonly IMapper _mapper;
-        private readonly IValidator<LoginRequestDto> _loginValidator;
-        private readonly IJwtTokenGenerator _jwt;
+        private readonly IJwtTokenGenerator _jwtGenerator;
         private readonly IEmailChannel _emailChannel;
-        private readonly IUserOtpRepository _userOtps;
+        private readonly IValidator<LoginRequestDto> _loginValidator;
+        private readonly IValidator<AdminCreateUserRequestDto> _adminCreateValidator;
+        private readonly IValidator<ChangePasswordRequestDto> _changePasswordValidator;
+        private readonly IValidator<OtpRequestDto> _otpRequestValidator;
+        private readonly IValidator<OtpVerifyDto> _otpVerifyValidator;
+        private readonly IValidator<ResetPasswordWithOtpDto> _resetPasswordValidator;
 
         public AuthenticationService(
-            IUserRepository users,
-            IActivityLogRepository activityLogs,
+            IUserRepository userRepo,
+            IActivityLogRepository logRepo,
+            IUserOtpRepository otpRepo,
             IMapper mapper,
-            IValidator<LoginRequestDto> loginValidator,
-            IJwtTokenGenerator jwt,
+            IJwtTokenGenerator jwtGenerator,
             IEmailChannel emailChannel,
-            IUserOtpRepository userOtps
+            IValidator<LoginRequestDto> loginValidator,
+            IValidator<AdminCreateUserRequestDto> adminCreateValidator,
+            IValidator<ChangePasswordRequestDto> changePasswordValidator,
+            IValidator<OtpRequestDto> otpRequestValidator,
+            IValidator<OtpVerifyDto> otpVerifyValidator,
+            IValidator<ResetPasswordWithOtpDto> resetPasswordValidator
         )
         {
-            _users = users;
-            _activityLogs = activityLogs;
+            _userRepo = userRepo;
+            _logRepo = logRepo;
+            _otpRepo = otpRepo;
             _mapper = mapper;
-            _loginValidator = loginValidator;
-            _jwt = jwt;
+            _jwtGenerator = jwtGenerator;
             _emailChannel = emailChannel;
-            _userOtps = userOtps;
+            _loginValidator = loginValidator;
+            _adminCreateValidator = adminCreateValidator;
+            _changePasswordValidator = changePasswordValidator;
+            _otpRequestValidator = otpRequestValidator;
+            _otpVerifyValidator = otpVerifyValidator;
+            _resetPasswordValidator = resetPasswordValidator;
         }
 
         public AuthResponseDto? Login(LoginRequestDto request)
         {
-            var vr = _loginValidator.Validate(request);
-            if (!vr.IsValid) throw new ValidationException(vr.Errors);
+            var validation = _loginValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
 
-            var user = _users.QueryWithRolesAndPartner()
-                             .FirstOrDefault(u => u.UserName == request.UserName);
-            if (user is null) return null;
-            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase)) return null;
+            var user = _userRepo.QueryWithRolesAndPartner()
+                                .FirstOrDefault(u => u.UserName == request.UserName);
 
-            var hashB64 = HashBase64(request.Password);
-            var hashHex = HashHex(request.Password);
-            var ok = string.Equals(user.PasswordHash, hashB64, StringComparison.Ordinal)
-                     || string.Equals(user.PasswordHash, hashHex, StringComparison.OrdinalIgnoreCase);
-            if (!ok) return null;
+            if (user == null) return null;
 
-            _activityLogs.LogAction(user.UserId, "User logged in", "User", user.UserId);
+            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase))
+                return null;
 
-            var dto = _mapper.Map<AuthResponseDto>(user);
-            dto.PartnerId = user.PartnerId;
-            dto.PartnerName = user.Partner?.PartnerName;
-            dto.PartnerType = user.Partner?.PartnerType?.TypeName;
-            dto.MustChangePassword = user.MustChangePassword;
+            if (!VerifyPassword(request.Password, user.PasswordHash))
+                return null;
 
-            var roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
-            dto.Roles = roles;
-            dto.Token = _jwt.GenerateToken(user, roles);
+            _logRepo.LogAction(user.UserId, "User logged in", "User", user.UserId);
 
-            return dto;
+            return CreateAuthResponse(user);
         }
 
         public void Logout(int userId)
         {
-            _activityLogs.LogAction(userId, "User logged out", "User", userId);
+            _logRepo.LogAction(userId, "User logged out", "User", userId);
+        }
+
+        public AuthResponseDto AdminCreateUser(AdminCreateUserRequestDto request)
+        {
+            var validation = _adminCreateValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+            var email = request.Email.Trim();
+
+            if (_userRepo.ExistsByEmail(email))
+                throw new InvalidOperationException(string.Format(AuthMessages.EMAIL_EXISTED, email));
+
+            var rawPassword = GenerateRandomString(12);
+            var passwordHash = HashBase64(rawPassword);
+
+            var user = new User
+            {
+                UserName = email,
+                Email = email,
+                PasswordHash = passwordHash,
+                Status = string.IsNullOrWhiteSpace(request.Status) ? "Active" : request.Status.Trim(),
+                CreatedAt = DateTime.Now,
+                MustChangePassword = true,
+                FullName = request.FullName?.Trim(),
+                Phone = request.Phone?.Trim(),
+                PartnerId = request.PartnerId
+            };
+
+            _userRepo.Add(user);
+
+            var body = $"Tài khoản của bạn đã được tạo.\n" +
+                       $"Tên đăng nhập: {email}\n" +
+                       $"Mật khẩu tạm: {rawPassword}\n\n" +
+                       $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
+
+            _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, AuthMessages.EMAIL_SUBJECT_NEW_ACCOUNT, body);
+
+            return CreateAuthResponse(user, mustChangePass: true);
+        }
+
+        public async Task<List<AuthResponseDto>> BulkCreateUsersByEmailAsync(
+            BulkCreateUsersByEmailRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            var results = new List<AuthResponseDto>();
+            if (request.Emails == null || !request.Emails.Any()) return results;
+
+            var distinctEmails = request.Emails
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .Select(e => e.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var email in distinctEmails)
+            {
+                if (_userRepo.ExistsByEmail(email)) continue;
+
+                var rawPassword = GenerateRandomString(12);
+                var user = new User
+                {
+                    UserName = email,
+                    Email = email,
+                    PasswordHash = HashBase64(rawPassword),
+                    Status = "Active",
+                    CreatedAt = DateTime.Now,
+                    MustChangePassword = true
+                };
+
+                _userRepo.Add(user);
+
+                var body = $"Tài khoản của bạn đã được tạo.\n" +
+                           $"Tên đăng nhập: {email}\n" +
+                           $"Mật khẩu tạm: {rawPassword}\n\n" +
+                           $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
+
+                await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, AuthMessages.EMAIL_SUBJECT_NEW_ACCOUNT, body, cancellationToken);
+
+                var dto = _mapper.Map<AuthResponseDto>(user);
+                dto.MustChangePassword = true;
+                results.Add(dto);
+            }
+
+            return results;
+        }
+
+        public void ChangePassword(ChangePasswordRequestDto request)
+        {
+            var validation = _changePasswordValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+            var user = _userRepo.GetById(request.UserId);
+            if (user == null)
+                throw new KeyNotFoundException(AuthMessages.USER_NOT_FOUND);
+
+            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(AuthMessages.USER_INACTIVE);
+
+            if (!VerifyPassword(request.OldPassword, user.PasswordHash))
+                throw new InvalidOperationException(AuthMessages.OLD_PASSWORD_WRONG);
+
+            user.PasswordHash = HashBase64(request.NewPassword);
+            user.MustChangePassword = false;
+
+            _userRepo.Update(user);
+            _logRepo.LogAction(user.UserId, "User changed password", "User", user.UserId);
+        }
+
+        public async Task RequestOtpAsync(OtpRequestDto request)
+        {
+            var validation = _otpRequestValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+            var email = request.Email.Trim();
+            var user = _userRepo.GetByEmail(email);
+            if (user == null)
+                throw new KeyNotFoundException(AuthMessages.USER_NOT_FOUND);
+
+            _otpRepo.InvalidateAll(user.UserId, request.Purpose);
+
+            var code = GenerateRandomString(6, true);
+            var otp = new UserOtp
+            {
+                UserId = user.UserId,
+                Code = code,
+                Purpose = request.Purpose,
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddMinutes(10),
+                IsUsed = false
+            };
+
+            _otpRepo.Add(otp);
+
+            var body = $"Mã OTP của bạn là: {code}. Mã có hiệu lực trong 10 phút.";
+            await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, AuthMessages.EMAIL_SUBJECT_OTP, body);
+        }
+
+        public Task<bool> VerifyOtpAsync(OtpVerifyDto request)
+        {
+            var validation = _otpVerifyValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+            var user = _userRepo.GetByEmail(request.Email.Trim());
+            if (user == null)
+                throw new KeyNotFoundException(AuthMessages.USER_NOT_FOUND);
+
+            var otp = _otpRepo.GetActive(user.UserId, request.Purpose, request.Code.Trim());
+            if (otp == null) return Task.FromResult(false);
+
+            otp.IsUsed = true;
+            _otpRepo.Update(otp);
+
+            return Task.FromResult(true);
+        }
+
+        public async Task ForgotPasswordRequestAsync(ForgotPasswordRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new ArgumentNullException(nameof(request.Email));
+
+            await RequestOtpAsync(new OtpRequestDto
+            {
+                Email = request.Email,
+                Purpose = OtpPurposeEnum.ForgotPassword.ToString()
+            });
+        }
+
+        public async Task ResetPasswordWithOtpAsync(ResetPasswordWithOtpDto request)
+        {
+            var validation = _resetPasswordValidator.Validate(request);
+            if (!validation.IsValid) throw new ValidationException(validation.Errors);
+
+            var user = _userRepo.GetByEmail(request.Email.Trim());
+            if (user == null)
+                throw new KeyNotFoundException(AuthMessages.USER_NOT_FOUND);
+
+            var otp = _otpRepo.GetActive(user.UserId, OtpPurposeEnum.ForgotPassword.ToString(), request.OtpCode.Trim());
+            if (otp == null)
+                throw new InvalidOperationException(AuthMessages.OTP_INVALID_OR_EXPIRED);
+
+            otp.IsUsed = true;
+            _otpRepo.Update(otp);
+
+            user.PasswordHash = HashBase64(request.NewPassword);
+            user.MustChangePassword = false;
+            _userRepo.Update(user);
+
+            _logRepo.LogAction(user.UserId, "User reset password via OTP", "User", user.UserId);
+            await Task.CompletedTask;
+        }
+
+        private AuthResponseDto CreateAuthResponse(User user, bool? mustChangePass = null)
+        {
+            var dto = _mapper.Map<AuthResponseDto>(user);
+            dto.PartnerId = user.PartnerId;
+            dto.PartnerName = user.Partner?.PartnerName;
+            dto.PartnerType = user.Partner?.PartnerType?.TypeName;
+            dto.MustChangePassword = mustChangePass ?? user.MustChangePassword;
+
+            var roles = _userRepo.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
+            dto.Roles = roles;
+            dto.Token = _jwtGenerator.GenerateToken(user, roles);
+
+            return dto;
+        }
+
+        private static bool VerifyPassword(string inputPassword, string storedHash)
+        {
+            if (string.IsNullOrEmpty(storedHash)) return false;
+
+            var hashB64 = HashBase64(inputPassword);
+            var hashHex = HashHex(inputPassword);
+
+            return string.Equals(storedHash, hashB64, StringComparison.Ordinal)
+                || string.Equals(storedHash, hashHex, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string HashBase64(string input)
@@ -91,249 +311,26 @@ namespace Application.Services.Implements
             using var sha = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(input);
             var hash = sha.ComputeHash(bytes);
-            var sb = new StringBuilder(hash.Length * 2);
-            foreach (var b in hash) sb.Append(b.ToString("x2"));
-            return sb.ToString();
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
-        private static string GenerateRandomPassword(int length = 12)
+        private static string GenerateRandomString(int length, bool digitsOnly = false)
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@#$%^&*";
+            const string digits = "0123456789";
+
+            var charSet = digitsOnly ? digits : chars;
             var bytes = new byte[length];
+
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(bytes);
 
             var result = new StringBuilder(length);
             for (int i = 0; i < length; i++)
             {
-                var idx = bytes[i] % chars.Length;
-                result.Append(chars[idx]);
+                result.Append(charSet[bytes[i] % charSet.Length]);
             }
             return result.ToString();
-        }
-
-        public AuthResponseDto AdminCreateUser(AdminCreateUserRequestDto request)
-        {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                throw new ValidationException("Email is required");
-
-            var email = request.Email.Trim();
-
-            if (_users.ExistsByEmail(email))
-                throw new InvalidOperationException("Email already exists");
-
-            var userName = email;
-            var rawPassword = GenerateRandomPassword();
-            var passwordHash = HashBase64(rawPassword);
-
-            var status = string.IsNullOrWhiteSpace(request.Status)
-                ? "Active"
-                : request.Status.Trim();
-
-            var user = new User
-            {
-                UserName = userName,
-                Email = email,
-                PasswordHash = passwordHash,
-                Status = status,
-                CreatedAt = DateTime.Now,
-                MustChangePassword = true,
-                FullName = string.IsNullOrWhiteSpace(request.FullName) ? null : request.FullName.Trim(),
-                Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
-                PartnerId = request.PartnerId,
-                AvatarBase64 = null,
-                ZaloUserId = null
-            };
-
-            _users.Add(user);
-
-            var subject = "Tài khoản SCM VLXD của bạn";
-            var body = $"Tài khoản của bạn đã được tạo.\n" +
-                       $"Tên đăng nhập: {userName}\n" +
-                       $"Mật khẩu tạm: {rawPassword}\n\n" +
-                       $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
-
-            _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body);
-
-            var dto = _mapper.Map<AuthResponseDto>(user);
-            dto.MustChangePassword = true;
-            dto.Roles = _users.GetRoleNamesByUserId(user.UserId) ?? Enumerable.Empty<string>();
-            dto.Token = _jwt.GenerateToken(user, dto.Roles);
-
-            return dto;
-        }
-
-        public void ChangePassword(ChangePasswordRequestDto request)
-        {
-            var user = _users.GetById(request.UserId);
-            if (user == null) throw new InvalidOperationException("User not found");
-            if (!string.Equals(user.Status, "Active", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("User is not active");
-
-            var currentHash = HashBase64(request.OldPassword);
-            var currentHex = HashHex(request.OldPassword);
-            var ok = string.Equals(user.PasswordHash, currentHash, StringComparison.Ordinal)
-                     || string.Equals(user.PasswordHash, currentHex, StringComparison.OrdinalIgnoreCase);
-            if (!ok) throw new InvalidOperationException("Old password is incorrect");
-
-            user.PasswordHash = HashBase64(request.NewPassword);
-            user.MustChangePassword = false;
-
-            _users.Update(user);
-            _activityLogs.LogAction(user.UserId, "User changed password", "User", user.UserId);
-        }
-
-        public async Task<List<AuthResponseDto>> BulkCreateUsersByEmailAsync(
-            BulkCreateUsersByEmailRequestDto request,
-            CancellationToken cancellationToken = default)
-        {
-            var results = new List<AuthResponseDto>();
-
-            if (request.Emails == null || request.Emails.Count == 0)
-                return results;
-
-            var distinctEmails = request.Emails
-                .Where(e => !string.IsNullOrWhiteSpace(e))
-                .Select(e => e.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            foreach (var email in distinctEmails)
-            {
-                if (_users.ExistsByEmail(email))
-                    continue;
-
-                var rawPassword = GenerateRandomPassword();
-                var passwordHash = HashBase64(rawPassword);
-
-                var user = new User
-                {
-                    UserName = email,
-                    Email = email,
-                    PasswordHash = passwordHash,
-                    Status = "Active",
-                    CreatedAt = DateTime.Now,
-                    MustChangePassword = true
-                };
-
-                _users.Add(user);
-
-                var subject = "Tài khoản SCM VLXD của bạn";
-                var body = $"Tài khoản của bạn đã được tạo.\n" +
-                           $"Tên đăng nhập: {email}\n" +
-                           $"Mật khẩu tạm: {rawPassword}\n\n" +
-                           $"Vui lòng đăng nhập và đổi mật khẩu ngay lần đầu.";
-
-                await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body, cancellationToken);
-
-                var dto = _mapper.Map<AuthResponseDto>(user);
-                dto.MustChangePassword = true;
-                results.Add(dto);
-            }
-
-            return results;
-        }
-
-        private static string GenerateOtpCode(int length = 6)
-        {
-            const string digits = "0123456789";
-            var bytes = new byte[length];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-            var sb = new StringBuilder(length);
-            for (int i = 0; i < length; i++)
-            {
-                sb.Append(digits[bytes[i] % digits.Length]);
-            }
-            return sb.ToString();
-        }
-        public async Task RequestOtpAsync(OtpRequestDto request)
-        {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                throw new ValidationException("Email is required");
-            if (string.IsNullOrWhiteSpace(request.Purpose))
-                throw new ValidationException("Purpose is required");
-
-            var email = request.Email.Trim();
-            var user = _users.GetByEmail(email);
-            if (user == null)
-                throw new InvalidOperationException("User not found");
-
-            _userOtps.InvalidateAll(user.UserId, request.Purpose);
-
-            var code = GenerateOtpCode();
-            var now = DateTime.Now;
-
-            var otp = new UserOtp
-            {
-                UserId = user.UserId,
-                Code = code,
-                Purpose = request.Purpose,
-                CreatedAt = now,
-                ExpiresAt = now.AddMinutes(10),
-                IsUsed = false
-            };
-
-            _userOtps.Add(otp);
-
-            var subject = "Mã OTP xác thực";
-            var body = $"Mã OTP của bạn là: {code}. Mã có hiệu lực trong 10 phút.";
-            await _emailChannel.SendAsync(user.PartnerId ?? 0, new[] { email }, subject, body);
-        }
-
-        public Task<bool> VerifyOtpAsync(OtpVerifyDto request)
-        {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                throw new ValidationException("Email is required");
-            if (string.IsNullOrWhiteSpace(request.Purpose))
-                throw new ValidationException("Purpose is required");
-            if (string.IsNullOrWhiteSpace(request.Code))
-                throw new ValidationException("Code is required");
-
-            var email = request.Email.Trim();
-            var user = _users.GetByEmail(email);
-            if (user == null)
-                throw new InvalidOperationException("User not found");
-
-            var otp = _userOtps.GetActive(user.UserId, request.Purpose, request.Code.Trim());
-            if (otp == null)
-                return Task.FromResult(false);
-
-            otp.IsUsed = true;
-            _userOtps.Update(otp);
-
-            return Task.FromResult(true);
-        }
-
-        public async Task ForgotPasswordRequestAsync(ForgotPasswordRequestDto request)
-        {
-            var dto = new OtpRequestDto
-            {
-                Email = request.Email,
-                Purpose = OtpPurposeEnum.ForgotPassword.ToString()
-            };
-            await RequestOtpAsync(dto);
-        }
-
-        public async Task ResetPasswordWithOtpAsync(ResetPasswordWithOtpDto request)
-        {
-            var email = request.Email.Trim();
-            var user = _users.GetByEmail(email);
-            if (user == null)
-                throw new InvalidOperationException("User not found");
-
-            var otp = _userOtps.GetActive(user.UserId, OtpPurposeEnum.ForgotPassword.ToString(), request.OtpCode.Trim());
-            if (otp == null)
-                throw new InvalidOperationException("Invalid or expired OTP");
-
-            otp.IsUsed = true;
-            _userOtps.Update(otp);
-
-            user.PasswordHash = HashBase64(request.NewPassword);
-            user.MustChangePassword = false;
-            _users.Update(user);
-
-            _activityLogs.LogAction(user.UserId, "User reset password via OTP", "User", user.UserId);
         }
     }
 }

@@ -15,6 +15,7 @@
         public int WarehouseId { get; set; }
         public int ProviderPartnerId { get; set; }
         public DateTimeOffset? StartTimePlanned { get; set; }
+        public DateTimeOffset? EndTimePlanned { get; set; }
         public string? Notes { get; set; }
     }
 

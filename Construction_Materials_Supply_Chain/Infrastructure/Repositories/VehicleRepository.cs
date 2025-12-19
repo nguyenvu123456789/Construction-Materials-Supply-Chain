@@ -3,6 +3,7 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Implementations
 {
@@ -32,6 +33,11 @@ namespace Infrastructure.Implementations
             var set = ids?.Distinct().ToList();
             if (set == null || set.Count == 0) return new List<Vehicle>();
             return _context.Vehicles.Where(v => set.Contains(v.VehicleId)).ToList();
+        }
+
+        public bool CheckExists(Expression<Func<Vehicle, bool>> predicate)
+        {
+            return _context.Vehicles.Any(predicate);
         }
     }
 }

@@ -263,10 +263,8 @@ namespace Application.Services.Implements
             var warehouses = _warehouses.GetAll();
             var warehouseDict = warehouses.ToDictionary(w => w.WarehouseId, w => w);
 
-            // Lấy toàn bộ inventory có includes
             var inventories = _inventories.GetAllWithIncludes().AsQueryable();
 
-            // Filter theo partner nếu có
             if (partnerId.HasValue)
             {
                 inventories = inventories.Where(i =>
@@ -275,7 +273,6 @@ namespace Application.Services.Implements
                 );
             }
 
-            // Chuyển sang List<Inventory>
             var inventoryList = inventories.ToList();
 
             var invoices = _invoices.GetAllWithDetails()
@@ -347,7 +344,6 @@ namespace Application.Services.Implements
                 .ToList();
         }
 
-
         public List<RecommendationDto> GetRecommendations(DateTime from, DateTime to, int? partnerId = null)
         {
             var inventorySummary = GetInventorySummary(from, to, partnerId);
@@ -415,18 +411,15 @@ namespace Application.Services.Implements
 
         public List<StockForecastDto> GetDemandForecast(DateTime from, DateTime to, TimeGranularity granularity, int? materialId = null, int? partnerId = null)
         {
-            // Lấy toàn bộ invoices thỏa điều kiện
             var invoices = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
                 .ToList();
 
-            // Filter theo partner nếu có
             if (partnerId.HasValue)
             {
                 invoices = invoices.Where(i => i.PartnerId == partnerId.Value).ToList();
             }
 
-            // Chuyển invoices thành series theo material và period
             var series = invoices
                 .SelectMany(i => i.InvoiceDetails, (i, d) =>
                 {
@@ -455,10 +448,8 @@ namespace Application.Services.Implements
                     g => g.Key,
                     g => g.OrderBy(x => x.Start).ToList());
 
-            // Lấy toàn bộ inventory với includes
             var inventoriesQuery = _inventories.GetAllWithIncludes().AsQueryable();
 
-            // Filter theo partner nếu có
             if (partnerId.HasValue)
             {
                 inventoriesQuery = inventoriesQuery.Where(i =>
@@ -467,7 +458,6 @@ namespace Application.Services.Implements
                 );
             }
 
-            // Chuyển sang List<Inventory> và gom nhóm
             var inventories = GroupInventory(inventoriesQuery.ToList());
 
             var result = new List<StockForecastDto>();

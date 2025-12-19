@@ -19,6 +19,7 @@ namespace Application.Services.Implements
         private readonly IPartnerRepository _partnerRepo;
         private readonly IWarehouseRepository _warehouseRepo;
         private readonly IMapper _mapper;
+        private readonly IExportRepository _exportRepo;
         private readonly INotificationService _notificationService;
 
         public TransportService(
@@ -31,7 +32,8 @@ namespace Application.Services.Implements
             IPartnerRepository partnerRepo,
             IWarehouseRepository warehouseRepo,
             IMapper mapper,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IExportRepository exportRepo)
         {
             _transportRepo = transportRepo;
             _invoiceRepo = invoiceRepo;
@@ -43,6 +45,7 @@ namespace Application.Services.Implements
             _warehouseRepo = warehouseRepo;
             _mapper = mapper;
             _notificationService = notificationService;
+            _exportRepo = exportRepo;
         }
 
         private static readonly string[] LicenseOrder =
@@ -237,6 +240,18 @@ namespace Application.Services.Implements
 
                 if (!string.Equals(invoice.InvoiceType, "Export", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException(string.Format(TransportMessages.INVOICE_NOT_EXPORT, id));
+
+                var export = _exportRepo.GetByInvoiceId(id);
+
+                if (export == null)
+                {
+                    throw new InvalidOperationException(string.Format(TransportMessages.EXPORT_NOT_FOUND, id));
+                }
+
+                if (!string.Equals(export.Status, "Success", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(string.Format(TransportMessages.EXPORT_NOT_SUCCESS, id));
+                }
             }
 
             if (_transportRepo.InvoiceAssignedElsewhere(cleanInvoiceIds, transportId, transportStopId))

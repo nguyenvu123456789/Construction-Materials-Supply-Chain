@@ -40,5 +40,8 @@ namespace Application.Constants.Messages
         public const string STOP_PROOF_REQUIRED = "Chưa có ảnh chứng từ cho điểm dừng này.";
         public const string STOP_CANNOT_REMOVE_DEPOT = "Không thể xóa điểm dừng kho (Depot).";
         public const string STOP_PROOF_BASE64_REQUIRED = "Dữ liệu ảnh (Base64) là bắt buộc.";
+
+        public const string EXPORT_NOT_FOUND = "Không tìm thấy phiếu xuất kho cho hóa đơn {0}.";
+        public const string EXPORT_NOT_SUCCESS = "Hóa đơn {0} chưa hoàn thành xuất kho (Export Status chưa phải Success).";
     }
 }

@@ -1,271 +1,287 @@
 ﻿using Application.Common.Pagination;
+using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Interface;
 using Domain.Models;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-public class UserService : IUserService
+namespace Application.Services.Implements
 {
-    private readonly IUserRepository _users;
-    private readonly IRoleRepository _roles;
-    private readonly IMapper _mapper;
-
-    public UserService(IUserRepository users, IRoleRepository roles, IMapper mapper)
+    public class UserService : IUserService
     {
-        _users = users;
-        _roles = roles;
-        _mapper = mapper;
-    }
+        private readonly IUserRepository _userRepo;
+        private readonly IRoleRepository _roleRepo;
+        private readonly IMapper _mapper;
+        private readonly IValidator<UserCreateDto> _createValidator;
+        private readonly IValidator<UserUpdateDto> _updateValidator;
+        private readonly IValidator<UserProfileUploadDto> _profileValidator;
 
-    public List<UserDto> GetAll() =>
-        _users.QueryWithRoles()
-              .AsNoTracking()
-              .Where(u => u.Status != "Deleted")
-              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-              .ToList();
-
-    public UserDto? GetById(int id) =>
-        _users.QueryWithRoles()
-              .AsNoTracking()
-              .Where(u => u.UserId == id && u.Status != "Deleted")
-              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-              .FirstOrDefault();
-
-    public List<UserDto> GetAllWithRoles() =>
-        _users.QueryWithRoles()
-              .Where(u => u.Status != "Deleted")
-              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-              .ToList();
-
-    public UserDto? GetByIdWithRoles(int id) =>
-        _users.QueryWithRoles()
-              .Where(u => u.UserId == id && u.Status != "Deleted")
-              .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-              .FirstOrDefault();
-
-    public UserDto Create(UserCreateDto dto)
-    {
-        var entity = _mapper.Map<User>(dto);
-        entity.CreatedAt = DateTime.Now;
-        entity.Status = "Active";
-
-        if (dto.AvatarFile != null)
+        public UserService(
+            IUserRepository userRepo,
+            IRoleRepository roleRepo,
+            IMapper mapper,
+            IValidator<UserCreateDto> createValidator,
+            IValidator<UserUpdateDto> updateValidator,
+            IValidator<UserProfileUploadDto> profileValidator)
         {
-            using var ms = new MemoryStream();
-            dto.AvatarFile.CopyTo(ms);
-            var bytes = ms.ToArray();
-            entity.AvatarBase64 = Convert.ToBase64String(bytes);
+            _userRepo = userRepo;
+            _roleRepo = roleRepo;
+            _mapper = mapper;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+            _profileValidator = profileValidator;
         }
 
-        _users.Add(entity);
+        public List<UserDto> GetAll() =>
+            _userRepo.QueryWithRoles()
+                  .AsNoTracking()
+                  .Where(u => u.Status != "Deleted")
+                  .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                  .ToList();
 
-        var created = _users.QueryWithRolesIncludeDeleted().First(u => u.UserId == entity.UserId);
-        if (dto.RoleIds != null && dto.RoleIds.Any())
-            _users.AssignRoles(entity.UserId, dto.RoleIds);
+        public UserDto? GetById(int id) =>
+            _userRepo.QueryWithRoles()
+                  .AsNoTracking()
+                  .Where(u => u.UserId == id && u.Status != "Deleted")
+                  .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                  .FirstOrDefault();
 
-        return _mapper.Map<UserDto>(created);
-    }
+        public List<UserDto> GetAllWithRoles() =>
+            _userRepo.QueryWithRoles()
+                  .Where(u => u.Status != "Deleted")
+                  .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                  .ToList();
 
-    public void Update(int id, UserUpdateDto dto)
-    {
-        var existing = _users.QueryWithRolesIncludeDeleted().FirstOrDefault(u => u.UserId == id);
-        if (existing == null) throw new KeyNotFoundException("User not found");
-        if (existing.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted user");
+        public UserDto? GetByIdWithRoles(int id) =>
+            _userRepo.QueryWithRoles()
+                  .Where(u => u.UserId == id && u.Status != "Deleted")
+                  .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                  .FirstOrDefault();
 
-        _mapper.Map(dto, existing);
-
-        if (dto.AvatarFile != null)
+        public UserDto? GetByIdWithPartner(int id)
         {
-            using var ms = new MemoryStream();
-            dto.AvatarFile.CopyTo(ms);
-            var bytes = ms.ToArray();
-            existing.AvatarBase64 = Convert.ToBase64String(bytes);
+            var user = _userRepo.GetByIdWithPartner(id);
+            return user == null ? null : _mapper.Map<UserDto>(user);
         }
 
-        existing.UpdatedAt = DateTime.Now;
-        _users.Update(existing);
-
-        if (dto.RoleIds != null)
-            _users.AssignRoles(existing.UserId, dto.RoleIds);
-    }
-
-    public void Delete(int id)
-    {
-        var u = _users.GetById(id);
-        if (u == null) return;
-        if (u.Status == "Deleted") return;
-        u.Status = "Deleted";
-        u.UpdatedAt = DateTime.Now;
-        _users.Update(u);
-    }
-
-    public void Restore(int id, string status)
-    {
-        var s = (status ?? string.Empty).Trim();
-        if (!string.Equals(s, "Active", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(s, "Inactive", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Status must be Active or Inactive");
-
-        var u = _users.QueryWithRolesIncludeDeleted().FirstOrDefault(x => x.UserId == id);
-        if (u == null) throw new KeyNotFoundException("User not found");
-        if (u.Status != "Deleted") return;
-        u.Status = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
-        u.UpdatedAt = DateTime.Now;
-        _users.Update(u);
-    }
-
-    public PagedResultDto<UserDto> GetUsersFiltered(UserPagedQueryDto query, List<string>? statuses = null)
-    {
-        var q = _users.QueryWithRoles().AsNoTracking().Where(u => u.Status != "Deleted");
-        if (statuses != null && statuses.Count > 0)
+        public string? GetAvatarBase64(int id)
         {
-            var set = new HashSet<string>(statuses.Where(s => !string.IsNullOrWhiteSpace(s))
-                                                  .Select(s => s.Trim().ToLowerInvariant()));
-            set.Remove("deleted");
-            if (set.Count > 0)
-                q = q.Where(u => set.Contains(u.Status.ToLower()));
-        }
-        if (!string.IsNullOrWhiteSpace(query.SearchTerm))
-        {
-            var term = query.SearchTerm.Trim();
-            q = q.Where(u =>
-                (u.UserName ?? "").Contains(term) ||
-                (u.Email ?? "").Contains(term) ||
-                (u.FullName ?? "").Contains(term));
-        }
-        if (query.Roles != null && query.Roles.Count > 0)
-        {
-            var rset = query.Roles
-                .Where(r => !string.IsNullOrWhiteSpace(r))
-                .Select(r => r.Trim().ToLowerInvariant())
-                .ToHashSet();
-            q = q.Where(u => u.UserRoles.Any(ur =>
-                rset.Contains(ur.Role.RoleName.ToLower()) ||
-                rset.Contains(ur.Role.RoleId.ToString())
-            ));
-        }
-        var pageNumber = query.PageNumber > 0 ? query.PageNumber : 1;
-        var pageSize = query.PageSize > 0 ? query.PageSize : 10;
-        var totalCount = q.Count();
-        var data = q
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-            .ToList();
-        return new PagedResultDto<UserDto>
-        {
-            Data = data,
-            TotalCount = totalCount,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-        };
-    }
-
-    public PagedResultDto<UserDto> GetUsersFilteredIncludeDeleted(UserPagedQueryDto query, List<string>? statuses = null)
-    {
-        var q = _users.QueryWithRolesIncludeDeleted().AsNoTracking();
-        if (statuses != null && statuses.Count > 0)
-        {
-            var set = new HashSet<string>(statuses
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Select(s => s.Trim().ToLowerInvariant()));
-            if (set.Count > 0)
-                q = q.Where(u => set.Contains(u.Status.ToLower()));
-        }
-        if (!string.IsNullOrWhiteSpace(query.SearchTerm))
-        {
-            var term = query.SearchTerm.Trim();
-            q = q.Where(u =>
-                (u.UserName ?? "").Contains(term) ||
-                (u.Email ?? "").Contains(term) ||
-                (u.FullName ?? "").Contains(term));
-        }
-        if (query.Roles != null && query.Roles.Count > 0)
-        {
-            var rset = query.Roles
-                .Where(r => !string.IsNullOrWhiteSpace(r))
-                .Select(r => r.Trim().ToLowerInvariant())
-                .ToHashSet();
-            q = q.Where(u => u.UserRoles.Any(ur =>
-                rset.Contains(ur.Role.RoleName.ToLower()) ||
-                rset.Contains(ur.Role.RoleId.ToString())
-            ));
-        }
-        var pageNumber = query.PageNumber > 0 ? query.PageNumber : 1;
-        var pageSize = query.PageSize > 0 ? query.PageSize : 10;
-        var totalCount = q.Count();
-        var data = q
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
-            .ToList();
-        return new PagedResultDto<UserDto>
-        {
-            Data = data,
-            TotalCount = totalCount,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-        };
-    }
-
-    private static string? NormalizeBase64(string? input)
-    {
-        if (string.IsNullOrWhiteSpace(input)) return null;
-        var s = input.Trim();
-
-        var comma = s.IndexOf(',');
-        if (comma >= 0)
-            s = s[(comma + 1)..];
-
-        try
-        {
-            Convert.FromBase64String(s);
-            return s;
-        }
-        catch
-        {
-            throw new ArgumentException("AvatarBase64 is invalid base64 data.");
-        }
-    }
-
-    public UserDto? GetByIdWithPartner(int id)
-    {
-        var user = _users.GetByIdWithPartner(id);
-        return user == null ? null : _mapper.Map<UserDto>(user);
-    }
-
-    public void UpdateProfile(int id, UserProfileUploadDto dto)
-    {
-        var existing = _users.GetById(id);
-        if (existing == null) throw new KeyNotFoundException("User not found");
-        if (existing.Status == "Deleted") throw new InvalidOperationException("Cannot update deleted user");
-
-        if (dto.FullName != null)
-            existing.FullName = dto.FullName;
-
-        if (dto.Phone != null)
-            existing.Phone = dto.Phone;
-
-        if (dto.AvatarFile != null)
-        {
-            using var ms = new MemoryStream();
-            dto.AvatarFile.CopyTo(ms);
-            var bytes = ms.ToArray();
-            existing.AvatarBase64 = Convert.ToBase64String(bytes);
+            var user = _userRepo.GetById(id);
+            return user?.AvatarBase64;
         }
 
-        existing.UpdatedAt = DateTime.Now;
-        _users.Update(existing);
-    }
+        public UserDto Create(UserCreateDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto), UserMessages.REQUEST_NULL);
 
-    public string? GetAvatarBase64(int id)
-    {
-        var u = _users.GetById(id);
-        return u?.AvatarBase64;
+            var validationResult = _createValidator.Validate(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            if (_userRepo.QueryWithRolesIncludeDeleted().Any(u => u.UserName == dto.UserName))
+                throw new InvalidOperationException(string.Format(UserMessages.USERNAME_EXISTED, dto.UserName));
+
+            if (_userRepo.QueryWithRolesIncludeDeleted().Any(u => u.Email == dto.Email))
+                throw new InvalidOperationException(string.Format(UserMessages.EMAIL_EXISTED, dto.Email));
+
+            var userEntity = _mapper.Map<User>(dto);
+            userEntity.CreatedAt = DateTime.Now;
+            userEntity.Status = "Active";
+
+            if (dto.AvatarFile != null)
+            {
+                using var memoryStream = new MemoryStream();
+                dto.AvatarFile.CopyTo(memoryStream);
+                userEntity.AvatarBase64 = Convert.ToBase64String(memoryStream.ToArray());
+            }
+
+            _userRepo.Add(userEntity);
+
+            if (dto.RoleIds != null && dto.RoleIds.Any())
+            {
+                _userRepo.AssignRoles(userEntity.UserId, dto.RoleIds);
+            }
+
+            var createdUser = _userRepo.QueryWithRolesIncludeDeleted().First(u => u.UserId == userEntity.UserId);
+            return _mapper.Map<UserDto>(createdUser);
+        }
+
+        public void Update(int id, UserUpdateDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto), UserMessages.REQUEST_NULL);
+
+            var validationResult = _updateValidator.Validate(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            var existingUser = _userRepo.QueryWithRolesIncludeDeleted().FirstOrDefault(u => u.UserId == id);
+            if (existingUser == null)
+                throw new KeyNotFoundException(UserMessages.USER_NOT_FOUND);
+
+            if (existingUser.Status == "Deleted")
+                throw new InvalidOperationException(UserMessages.CANNOT_UPDATE_DELETED);
+
+            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != existingUser.Email)
+            {
+                if (_userRepo.QueryWithRolesIncludeDeleted().Any(u => u.Email == dto.Email && u.UserId != id))
+                    throw new InvalidOperationException(string.Format(UserMessages.EMAIL_EXISTED, dto.Email));
+            }
+
+            _mapper.Map(dto, existingUser);
+
+            if (dto.AvatarFile != null)
+            {
+                using var memoryStream = new MemoryStream();
+                dto.AvatarFile.CopyTo(memoryStream);
+                existingUser.AvatarBase64 = Convert.ToBase64String(memoryStream.ToArray());
+            }
+
+            existingUser.UpdatedAt = DateTime.Now;
+            _userRepo.Update(existingUser);
+
+            if (dto.RoleIds != null)
+            {
+                _userRepo.AssignRoles(existingUser.UserId, dto.RoleIds);
+            }
+        }
+
+        public void UpdateProfile(int id, UserProfileUploadDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto), UserMessages.REQUEST_NULL);
+
+            var validationResult = _profileValidator.Validate(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            var existingUser = _userRepo.GetById(id);
+            if (existingUser == null)
+                throw new KeyNotFoundException(UserMessages.USER_NOT_FOUND);
+
+            if (existingUser.Status == "Deleted")
+                throw new InvalidOperationException(UserMessages.CANNOT_UPDATE_DELETED);
+
+            if (dto.FullName != null) existingUser.FullName = dto.FullName;
+            if (dto.Phone != null) existingUser.Phone = dto.Phone;
+
+            if (dto.AvatarFile != null)
+            {
+                using var memoryStream = new MemoryStream();
+                dto.AvatarFile.CopyTo(memoryStream);
+                existingUser.AvatarBase64 = Convert.ToBase64String(memoryStream.ToArray());
+            }
+
+            existingUser.UpdatedAt = DateTime.Now;
+            _userRepo.Update(existingUser);
+        }
+
+        public void Delete(int id)
+        {
+            var user = _userRepo.GetById(id);
+            if (user == null || user.Status == "Deleted") return;
+
+            user.Status = "Deleted";
+            user.UpdatedAt = DateTime.Now;
+            _userRepo.Update(user);
+        }
+
+        public void Restore(int id, string status)
+        {
+            var normalizedStatus = (status ?? string.Empty).Trim();
+
+            if (!string.Equals(normalizedStatus, "Active", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(normalizedStatus, "Inactive", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(UserMessages.STATUS_INVALID);
+            }
+
+            var user = _userRepo.QueryWithRolesIncludeDeleted().FirstOrDefault(x => x.UserId == id);
+
+            if (user == null)
+                throw new KeyNotFoundException(UserMessages.USER_NOT_FOUND);
+
+            if (user.Status != "Deleted") return;
+
+            user.Status = char.ToUpperInvariant(normalizedStatus[0]) + normalizedStatus.Substring(1).ToLowerInvariant();
+            user.UpdatedAt = DateTime.Now;
+            _userRepo.Update(user);
+        }
+
+        public PagedResultDto<UserDto> GetUsersFiltered(UserPagedQueryDto query, List<string>? statuses = null)
+        {
+            var queryable = _userRepo.QueryWithRoles().AsNoTracking().Where(u => u.Status != "Deleted");
+            return FilterAndPageUsers(queryable, query, statuses, includeDeleted: false);
+        }
+
+        public PagedResultDto<UserDto> GetUsersFilteredIncludeDeleted(UserPagedQueryDto query, List<string>? statuses = null)
+        {
+            var queryable = _userRepo.QueryWithRolesIncludeDeleted().AsNoTracking();
+            return FilterAndPageUsers(queryable, query, statuses, includeDeleted: true);
+        }
+
+        private PagedResultDto<UserDto> FilterAndPageUsers(
+            IQueryable<User> queryable,
+            UserPagedQueryDto queryDto,
+            List<string>? statuses,
+            bool includeDeleted)
+        {
+            if (statuses != null && statuses.Count > 0)
+            {
+                var statusSet = new HashSet<string>(statuses
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Select(s => s.Trim().ToLowerInvariant()));
+
+                if (!includeDeleted) statusSet.Remove("deleted");
+
+                if (statusSet.Count > 0)
+                {
+                    queryable = queryable.Where(u => statusSet.Contains(u.Status.ToLower()));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(queryDto.SearchTerm))
+            {
+                var term = queryDto.SearchTerm.Trim();
+                queryable = queryable.Where(u =>
+                    (u.UserName ?? "").Contains(term) ||
+                    (u.Email ?? "").Contains(term) ||
+                    (u.FullName ?? "").Contains(term));
+            }
+
+            if (queryDto.Roles != null && queryDto.Roles.Count > 0)
+            {
+                var roleSet = queryDto.Roles
+                    .Where(r => !string.IsNullOrWhiteSpace(r))
+                    .Select(r => r.Trim().ToLowerInvariant())
+                    .ToHashSet();
+
+                queryable = queryable.Where(u => u.UserRoles.Any(ur =>
+                    roleSet.Contains(ur.Role.RoleName.ToLower()) ||
+                    roleSet.Contains(ur.Role.RoleId.ToString())
+                ));
+            }
+
+            var pageNumber = queryDto.PageNumber > 0 ? queryDto.PageNumber : 1;
+            var pageSize = queryDto.PageSize > 0 ? queryDto.PageSize : 10;
+            var totalCount = queryable.Count();
+
+            var data = queryable
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return new PagedResultDto<UserDto>
+            {
+                Data = data,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+        }
     }
 }

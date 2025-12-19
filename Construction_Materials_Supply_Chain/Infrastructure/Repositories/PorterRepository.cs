@@ -3,6 +3,7 @@ using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Implementations
 {
@@ -31,6 +32,11 @@ namespace Infrastructure.Implementations
             var set = ids?.Distinct().ToList();
             if (set == null || set.Count == 0) return new List<Porter>();
             return _context.Porters.Where(p => set.Contains(p.PorterId)).ToList();
+        }
+
+        public bool CheckExists(Expression<Func<Porter, bool>> predicate)
+        {
+            return _context.Porters.Any(predicate);
         }
     }
 }

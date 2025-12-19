@@ -19,7 +19,8 @@ namespace Application.Services.Implements
         private readonly IPartnerRepository _partnerRepo;
         private readonly IWarehouseRepository _warehouseRepo;
         private readonly IMapper _mapper;
-        private readonly INotificationService _event;
+        private readonly IExportRepository _exportRepo;
+        private readonly INotificationService _notificationService;
 
         public TransportService(
             ITransportRepository transportRepo,
@@ -31,7 +32,8 @@ namespace Application.Services.Implements
             IPartnerRepository partnerRepo,
             IWarehouseRepository warehouseRepo,
             IMapper mapper,
-            INotificationService eventSvc)
+            INotificationService notificationService,
+            IExportRepository exportRepo)
         {
             _transportRepo = transportRepo;
             _invoiceRepo = invoiceRepo;
@@ -42,71 +44,77 @@ namespace Application.Services.Implements
             _partnerRepo = partnerRepo;
             _warehouseRepo = warehouseRepo;
             _mapper = mapper;
-            _event = eventSvc;
+            _notificationService = notificationService;
+            _exportRepo = exportRepo;
         }
 
-        private static readonly string[] LicenseOrder = new[]
+        private static readonly string[] LicenseOrder =
         {
             "A1","A","B1","B","C1","C","D1","D2","D","BE","C1E","CE","D1E","D2E","DE"
         };
 
-        private static int LicenseRank(string? cls)
+        private static int GetLicenseRank(string? className)
         {
-            if (string.IsNullOrWhiteSpace(cls)) return -1;
-            var x = cls.Trim().ToUpperInvariant();
+            if (string.IsNullOrWhiteSpace(className)) return -1;
+            var normalized = className.Trim().ToUpperInvariant();
             for (int i = 0; i < LicenseOrder.Length; i++)
-                if (LicenseOrder[i].Equals(x, StringComparison.OrdinalIgnoreCase))
+                if (LicenseOrder[i].Equals(normalized, StringComparison.OrdinalIgnoreCase))
                     return i;
             return -1;
         }
 
-        private static bool LicenseSatisfies(string? driverClass, string? minRequiredClass)
+        private static bool IsLicenseSatisfied(string? driverClass, string? minRequiredClass)
         {
             if (string.IsNullOrWhiteSpace(minRequiredClass)) return true;
-            var d = LicenseRank(driverClass);
-            var r = LicenseRank(minRequiredClass);
-            return d >= 0 && r >= 0 && d >= r;
+            var driverRank = GetLicenseRank(driverClass);
+            var requiredRank = GetLicenseRank(minRequiredClass);
+            return driverRank >= 0 && requiredRank >= 0 && driverRank >= requiredRank;
         }
 
         public TransportResponseDto Create(TransportCreateRequestDto dto)
         {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
             var partner = _partnerRepo.GetById(dto.ProviderPartnerId);
-            if (partner == null) throw new InvalidOperationException("ProviderPartner not found");
+            if (partner == null)
+                throw new InvalidOperationException(TransportMessages.PROVIDER_PARTNER_NOT_FOUND);
 
             var warehouse = _warehouseRepo.GetById(dto.WarehouseId);
-            if (warehouse == null) throw new InvalidOperationException("Warehouse not found");
+            if (warehouse == null)
+                throw new InvalidOperationException(TransportMessages.WAREHOUSE_NOT_FOUND);
 
-            var t = new Transport
+            var transport = new Transport
             {
                 TransportCode = $"T-{DateTime.Now:yyyyMMddHHmmss}",
                 WarehouseId = dto.WarehouseId,
                 ProviderPartnerId = dto.ProviderPartnerId,
                 Status = TransportStatus.Planned,
                 StartTimePlanned = dto.StartTimePlanned,
+                EndTimePlanned = dto.EndTimePlanned,
                 Notes = dto.Notes,
             };
 
-            _transportRepo.Add(t);
-            _logRepo.Add(new ShippingLog { TransportId = t.TransportId, Status = "Transport.Created", CreatedAt = DateTime.Now });
-            var id = t.TransportId;
+            _transportRepo.Add(transport);
+            _logRepo.Add(new ShippingLog { TransportId = transport.TransportId, Status = "Transport.Created", CreatedAt = DateTime.Now });
 
-            _event.Trigger(new EventNotifyTriggerDto
+            var transportId = transport.TransportId;
+            _notificationService.Trigger(new EventNotifyTriggerDto
             {
                 PartnerId = dto.ProviderPartnerId,
                 EventType = EventTypes.TransportCreated,
-                Title = $"Có chuyến đi mới Id:{id}",
-                Content = $"Transport #{id} vừa được tạo.",
+                Title = $"Có chuyến đi mới Id:{transportId}",
+                Content = $"Transport #{transportId} vừa được tạo.",
                 OverrideRequireAcknowledge = true
             });
 
-            var loaded = _transportRepo.GetDetail(id);
-            return _mapper.Map<TransportResponseDto>(loaded!);
+            var loadedTransport = _transportRepo.GetDetail(transportId);
+            return _mapper.Map<TransportResponseDto>(loadedTransport!);
         }
 
         public TransportResponseDto? Get(int transportId)
         {
-            var t = _transportRepo.GetDetail(transportId);
-            return t == null ? null : _mapper.Map<TransportResponseDto>(t);
+            var transport = _transportRepo.GetDetail(transportId);
+            return transport == null ? null : _mapper.Map<TransportResponseDto>(transport);
         }
 
         public List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId)
@@ -114,83 +122,99 @@ namespace Application.Services.Implements
 
         public List<TransportResponseDto> Query(DateOnly? date, string? status, int? vehicleId, int? providerPartnerId)
         {
-            var list = _transportRepo.Query(date, status, vehicleId);
-            if (providerPartnerId is not null)
-                list = list.Where(t => t.ProviderPartnerId == providerPartnerId.Value).ToList();
+            var transports = _transportRepo.Query(date, status, vehicleId);
+            if (providerPartnerId.HasValue)
+            {
+                transports = transports.Where(t => t.ProviderPartnerId == providerPartnerId.Value).ToList();
+            }
 
-            return list.Select(_mapper.Map<TransportResponseDto>).ToList();
+            return transports.Select(_mapper.Map<TransportResponseDto>).ToList();
         }
 
         public void Assign(int transportId, TransportAssignRequestDto dto)
         {
-            var t = _transportRepo.GetById(transportId) ?? throw new KeyNotFoundException("Transport not found");
-            var v = _vehicleRepo.GetById(dto.VehicleId) ?? throw new InvalidOperationException("Vehicle not found");
-            var dr = _driverRepo.GetById(dto.DriverId) ?? throw new InvalidOperationException("Driver not found");
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
 
-            if (v.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Vehicle partner mismatch");
-            if (dr.PartnerId != t.ProviderPartnerId) throw new InvalidOperationException("Driver partner mismatch");
+            var transport = _transportRepo.GetById(transportId)
+                ?? throw new KeyNotFoundException(string.Format(TransportMessages.TRANSPORT_NOT_FOUND, transportId));
 
-            var s = t.StartTimePlanned ?? DateTimeOffset.Now;
-            var e = t.EndTimePlanned;
+            var vehicle = _vehicleRepo.GetById(dto.VehicleId)
+                ?? throw new InvalidOperationException(TransportMessages.VEHICLE_NOT_FOUND);
 
-            if (_transportRepo.VehicleBusy(dto.VehicleId, transportId, s, e)) throw new InvalidOperationException("Vehicle busy");
-            if (_transportRepo.DriverBusy(dto.DriverId, transportId, s, e)) throw new InvalidOperationException("Driver busy");
+            var driver = _driverRepo.GetById(dto.DriverId)
+                ?? throw new InvalidOperationException(TransportMessages.DRIVER_NOT_FOUND);
 
-            if (dto.PorterIds?.Any() == true)
+            if (vehicle.PartnerId != transport.ProviderPartnerId || driver.PartnerId != transport.ProviderPartnerId)
+                throw new InvalidOperationException(TransportMessages.PARTNER_MISMATCH);
+
+            var startTime = transport.StartTimePlanned ?? DateTimeOffset.Now;
+            var endTime = transport.EndTimePlanned;
+
+            if (_transportRepo.VehicleBusy(dto.VehicleId, transportId, startTime, endTime))
+                throw new InvalidOperationException(TransportMessages.VEHICLE_BUSY);
+
+            if (_transportRepo.DriverBusy(dto.DriverId, transportId, startTime, endTime))
+                throw new InvalidOperationException(TransportMessages.DRIVER_BUSY);
+
+            if (dto.PorterIds != null && dto.PorterIds.Any())
             {
-                var busy = _transportRepo.BusyPorters(dto.PorterIds, transportId, s, e);
-                if (busy.Any()) throw new InvalidOperationException($"Porters busy: {string.Join(",", busy)}");
+                var busyPorters = _transportRepo.BusyPorters(dto.PorterIds, transportId, startTime, endTime);
+                if (busyPorters.Any())
+                {
+                    var busyList = string.Join(", ", busyPorters);
+                    throw new InvalidOperationException(string.Format(TransportMessages.PORTER_BUSY, busyList));
+                }
             }
 
-            t.VehicleId = dto.VehicleId;
-            t.DriverId = dto.DriverId;
-            _transportRepo.Update(t);
+            transport.VehicleId = dto.VehicleId;
+            transport.DriverId = dto.DriverId;
+            _transportRepo.Update(transport);
 
-            _transportRepo.ReplacePorters(transportId, dto.PorterIds ?? new());
-
+            _transportRepo.ReplacePorters(transportId, dto.PorterIds ?? new List<int>());
             _transportRepo.UpdateStatus(transportId, TransportStatus.Assigned, null, null);
+
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Assigned", CreatedAt = DateTime.Now });
         }
 
         public void AddStops(int transportId, TransportAddStopsRequestDto request)
         {
+            if (request?.Stops == null) throw new ArgumentNullException(nameof(request));
+
             var transport = _transportRepo.GetDetail(transportId);
             if (transport == null)
-                throw new Exception("Transport not found");
+                throw new Exception(string.Format(TransportMessages.TRANSPORT_NOT_FOUND, transportId));
 
             if (transport.Status != TransportStatus.Planned && transport.Status != TransportStatus.Assigned)
-                throw new Exception("Cannot add stops to a transport that is already in progress or completed.");
+                throw new Exception(TransportMessages.TRANSPORT_ALREADY_STARTED_OR_COMPLETED);
 
             foreach (var item in request.Stops)
             {
                 if (item.InvoiceIds == null || !item.InvoiceIds.Any())
-                    throw new Exception("A stop must have at least one invoice assigned.");
+                    throw new Exception(TransportMessages.STOP_MISSING_INVOICE);
 
                 var invoices = _invoiceRepo.GetAll()
                                            .Where(i => item.InvoiceIds.Contains(i.InvoiceId))
                                            .ToList();
 
                 if (invoices.Count != item.InvoiceIds.Count)
-                    throw new Exception("One or more Invoice IDs provided do not exist.");
+                    throw new Exception(string.Format(TransportMessages.INVOICE_NOT_FOUND, string.Join(",", item.InvoiceIds.Except(invoices.Select(x => x.InvoiceId)))));
 
                 var addresses = invoices.Select(i => i.Address?.Trim().ToLower()).Distinct().ToList();
                 if (addresses.Count > 1)
                 {
-                    throw new Exception($"Cannot create a single stop for Invoices {string.Join(", ", item.InvoiceIds)} because they have different delivery addresses.");
+                    throw new Exception(TransportMessages.INVOICE_ADDRESS_MISMATCH);
                 }
 
-                string targetAddressStr = invoices.First().Address;
-                if (string.IsNullOrEmpty(targetAddressStr))
-                    throw new Exception($"Invoice {invoices.First().InvoiceCode} does not have a valid address.");
+                string targetAddress = invoices.First().Address;
+                if (string.IsNullOrEmpty(targetAddress))
+                    throw new Exception(string.Format(TransportMessages.INVOICE_NO_ADDRESS, invoices.First().InvoiceCode));
 
                 var stop = new TransportStop
                 {
                     TransportId = transportId,
                     Seq = item.Seq,
                     StopType = Enum.Parse<TransportStopType>(item.StopType),
-
-                    Address = targetAddressStr,
-
+                    Address = targetAddress,
                     ServiceTimeMin = item.ServiceTimeMin,
                     Status = TransportStopStatus.Planned,
                     TransportInvoices = invoices.Select(inv => new TransportInvoice
@@ -207,18 +231,34 @@ namespace Application.Services.Implements
 
         public void SetStopInvoices(int transportId, int transportStopId, List<int> invoiceIds)
         {
-            var list = invoiceIds?.Distinct().ToList() ?? new List<int>();
-            foreach (var id in list)
+            var cleanInvoiceIds = invoiceIds?.Distinct().ToList() ?? new List<int>();
+
+            foreach (var id in cleanInvoiceIds)
             {
-                var inv = _invoiceRepo.GetById(id) ?? throw new InvalidOperationException($"Invoice {id} not found");
-                if (!string.Equals(inv.InvoiceType, "Export", StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException($"Invoice {id} không phải Export");
+                var invoice = _invoiceRepo.GetById(id)
+                    ?? throw new InvalidOperationException(string.Format(TransportMessages.INVOICE_NOT_FOUND, id));
+
+                if (!string.Equals(invoice.InvoiceType, "Export", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException(string.Format(TransportMessages.INVOICE_NOT_EXPORT, id));
+
+                var export = _exportRepo.GetByInvoiceId(id);
+
+                if (export == null)
+                {
+                    throw new InvalidOperationException(string.Format(TransportMessages.EXPORT_NOT_FOUND, id));
+                }
+
+                if (!string.Equals(export.Status, "Success", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(string.Format(TransportMessages.EXPORT_NOT_SUCCESS, id));
+                }
             }
 
-            if (_transportRepo.InvoiceAssignedElsewhere(list, transportId, transportStopId))
-                throw new InvalidOperationException("Có invoice đã gán stop khác");
+            if (_transportRepo.InvoiceAssignedElsewhere(cleanInvoiceIds, transportId, transportStopId))
+                throw new InvalidOperationException(string.Format(TransportMessages.INVOICE_ASSIGNED_ELSEWHERE, "Unknown"));
 
-            _transportRepo.SetStopInvoices(transportId, transportStopId, list);
+            _transportRepo.SetStopInvoices(transportId, transportStopId, cleanInvoiceIds);
+
             _logRepo.Add(new ShippingLog
             {
                 TransportId = transportId,
@@ -230,32 +270,37 @@ namespace Application.Services.Implements
 
         public void Start(int transportId, DateTimeOffset at)
         {
-            var t = _transportRepo.GetDetail(transportId) ?? throw new KeyNotFoundException();
+            var transport = _transportRepo.GetDetail(transportId)
+                ?? throw new KeyNotFoundException(string.Format(TransportMessages.TRANSPORT_NOT_FOUND, transportId));
 
-            if (t.VehicleId == null || t.DriverId == null)
-                throw new InvalidOperationException("Transport chưa được gán xe hoặc tài xế.");
+            if (transport.VehicleId == null || transport.DriverId == null)
+                throw new InvalidOperationException(TransportMessages.TRANSPORT_NOT_ASSIGNED);
 
-            var vehicleId = t.VehicleId.Value;
-            var driverId = t.DriverId.Value;
+            var vehicleId = transport.VehicleId.Value;
+            var driverId = transport.DriverId.Value;
+            var startTime = at;
+            var endTime = transport.EndTimePlanned;
 
-            var s = at;
-            var e = t.EndTimePlanned;
+            var vehicle = _vehicleRepo.GetById(vehicleId)
+                ?? throw new InvalidOperationException(TransportMessages.VEHICLE_NOT_FOUND);
+            var driver = _driverRepo.GetById(driverId)
+                ?? throw new InvalidOperationException(TransportMessages.DRIVER_NOT_FOUND);
 
-            var v = _vehicleRepo.GetById(vehicleId) ?? throw new InvalidOperationException("Vehicle not found");
-            var d = _driverRepo.GetById(driverId) ?? throw new InvalidOperationException("Driver not found");
+            if (!IsLicenseSatisfied(driver.LicenseClass, vehicle.MinLicenseClass))
+            {
+                throw new InvalidOperationException(string.Format(TransportMessages.DRIVER_LICENSE_INVALID,
+                    driver.FullName, driver.LicenseClass, vehicle.Code, vehicle.MinLicenseClass));
+            }
 
-            if (!LicenseSatisfies(d.LicenseClass, v.MinLicenseClass))
-                throw new InvalidOperationException($"Driver {d.FullName} (license {d.LicenseClass}) không đạt yêu cầu {v.MinLicenseClass} của xe {v.Code}.");
+            if (_transportRepo.VehicleBusy(vehicleId, transportId, startTime, endTime))
+                throw new InvalidOperationException(TransportMessages.VEHICLE_BUSY);
 
-            if (_transportRepo.VehicleBusy(vehicleId, transportId, s, e))
-                throw new InvalidOperationException("Vehicle busy");
-
-            if (_transportRepo.DriverBusy(driverId, transportId, s, e))
-                throw new InvalidOperationException("Driver busy");
+            if (_transportRepo.DriverBusy(driverId, transportId, startTime, endTime))
+                throw new InvalidOperationException(TransportMessages.DRIVER_BUSY);
 
             var porterIds = _transportRepo.GetPorterIds(transportId);
-            if (porterIds.Any() && _transportRepo.BusyPorters(porterIds, transportId, s, e).Any())
-                throw new InvalidOperationException("Porter(s) busy");
+            if (porterIds.Any() && _transportRepo.BusyPorters(porterIds, transportId, startTime, endTime).Any())
+                throw new InvalidOperationException(string.Format(TransportMessages.PORTER_BUSY, "Multiple"));
 
             _transportRepo.UpdateStatus(transportId, TransportStatus.EnRoute, at, null);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Started", CreatedAt = DateTime.Now });
@@ -275,7 +320,9 @@ namespace Application.Services.Implements
 
         public void Complete(int transportId, DateTimeOffset at)
         {
-            if (!_transportRepo.AllNonDepotStopsDone(transportId)) throw new InvalidOperationException("Stops not completed");
+            if (!_transportRepo.AllNonDepotStopsDone(transportId))
+                throw new InvalidOperationException(TransportMessages.TRANSPORT_STOPS_NOT_COMPLETED);
+
             _transportRepo.UpdateStatus(transportId, TransportStatus.Completed, null, at);
             _logRepo.Add(new ShippingLog { TransportId = transportId, Status = "Transport.Completed", CreatedAt = DateTime.Now });
         }
@@ -301,7 +348,7 @@ namespace Application.Services.Implements
         public void UploadStopProofBase64(int transportId, TransportStopProofBase64Dto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Base64))
-                throw new InvalidOperationException("Base64 is required");
+                throw new InvalidOperationException(TransportMessages.STOP_PROOF_BASE64_REQUIRED);
 
             _transportRepo.UpdateStopProofImage(transportId, dto.TransportStopId, dto.Base64);
             _logRepo.Add(new ShippingLog
@@ -318,40 +365,33 @@ namespace Application.Services.Implements
             var stop = _transportRepo.GetStopByInvoice(invoiceId);
             if (stop == null) return null;
 
-            var t = stop.Transport;
+            var transport = stop.Transport;
 
-            var dto = new TransportInvoiceTrackingDto
+            return new TransportInvoiceTrackingDto
             {
-                TransportId = t.TransportId,
-                TransportCode = t.TransportCode,
-                Status = t.Status.ToString(),
-                DriverName = t.Driver != null ? t.Driver.FullName : null,
-                VehicleCode = t.Vehicle != null ? t.Vehicle.Code : null,
+                TransportId = transport.TransportId,
+                TransportCode = transport.TransportCode,
+                Status = transport.Status.ToString(),
+                DriverName = transport.Driver?.FullName,
+                VehicleCode = transport.Vehicle?.Code,
                 Stop = new TrackingStopDto
                 {
                     StopId = stop.TransportStopId,
                     StopType = stop.StopType.ToString(),
                     Address = stop.Address,
-
                     ETA = stop.ETA,
                     ATA = stop.ATA,
                     ATD = stop.ATD,
                     DeliveryPhotoBase64 = stop.ProofImageBase64
                 }
             };
-
-            return dto;
         }
 
         public List<CustomerOrderStatusDto> GetHistory(int customerPartnerId)
         {
-            var imports = _invoiceRepo.GetCustomerExportInvoices(customerPartnerId);
+            var importInvoices = _invoiceRepo.GetCustomerExportInvoices(customerPartnerId);
 
-            var orderIds = imports
-                .Select(i => i.OrderId)
-                .Distinct()
-                .ToList();
-
+            var orderIds = importInvoices.Select(i => i.OrderId).Distinct().ToList();
             var exportInvoices = _invoiceRepo.GetExportInvoicesByOrderIds(orderIds);
 
             var exportByOrder = exportInvoices
@@ -360,60 +400,50 @@ namespace Application.Services.Implements
 
             var result = new List<CustomerOrderStatusDto>();
 
-            foreach (var inv in imports)
+            foreach (var importInv in importInvoices)
             {
-                var exportList = new List<Invoice>();
-                if (exportByOrder.TryGetValue(inv.OrderId, out var exps))
-                    exportList = exps;
+                var relatedExports = exportByOrder.TryGetValue(importInv.OrderId, out var exps) ? exps : new List<Invoice>();
 
-                var transportList = new List<Transport>();
-                foreach (var exp in exportList)
+                var transports = new List<Transport>();
+                foreach (var exp in relatedExports)
                 {
                     var ts = _transportRepo.GetByInvoiceId(exp.InvoiceId);
-                    if (ts.Count > 0)
-                        transportList.AddRange(ts);
+                    if (ts.Count > 0) transports.AddRange(ts);
                 }
 
                 string deliveryStatus;
-
-                if (!exportList.Any())
+                if (!relatedExports.Any())
                 {
                     deliveryStatus = "Chưa xuất kho";
                 }
-                else if (!transportList.Any())
+                else if (!transports.Any())
                 {
                     deliveryStatus = "Chưa xếp chuyến";
                 }
                 else
                 {
-                    var exportIds = exportList.Select(e => e.InvoiceId).ToHashSet();
-
-                    var allStops = transportList
+                    var exportIds = relatedExports.Select(e => e.InvoiceId).ToHashSet();
+                    var relevantStops = transports
                         .SelectMany(t => t.Stops)
                         .Where(s => s.TransportInvoices.Any(ti => exportIds.Contains(ti.InvoiceId)))
                         .ToList();
 
-                    var allDone = allStops.Any() && allStops.All(s => s.Status == TransportStopStatus.Done);
-                    var anyEnRoute = transportList.Any(t =>
-                        t.Status == TransportStatus.EnRoute ||
-                        t.Status == TransportStatus.Assigned);
+                    var allDone = relevantStops.Any() && relevantStops.All(s => s.Status == TransportStopStatus.Done);
+                    var anyEnRoute = transports.Any(t => t.Status == TransportStatus.EnRoute || t.Status == TransportStatus.Assigned);
 
-                    if (allDone)
-                        deliveryStatus = "Đã giao xong";
-                    else if (anyEnRoute)
-                        deliveryStatus = "Đang giao";
-                    else
-                        deliveryStatus = "Đang xử lý";
+                    if (allDone) deliveryStatus = "Đã giao xong";
+                    else if (anyEnRoute) deliveryStatus = "Đang giao";
+                    else deliveryStatus = "Đang xử lý";
                 }
 
                 result.Add(new CustomerOrderStatusDto
                 {
-                    InvoiceId = inv.InvoiceId,
-                    InvoiceCode = inv.InvoiceCode,
-                    IssueDate = inv.IssueDate,
-                    TotalAmount = inv.TotalAmount,
-                    InvoiceType = inv.InvoiceType,
-                    ExportStatus = exportList.FirstOrDefault()?.ExportStatus ?? "N/A",
+                    InvoiceId = importInv.InvoiceId,
+                    InvoiceCode = importInv.InvoiceCode,
+                    IssueDate = importInv.IssueDate,
+                    TotalAmount = importInv.TotalAmount,
+                    InvoiceType = importInv.InvoiceType,
+                    ExportStatus = relatedExports.FirstOrDefault()?.ExportStatus ?? "N/A",
                     DeliveryStatus = deliveryStatus
                 });
             }
@@ -430,40 +460,40 @@ namespace Application.Services.Implements
             var vehicles = _vehicleRepo.Search(null, true, null, providerPartnerId);
             var porters = _porterRepo.Search(null, true, null, providerPartnerId);
 
-            foreach (var dr in drivers)
+            foreach (var driver in drivers)
             {
-                var busyUntil = _transportRepo.DriverBusyUntil(dr.DriverId, start, endTime);
+                var busyUntil = _transportRepo.DriverBusyUntil(driver.DriverId, start, endTime);
                 result.Add(new ResourceStatusDto
                 {
                     ResourceType = "Driver",
-                    Id = dr.DriverId,
-                    Name = dr.FullName,
+                    Id = driver.DriverId,
+                    Name = driver.FullName,
                     Status = busyUntil == null ? "Free" : "Busy",
                     BusyUntil = busyUntil
                 });
             }
 
-            foreach (var v in vehicles)
+            foreach (var vehicle in vehicles)
             {
-                var busyUntil = _transportRepo.VehicleBusyUntil(v.VehicleId, start, endTime);
+                var busyUntil = _transportRepo.VehicleBusyUntil(vehicle.VehicleId, start, endTime);
                 result.Add(new ResourceStatusDto
                 {
                     ResourceType = "Vehicle",
-                    Id = v.VehicleId,
-                    Name = v.Code,
+                    Id = vehicle.VehicleId,
+                    Name = vehicle.Code,
                     Status = busyUntil == null ? "Free" : "Busy",
                     BusyUntil = busyUntil
                 });
             }
 
-            foreach (var p in porters)
+            foreach (var porter in porters)
             {
-                var busyUntil = _transportRepo.PorterBusyUntil(p.PorterId, start, endTime);
+                var busyUntil = _transportRepo.PorterBusyUntil(porter.PorterId, start, endTime);
                 result.Add(new ResourceStatusDto
                 {
                     ResourceType = "Porter",
-                    Id = p.PorterId,
-                    Name = p.FullName,
+                    Id = porter.PorterId,
+                    Name = porter.FullName,
                     Status = busyUntil == null ? "Free" : "Busy",
                     BusyUntil = busyUntil
                 });

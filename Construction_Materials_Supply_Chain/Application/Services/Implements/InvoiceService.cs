@@ -72,10 +72,8 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
             if (order.Status != StatusEnum.Approved.ToStatusString()
-                && order.Status != StatusEnum.Invoiced.ToStatusString())
-            {
+                && order.Status != StatusEnum.Processing.ToStatusString())
                 throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
-            }
 
             var partnerId = order.CreatedByNavigation?.PartnerId;
             if (partnerId == null || partnerId == 0)
@@ -155,12 +153,13 @@ namespace Services.Implementations
 
             return createdInvoices;
         }
+
         // Caculate price
         private (decimal totalAmount, decimal totalDiscount) CalculateTotals(
-            List<OrderDetail> selectedDetails,
-            CreateInvoiceFromOrderDto dto,
-            Invoice invoice)
-        {
+                List<OrderDetail> selectedDetails,
+                CreateInvoiceFromOrderDto dto,
+                Invoice invoice)
+            {
             decimal totalAmount = 0;
             decimal totalDiscount = 0;
 
@@ -174,8 +173,6 @@ namespace Services.Implementations
 
                 if (deliveredBefore + deliveredQty > od.Quantity)
                     throw new Exception(string.Format(InvoiceMessages.DELIVERED_QTY_EXCEEDS_ORDER, od.MaterialId));
-
-                od.DeliveredQuantity = deliveredBefore + deliveredQty;
 
                 decimal finalPrice = od.FinalPrice;
                 decimal unitPrice = od.UnitPrice ?? 0m;

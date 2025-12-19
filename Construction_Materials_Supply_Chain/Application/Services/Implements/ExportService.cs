@@ -140,9 +140,7 @@ namespace Services.Implementations
             return export;
         }
 
-
         // Tạo phiếu xuất từ hóa đơn (Invoice)
-
         public Export CreateExportFromInvoice(ExportFromInvoiceDto dto)
             {
         var invoice = _invoiceRepository.GetByCode(dto.InvoiceCode);
@@ -206,7 +204,7 @@ namespace Services.Implementations
         _invoiceRepository.Update(invoice);
 
         return export;
-    }
+        }
 
 
         // Sinh mã phiếu xuất tăng dần

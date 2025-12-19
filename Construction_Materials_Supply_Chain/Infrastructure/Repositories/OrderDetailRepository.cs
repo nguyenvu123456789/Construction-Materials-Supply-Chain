@@ -32,7 +32,6 @@ namespace Infrastructure.Repositories
         public OrderDetail? GetByOrderAndMaterial(int orderId, int materialId)
         {
             return _context.OrderDetails
-                .AsNoTracking()
                 .Include(od => od.Material)
                 .Include(od => od.Order)
                 .FirstOrDefault(od => od.OrderId == orderId && od.MaterialId == materialId);

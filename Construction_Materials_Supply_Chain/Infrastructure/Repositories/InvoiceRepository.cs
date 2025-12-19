@@ -13,7 +13,6 @@ namespace Infrastructure.Implementations
         public Invoice? GetByCode(string invoiceCode)
         {
             return _dbSet
-                .AsNoTracking()
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                     .Include(i => i.Order)

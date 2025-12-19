@@ -21,7 +21,6 @@ namespace Infrastructure.Implementations
 
             return _context.Materials
                            .Where(m => materialIds.Contains(m.MaterialId))
-                           .AsNoTracking()   // ph?i ?? tr??c ToList()
                            .ToList();
         }
 

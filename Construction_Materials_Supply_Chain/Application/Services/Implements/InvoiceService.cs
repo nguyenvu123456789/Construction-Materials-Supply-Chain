@@ -72,7 +72,7 @@ namespace Services.Implementations
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
             if (order.Status != StatusEnum.Approved.ToStatusString()
-                && order.Status != StatusEnum.Invoiced.ToStatusString())
+                && order.Status != StatusEnum.Processing.ToStatusString())
             {
                 throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
             }

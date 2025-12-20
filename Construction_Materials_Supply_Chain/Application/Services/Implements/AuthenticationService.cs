@@ -9,7 +9,6 @@ using Domain.Interface;
 using Domain.Interfaces;
 using Domain.Models;
 using FluentValidation;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -23,7 +22,6 @@ namespace Application.Services.Implements
         private readonly IMapper _mapper;
         private readonly IJwtTokenGenerator _jwtGenerator;
         private readonly IEmailChannel _emailChannel;
-        private readonly ITokenBlacklistService _blacklistService;
         private readonly IValidator<LoginRequestDto> _loginValidator;
         private readonly IValidator<AdminCreateUserRequestDto> _adminCreateValidator;
         private readonly IValidator<ChangePasswordRequestDto> _changePasswordValidator;
@@ -38,7 +36,6 @@ namespace Application.Services.Implements
             IMapper mapper,
             IJwtTokenGenerator jwtGenerator,
             IEmailChannel emailChannel,
-            ITokenBlacklistService blacklistService,
             IValidator<LoginRequestDto> loginValidator,
             IValidator<AdminCreateUserRequestDto> adminCreateValidator,
             IValidator<ChangePasswordRequestDto> changePasswordValidator,
@@ -53,7 +50,6 @@ namespace Application.Services.Implements
             _mapper = mapper;
             _jwtGenerator = jwtGenerator;
             _emailChannel = emailChannel;
-            _blacklistService = blacklistService;
             _loginValidator = loginValidator;
             _adminCreateValidator = adminCreateValidator;
             _changePasswordValidator = changePasswordValidator;
@@ -83,28 +79,9 @@ namespace Application.Services.Implements
             return CreateAuthResponse(user);
         }
 
-        public void Logout(int userId, string token)
+        public void Logout(int userId)
         {
             _logRepo.LogAction(userId, "User logged out", "User", userId);
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                try
-                {
-                    var handler = new JwtSecurityTokenHandler();
-                    var jwtToken = handler.ReadJwtToken(token);
-                    var jti = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
-                    var exp = jwtToken.ValidTo;
-
-                    if (!string.IsNullOrEmpty(jti))
-                    {
-                        _blacklistService.BlacklistToken(jti, exp);
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
 
         public AuthResponseDto AdminCreateUser(AdminCreateUserRequestDto request)

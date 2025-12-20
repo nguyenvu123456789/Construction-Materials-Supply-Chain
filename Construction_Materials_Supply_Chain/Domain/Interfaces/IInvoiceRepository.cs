@@ -21,5 +21,6 @@ namespace Domain.Interface
         Invoice? GetByIdNoTracking(int id);
         Invoice? GetByCodeNoTracking(string invoiceCode);
         bool Exists(string invoiceCode);
+        List<Invoice> GetPendingInvoicesBySellerPartner(int sellerPartnerId);
     }
 }

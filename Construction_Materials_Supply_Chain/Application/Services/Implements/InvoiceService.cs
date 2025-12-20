@@ -2,6 +2,7 @@
 using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 
@@ -13,16 +14,19 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
+        private readonly IMapper _mapper;
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
             IPartnerRelationRepository partnerRelationRepository,
-            IOrderRepository orderRepository)
+            IOrderRepository orderRepository,
+            IMapper mapper)
         {
             _invoices = invoices;
             _materials = materials;
             _orderRepository = orderRepository;
             _partnerRelationRepository = partnerRelationRepository;
+            _mapper = mapper;
         }
 
         public Invoice CreateInvoice(CreateInvoiceDto dto)
@@ -356,6 +360,15 @@ namespace Services.Implementations
         }
         public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
+        public List<InvoiceDto> GetPendingInvoicesBySellerPartner(int sellerPartnerId)
+        {
+            if (sellerPartnerId <= 0)
+                throw new Exception(InvoiceMessages.INVALID_REQUEST);
+
+            var invoices = _invoices.GetPendingInvoicesBySellerPartner(sellerPartnerId);
+
+            return _mapper.Map<List<InvoiceDto>>(invoices);
+        }
 
     }
 }

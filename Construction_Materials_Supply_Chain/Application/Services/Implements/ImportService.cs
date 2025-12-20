@@ -14,6 +14,7 @@ namespace Services.Implementations
         private readonly IInventoryRepository _inventories;
         private readonly IImportDetailRepository _importDetails;
         private readonly IMaterialRepository _materialRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IMaterialPartnerRepository _materialPartners;
 
@@ -25,7 +26,8 @@ namespace Services.Implementations
             IImportDetailRepository importDetails,
             IMaterialRepository materialRepository,
             IMaterialPartnerRepository materialPartners,
-            IOrderDetailRepository orderDetailRepository)
+            IOrderDetailRepository orderDetailRepository,
+            IOrderRepository orderRepository)
         {
             _imports = imports;
             _invoices = invoices;
@@ -34,6 +36,7 @@ namespace Services.Implementations
             _materialRepository = materialRepository;
             _materialPartners = materialPartners;
             _orderDetailRepository = orderDetailRepository;
+            _orderRepository = orderRepository;
         }
 
         public Import CreateImportFromInvoice(string? importCode, string? invoiceCode, int warehouseId, int createdBy, string? notes)
@@ -140,15 +143,26 @@ namespace Services.Implementations
         private void UpdateOrderStatusIfFullyDelivered(int orderId, int materialId)
         {
             var orderDetail = _orderDetailRepository.GetByOrderAndMaterial(orderId, materialId);
-
             if (orderDetail == null)
                 return;
 
-            // Chỉ check, không cộng DeliveredQuantity
             if (orderDetail.DeliveredQuantity >= orderDetail.Quantity)
             {
                 orderDetail.Status = OrderDetailStatus.Success.ToString();
                 _orderDetailRepository.Update(orderDetail);
+            }
+
+            var allOrderDetails = _orderDetailRepository.GetByOrderId(orderId);
+
+            if (allOrderDetails.Any(od => od.Status != OrderDetailStatus.Success.ToString()))
+                return;
+
+            var order = _orderRepository.GetById(orderId);
+            if (order != null)
+            {
+                order.Status = StatusEnum.Success.ToStatusString();
+                order.UpdatedAt = DateTime.Now;
+                _orderRepository.Update(order);
             }
         }
 
@@ -233,9 +247,7 @@ namespace Services.Implementations
 
                 // CẬP NHẬT TỒN KHO 
                 UpdateInventory(warehouseId, material.MaterialId, m.Quantity);
-
             }
-
             return import;
         }
 

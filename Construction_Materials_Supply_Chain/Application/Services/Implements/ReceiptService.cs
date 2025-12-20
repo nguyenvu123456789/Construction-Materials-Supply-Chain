@@ -59,6 +59,12 @@ namespace Infrastructure.Services
                 var invoice = _invoiceRepository.GetByCode(dto.Invoices);
                 if (invoice == null)
                     throw new Exception($"Invoice Code {dto.Invoices} không tồn tại.");
+
+                bool isUsed = _receiptRepository.IsInvoiceUsed(dto.Invoices);
+                if (isUsed)
+                {
+                    throw new Exception($"Invoice Code {dto.Invoices} đã được sử dụng trong một phiếu thu khác.");
+                }
             }
 
             var receipt = _mapper.Map<Receipt>(dto);
@@ -157,6 +163,9 @@ namespace Infrastructure.Services
                 {
                     var invoice = _invoiceRepository.GetByCode(invoicesText);
                     if (invoice == null) continue;
+
+                    if (_receiptRepository.IsInvoiceUsed(invoicesText))
+                        continue;
                 }
 
                 if (!DateTime.TryParse(dateText, out DateTime createdDate)) createdDate = DateTime.Now;

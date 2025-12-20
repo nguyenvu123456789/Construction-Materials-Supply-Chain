@@ -335,6 +335,8 @@ namespace Services.Implementations
         }
         public Invoice? GetByIdWithDetails(int id) => _invoices.GetByIdWithDetails(id);
         public List<Invoice> GetAllWithDetails() => _invoices.GetAllWithDetails();
-
+        public List<Invoice>? GetInvoiceSeller(int partnerId) => _invoices.GetInvoiceSeller(partnerId);
+        public List<Invoice>? GetInvoiceBuyer(int partnerId) => _invoices.GetInvoiceBuyer(partnerId);
+        
     }
 }

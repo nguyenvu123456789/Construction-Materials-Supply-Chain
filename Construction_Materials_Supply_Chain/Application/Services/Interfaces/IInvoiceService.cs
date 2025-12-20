@@ -13,5 +13,7 @@ namespace Application.Interfaces
         InvoiceDto GetInvoiceForPartner(int invoiceId, int currentPartnerId);
         List<InvoiceDto> GetAllInvoicesForPartnerOrManager(int? partnerId, int? managerId);
         void MarkInvoicesAsDelivered(List<int> invoiceIds);
+        List<Invoice>? GetInvoiceBuyer(int partnerId);
+        List<Invoice>? GetInvoiceSeller(int partnerId);
     }
 }

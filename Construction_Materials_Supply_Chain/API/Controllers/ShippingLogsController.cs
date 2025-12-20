@@ -1,12 +1,14 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ShippingLogsController : ControllerBase
     {
         private readonly IShippingLogService _service;
@@ -19,6 +21,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin, Staff")]
         public ActionResult<IEnumerable<ShippingLogDto>> GetAllShippingLogs()
         {
             var logs = _service.GetAll();

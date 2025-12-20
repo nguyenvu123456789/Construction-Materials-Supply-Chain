@@ -105,5 +105,27 @@ namespace API.Controllers
                 message = InvoiceMessages.INVOICE_MARK_DELIVERED_SUCCESS
             });
         }
+
+        [HttpGet("by-partner-seller")]
+        public IActionResult GetInvoicesSeller([FromQuery] int partnerId)
+        {
+            var invoices = _invoiceService.GetInvoiceSeller(partnerId);
+
+            if (invoices == null || invoices.Count == 0)
+                return NotFound(new { message = InvoiceMessages.INVOICE_NOT_FOUND });
+
+            return Ok(invoices);
+        }
+
+        [HttpGet("by-partner-buyer")]
+        public IActionResult GetInvoicesBuyer([FromQuery] int partnerId)
+        {
+            var invoices = _invoiceService.GetInvoiceBuyer(partnerId);
+
+            if (invoices == null || invoices.Count == 0)
+                return NotFound(new { message = InvoiceMessages.INVOICE_NOT_FOUND });
+
+            return Ok(invoices);
+        }
     }
 }

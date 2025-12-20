@@ -52,5 +52,10 @@ namespace Infrastructure.Repositories
 
             return query.OrderBy(x => x.DateCreated).ToList();
         }
+
+        public bool IsInvoiceUsed(string invoiceCode)
+        {
+            return _dbSet.Any(p => p.Invoices == invoiceCode);
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace Application.Services.Implements
             var materialDict = materials.ToDictionary(m => m.MaterialId);
 
             var currentInvoices = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
+                .Where(i => i.ExportStatus == "Success" && i.IssueDate >= from && i.IssueDate <= to)
                 .ToList();
 
             var currentData = currentInvoices
@@ -71,7 +71,7 @@ namespace Application.Services.Implements
 
             var previousRange = GetPreviousPeriod(from, to);
             var previousInvoices = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= previousRange.from && i.IssueDate <= previousRange.to)
+                .Where(i => i.ExportStatus == "Success" && i.IssueDate >= previousRange.from && i.IssueDate <= previousRange.to)
                 .ToList();
 
             var previousRevenueByCategory = previousInvoices
@@ -112,7 +112,7 @@ namespace Application.Services.Implements
             var materialDict = materials.ToDictionary(m => m.MaterialId);
 
             var invoices = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= filter.From && i.IssueDate <= filter.To)
+                .Where(i => i.ExportStatus == "Success" && i.IssueDate >= filter.From && i.IssueDate <= filter.To)
                 .ToList();
 
             var data = invoices
@@ -124,7 +124,9 @@ namespace Application.Services.Implements
                         if (!materialDict.TryGetValue(d.MaterialId, out var material)) return null;
                         if (material.CategoryId != filter.CategoryId.Value) return null;
                     }
+
                     if (filter.PartnerId.HasValue && i.PartnerId != filter.PartnerId.Value) return null;
+
                     var quantity = Convert.ToDecimal(d.Quantity);
                     var revenue = d.LineTotal ?? quantity * d.UnitPrice;
                     return new
@@ -164,7 +166,6 @@ namespace Application.Services.Implements
         {
             var invoicesCurrent = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success"
-                         && i.InvoiceType == "Export"
                          && i.IssueDate >= from
                          && i.IssueDate <= to)
                 .ToList();
@@ -211,7 +212,6 @@ namespace Application.Services.Implements
 
             var invoicesPrevious = _invoices.GetAllWithDetails()
                 .Where(i => i.ExportStatus == "Success"
-                         && i.InvoiceType == "Export"
                          && i.IssueDate >= previousRange.from
                          && i.IssueDate <= previousRange.to)
                 .ToList();
@@ -275,9 +275,16 @@ namespace Application.Services.Implements
 
             var inventoryList = inventories.ToList();
 
-            var invoices = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
-                .ToList();
+            var invoicesQuery = _invoices.GetAllWithDetails().AsQueryable();
+
+            invoicesQuery = invoicesQuery.Where(i => i.ExportStatus == "Success" && i.IssueDate >= from && i.IssueDate <= to);
+
+            if (partnerId.HasValue)
+            {
+                invoicesQuery = invoicesQuery.Where(i => i.CreatedByNavigation.PartnerId == partnerId.Value);
+            }
+
+            var invoices = invoicesQuery.ToList();
 
             var soldByMaterial = invoices
                 .SelectMany(i => i.InvoiceDetails, (i, d) => new
@@ -411,14 +418,16 @@ namespace Application.Services.Implements
 
         public List<StockForecastDto> GetDemandForecast(DateTime from, DateTime to, TimeGranularity granularity, int? materialId = null, int? partnerId = null)
         {
-            var invoices = _invoices.GetAllWithDetails()
-                .Where(i => i.ExportStatus == "Success" && i.InvoiceType == "Export" && i.IssueDate >= from && i.IssueDate <= to)
-                .ToList();
+            var invoicesQuery = _invoices.GetAllWithDetails().AsQueryable();
+
+            invoicesQuery = invoicesQuery.Where(i => i.ExportStatus == "Success" && i.IssueDate >= from && i.IssueDate <= to);
 
             if (partnerId.HasValue)
             {
-                invoices = invoices.Where(i => i.PartnerId == partnerId.Value).ToList();
+                invoicesQuery = invoicesQuery.Where(i => i.CreatedByNavigation.PartnerId == partnerId.Value);
             }
+
+            var invoices = invoicesQuery.ToList();
 
             var series = invoices
                 .SelectMany(i => i.InvoiceDetails, (i, d) =>

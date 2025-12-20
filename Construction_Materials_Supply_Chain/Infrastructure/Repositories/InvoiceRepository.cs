@@ -11,6 +11,20 @@ namespace Infrastructure.Implementations
     {
         public InvoiceRepository(ScmVlxdContext context) : base(context) { }
 
+        public List<Invoice>? GetInvoiceSeller(int partnerId)
+        {
+            return _dbSet
+                .Where(i => i.CreatedByNavigation.PartnerId == partnerId && i.ExportStatus == "Success" && !_context.Receipts.Any(r => r.Invoices == i.InvoiceCode))
+                .ToList();
+        }
+
+        public List<Invoice>? GetInvoiceBuyer(int partnerId)
+        {
+            return _dbSet
+                .Where(i => i.PartnerId == partnerId && i.ImportStatus == "Success" || i.ImportStatus == "Delivered" && !_context.Payments.Any(p => p.Invoices == i.InvoiceCode))
+                .ToList();
+        }
+
         public Invoice? GetByCode(string invoiceCode)
         {
             return _dbSet
@@ -44,7 +58,7 @@ namespace Infrastructure.Implementations
                 .Include(i => i.Warehouse)
                 .Include(i => i.CreatedByNavigation)
                 .Include(i => i.Order)
-            .ThenInclude(o => o.Warehouse)
+                .ThenInclude(o => o.Warehouse)
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .Include(i => i.Partner)

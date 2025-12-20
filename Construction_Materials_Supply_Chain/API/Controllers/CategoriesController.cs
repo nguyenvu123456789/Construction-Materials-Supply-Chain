@@ -3,6 +3,7 @@ using Application.Constants.Messages;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -19,6 +20,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IActionResult Create([FromBody] Category category)
         {
             try
@@ -33,6 +35,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize]
         public IActionResult Update(int id, [FromBody] Category category)
         {
             try
@@ -48,6 +51,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             try
@@ -62,6 +66,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             var category = _categoryService.GetById(id);
@@ -79,6 +84,7 @@ namespace API.Controllers
         }
 
         [HttpGet("status/{status}")]
+        [Authorize]
         public IActionResult GetByStatus(string status)
         {
             var categories = _categoryService.GetByStatus(status);
@@ -86,6 +92,7 @@ namespace API.Controllers
         }
 
         [HttpGet("filter")]
+        [Authorize]
         public IActionResult GetFiltered([FromQuery] PagedQueryDto queryParams)
         {
             var categories = _categoryService.GetCategoriesFiltered(

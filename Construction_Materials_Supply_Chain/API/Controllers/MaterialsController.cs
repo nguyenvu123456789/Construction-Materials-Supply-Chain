@@ -4,6 +4,7 @@ using Application.DTOs.Material;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Route("api/[controller]")]
@@ -18,6 +19,7 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public IActionResult CreateMaterial([FromBody] CreateMaterialRequest request)
     {
         try
@@ -32,6 +34,7 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize]
     public IActionResult UpdateMaterial(int id, [FromBody] UpdateMaterialRequest request)
     {
         try
@@ -50,6 +53,7 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public IActionResult DeleteMaterial(int id)
     {
         try
@@ -68,6 +72,7 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpGet("buyer/{id:int}")]
+    [Authorize]
     public IActionResult GetByIdForBuyer(int id, [FromQuery] int? buyerPartnerId)
     {
         var partnerIdClaim = User.FindFirst("PartnerId")?.Value;
@@ -92,6 +97,8 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpGet("filter")]
+    [Authorize]
+
     public IActionResult GetMaterialsFiltered([FromQuery] PagedQueryDto queryParams)
     {
         var materials = _materialService.GetMaterialsFiltered(
@@ -114,6 +121,8 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpGet("by-category/{categoryId:int}")]
+    [Authorize]
+
     public IActionResult GetByCategory(int categoryId)
     {
         try
@@ -132,6 +141,7 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpGet("by-warehouse/{warehouseId:int}")]
+    [Authorize]
     public IActionResult GetByWarehouse(int warehouseId, [FromQuery] string? term)
     {
         try

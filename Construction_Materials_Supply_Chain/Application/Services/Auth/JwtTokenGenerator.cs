@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Common;
+using Application.MappingProfile;
 using Application.Services.Auth;
 using Domain.Models;
 using Microsoft.Extensions.Options;
@@ -38,11 +39,13 @@ namespace Infrastructure.Auth
 
             if (roles != null)
             {
-                foreach (var role in roles)
+                foreach (var roleName in roles)
                 {
-                    claims.Add(new Claim(ClaimTypes.Role, role));
+                    var roleCode = RoleMapper.MapFromDb(roleName);
+                    claims.Add(new Claim(ClaimTypes.Role, roleCode.ToString()));
                 }
             }
+
 
             if (user.PartnerId != null)
             {

@@ -315,9 +315,9 @@ namespace Application.MappingProfile
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt ?? DateTime.MinValue));
 
             CreateMap<ExportDetail, ExportDetailResponseDto>()
-                .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.Material.MaterialCode))
-                .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material.MaterialName))
-                .ForMember(d => d.LineTotal, o => o.MapFrom(s => s.Quantity * s.UnitPrice));
+                .ForMember(d => d.MaterialCode, o => o.MapFrom(s => s.MaterialCode))
+                .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.MaterialName))
+                .ForMember(d => d.LineTotal, o => o.MapFrom(s => s.LineTotal));
 
         }
 

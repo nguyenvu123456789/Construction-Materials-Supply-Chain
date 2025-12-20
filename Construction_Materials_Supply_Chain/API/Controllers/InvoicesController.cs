@@ -31,6 +31,20 @@ namespace API.Controllers
             return Ok(invoices);
         }
 
+        [HttpGet("pending/seller/{partnerId:int}")]
+        public IActionResult GetPendingInvoicesBySellerPartner(int partnerId)
+        {
+            try
+            {
+                var result = _invoiceService.GetPendingInvoicesBySellerPartner(partnerId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("from-order")]
         public IActionResult CreateInvoiceFromOrder([FromBody] CreateInvoiceFromOrderDto dto)
         {

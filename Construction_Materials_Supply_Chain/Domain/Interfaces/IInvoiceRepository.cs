@@ -23,5 +23,6 @@ namespace Domain.Interface
         bool Exists(string invoiceCode);
         List<Invoice>? GetInvoiceSeller(int partnerId);
         List<Invoice>? GetInvoiceBuyer(int partnerId);
+        List<Invoice> GetPendingInvoicesBySellerPartner(int sellerPartnerId);
     }
 }

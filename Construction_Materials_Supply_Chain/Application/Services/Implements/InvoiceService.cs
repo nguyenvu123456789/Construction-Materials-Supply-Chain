@@ -2,6 +2,7 @@
 using Application.Constants.Messages;
 using Application.DTOs;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Interface;
 using Domain.Models;
 
@@ -13,17 +14,19 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
-        private static int _invoiceCounter = 99;
+        private readonly IMapper _mapper;
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
             IPartnerRelationRepository partnerRelationRepository,
-            IOrderRepository orderRepository)
+            IOrderRepository orderRepository,
+            IMapper mapper)
         {
             _invoices = invoices;
             _materials = materials;
             _orderRepository = orderRepository;
             _partnerRelationRepository = partnerRelationRepository;
+            _mapper = mapper;
         }
 
         public Invoice CreateInvoice(CreateInvoiceDto dto)
@@ -68,11 +71,11 @@ namespace Services.Implementations
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
-            if (order == null)
+            if (order == null)  
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
             if (order.Status != StatusEnum.Approved.ToStatusString()
-                && order.Status != StatusEnum.Invoiced.ToStatusString())
+                && order.Status != StatusEnum.Processing.ToStatusString())
             {
                 throw new Exception(InvoiceMessages.ORDER_NOT_APPROVED);
             }
@@ -206,9 +209,31 @@ namespace Services.Implementations
 
         private string GenerateInvoiceCode()
         {
-            int next = Interlocked.Increment(ref _invoiceCounter);
-            return $"INV-{next}";
+            // Lấy InvoiceCode lớn nhất trong DB
+            var lastCode = _invoices.GetAll()
+                .Where(i => i.InvoiceCode.StartsWith("INV-"))
+                .OrderByDescending(i => i.InvoiceCode)
+                .Select(i => i.InvoiceCode)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (!string.IsNullOrEmpty(lastCode))
+            {
+                // INV-001 → 001
+                var numberPart = lastCode.Substring(4);
+
+                if (int.TryParse(numberPart, out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            // Format 3 chữ số
+            return $"INV-{nextNumber:D3}";
         }
+
+
 
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {
@@ -338,5 +363,15 @@ namespace Services.Implementations
         public List<Invoice>? GetInvoiceSeller(int partnerId) => _invoices.GetInvoiceSeller(partnerId);
         public List<Invoice>? GetInvoiceBuyer(int partnerId) => _invoices.GetInvoiceBuyer(partnerId);
         
+        public List<InvoiceDto> GetPendingInvoicesBySellerPartner(int sellerPartnerId)
+        {
+            if (sellerPartnerId <= 0)
+                throw new Exception(InvoiceMessages.INVALID_REQUEST);
+
+            var invoices = _invoices.GetPendingInvoicesBySellerPartner(sellerPartnerId);
+
+            return _mapper.Map<List<InvoiceDto>>(invoices);
+        }
+
     }
 }

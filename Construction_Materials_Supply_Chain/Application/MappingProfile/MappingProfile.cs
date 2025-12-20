@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using Application.Constants.Enums;
+using Application.DTOs;
 using Application.DTOs.Relations;
 using Application.DTOs.RelationType;
 using AutoMapper;
@@ -67,6 +68,23 @@ namespace Application.MappingProfile
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy));
 
             CreateMap<Invoice, SimpleInvoiceDto>();
+
+            CreateMap<Invoice, InvoiceDto>()
+                .ForMember(d => d.PartnerName,
+                    o => o.MapFrom(s => s.Partner != null
+                        ? s.Partner.PartnerName
+                        : "Không xác định"))
+                .ForMember(d => d.WarehouseName,
+                    o => o.MapFrom(s => s.Warehouse != null
+                        ? s.Warehouse.WarehouseName
+                        : "Không xác định"))
+                .ForMember(d => d.Status,
+                    o => o.MapFrom(s =>
+                        s.ExportStatus == StatusEnum.Pending.ToStatusString()
+                            ? s.ExportStatus
+                            : s.ImportStatus
+                    ));
+
             CreateMap<Import, SimpleImportDto>();
             CreateMap<ImportReportDetail, ImportReportDetailDto>();
 

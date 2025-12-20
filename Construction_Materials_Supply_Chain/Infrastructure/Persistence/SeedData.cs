@@ -59,22 +59,31 @@ namespace Infrastructure.Persistence
             // Seed Partners
             if (!context.Partners.Any())
             {
+                var supplierType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà cung cấp");
+                var distributorType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà phân phối");
+                var agentType = context.PartnerTypes.First(pt => pt.TypeName == "Đại lý");
+                var customerType = context.PartnerTypes.First(pt => pt.TypeName == "Khách hàng lẻ");
+                var strategicType = context.PartnerTypes.First(pt => pt.TypeName == "Đối tác chiến lược");
+                var contractorType = context.PartnerTypes.First(pt => pt.TypeName == "Nhà thầu");
+                var collaboratorType = context.PartnerTypes.First(pt => pt.TypeName == "Cộng tác viên");
+
                 context.Partners.AddRange(
-                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = 1, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active" },
-                    new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = 1, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active" },
-                    new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = 2, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active" },
-                    new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = 3, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active" },
-                    new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = 3, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active" },
-                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = 2, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active" },
-                    new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = 2, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active" },
-                    new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = 3, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active" },
-                    new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = 3, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active" },
-                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = 2, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" },
-                    new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = 2, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active" },
-                    new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = 3, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active" },
-                    new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = 3, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active" },
-                    new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = 2, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active" }
+                    new Partner { PartnerCode = "P001", PartnerName = "Công ty Gỗ Việt", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "contact@goviet.vn", ContactPhone = "0903123456", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P002", PartnerName = "Thép Hòa Phát", PartnerTypeId = supplierType.PartnerTypeId, ContactEmail = "info@hoaphatsteel.vn", ContactPhone = "0911222333", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P003", PartnerName = "Nhựa Duy Tân", PartnerTypeId = distributorType.PartnerTypeId, ContactEmail = "sales@duytanplastic.vn", ContactPhone = "0988999777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P004", PartnerName = "Đại lý Minh Tâm", PartnerTypeId = agentType.PartnerTypeId, ContactEmail = "minhtam@agent.vn", ContactPhone = "0933444555", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P005", PartnerName = "Khách hàng Lê Văn A", PartnerTypeId = customerType.PartnerTypeId, ContactEmail = "levana@customer.vn", ContactPhone = "0915666777", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P006", PartnerName = "Công ty xây dựng Sài Gòn", PartnerTypeId = contractorType.PartnerTypeId, ContactEmail = "saigonbuild@contractor.vn", ContactPhone = "0909777888", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P007", PartnerName = "Cộng tác viên Nguyễn Thị B", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "nguyenb@collaborator.vn", ContactPhone = "0922333444", Status = "Active" },
+                    new Partner { PartnerCode = "P008", PartnerName = "Admin Nguyễn Văn", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "admin@scmvlxd.vn", ContactPhone = "0901234567", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = tayHo } } },
+                    new Partner { PartnerCode = "P009", PartnerName = "Quản lý Trần Thị", PartnerTypeId = strategicType.PartnerTypeId, ContactEmail = "manager1@scmvlxd.vn", ContactPhone = "0912345678", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P010", PartnerName = "Nhân viên Lê Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "staff01@scmvlxd.vn", ContactPhone = "0923456789", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = baDinh } } },
+                    new Partner { PartnerCode = "P011", PartnerName = "Kế toán Phạm Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "accountant1@scmvlxd.vn", ContactPhone = "0934567890", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P012", PartnerName = "Bán hàng Ngô Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "sales1@scmvlxd.vn", ContactPhone = "0945678901", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P013", PartnerName = "Hỗ trợ Vũ Thị", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "support1@scmvlxd.vn", ContactPhone = "0956789012", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } },
+                    new Partner { PartnerCode = "P014", PartnerName = "Kiểm kho Đỗ Văn", PartnerTypeId = collaboratorType.PartnerTypeId, ContactEmail = "inventory1@scmvlxd.vn", ContactPhone = "0967890123", Status = "Active", PartnerRegions = new List<PartnerRegion> { new PartnerRegion { Region = thanhXuan } } }
                 );
+
                 context.SaveChanges();
             }
 
@@ -150,10 +159,9 @@ namespace Infrastructure.Persistence
                     new User { UserName = "support2", Email = "support2@scmvlxd.vn", FullName = "Mai Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0977777777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
                     new User { UserName = "customer2", Email = "customer2@customer.vn", FullName = "Nguyễn Văn Khách", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0978888888", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
                     new User { UserName = "customer3", Email = "customer3@customer.vn", FullName = "Trần Thị Khách", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0979999999", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
-                    new User { UserName = "analysis", Email = "collaborator2@collaborator.vn", FullName = "Đặng Văn Cộng Tác", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0981111111", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 }
+                    new User { UserName = "collaborator2", Email = "collaborator2@collaborator.vn", FullName = "Đặng Văn Cộng Tác", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0981111111", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 }
 
                 );
-
                 context.SaveChanges();
 
                 var adminRole = context.Roles.First(r => r.RoleName == "Quản trị viên");
@@ -172,8 +180,7 @@ namespace Infrastructure.Persistence
                     new UserRole { UserId = context.Users.First(u => u.UserName == "sales1").UserId, RoleId = 2, AssignedAt = DateTime.Now },
                     new UserRole { UserId = context.Users.First(u => u.UserName == "support1").UserId, RoleId = 3, AssignedAt = DateTime.Now },
                     new UserRole { UserId = context.Users.First(u => u.UserName == "inventory1").UserId, RoleId = 4, AssignedAt = DateTime.Now }, new UserRole { UserId = context.Users.First(u => u.UserName == "customer1").UserId, RoleId = salesRole.RoleId, AssignedAt = DateTime.Now },
-                    new UserRole { UserId = context.Users.First(u => u.UserName == "collaborator1").UserId, RoleId = supportRole.RoleId, AssignedAt = DateTime.Now },
-                    new UserRole { UserId = context.Users.First(u => u.UserName == "analysis").UserId, RoleId = accountantRole.RoleId, AssignedAt = DateTime.Now }
+                    new UserRole { UserId = context.Users.First(u => u.UserName == "collaborator1").UserId, RoleId = supportRole.RoleId, AssignedAt = DateTime.Now }
                 );
                 context.SaveChanges();
             }
@@ -754,7 +761,7 @@ namespace Infrastructure.Persistence
                         context.ExportReportDetails.AddRange(
                             new ExportReportDetail
                             {
-                                ExportReportId = report.ExportReportId, 
+                                ExportReportId = report.ExportReportId, // Bắt buộc
                                 MaterialId = reportMaterials[0].MaterialId,
                                 QuantityDamaged = 2,
                                 Reason = "Hư hỏng trong vận chuyển",
@@ -947,7 +954,7 @@ namespace Infrastructure.Persistence
                 }
             }
 
-            // 1️0 Seed Orders
+            // 1️⃣ Seed Orders
             var ord1 = context.Orders.SingleOrDefault(o => o.OrderCode == "ORD-001");
             if (ord1 == null)
             {
@@ -1002,19 +1009,19 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
             }
 
-            var invImp1 = EnsureInvoice("INV-008", "Import", pSupp1.PartnerId, userManager.UserId,
-                DateTime.Now.AddDays(-12), DateTime.Now.AddDays(5), "Success", ord1.OrderId);
+            var invImp1 = EnsureInvoice("IMP-001", "Import", pSupp1.PartnerId, userManager.UserId,
+    DateTime.Now.AddDays(-12), DateTime.Now.AddDays(5), "Success", ord1.OrderId);
 
-            var invImp2 = EnsureInvoice("INV-009", "Import", pSupp2.PartnerId, userManager.UserId,
+            var invImp2 = EnsureInvoice("IMP-002", "Import", pSupp2.PartnerId, userManager.UserId,
                 DateTime.Now.AddDays(-10), DateTime.Now.AddDays(7), "Success", ord2.OrderId);
 
-            var invExp1 = EnsureInvoice("INV-010", "Export", pRetail.PartnerId, userStaff.UserId,
+            var invExp1 = EnsureInvoice("EXP-001", "Export", pRetail.PartnerId, userStaff.UserId,
                 DateTime.Now.AddDays(-9), DateTime.Now.AddDays(10), "Success", ord1.OrderId);
 
-            var invExp2 = EnsureInvoice("INV-011", "Export", pAgent.PartnerId, userStaff.UserId,
+            var invExp2 = EnsureInvoice("EXP-002", "Export", pAgent.PartnerId, userStaff.UserId,
                 DateTime.Now.AddDays(-7), DateTime.Now.AddDays(12), "Success", ord3.OrderId);
 
-            // 3️ Seed InvoiceDetails
+            // 3️⃣ Seed InvoiceDetails
             EnsureInvoiceDetails(invImp1, new[]
             {
                 (matWood.MaterialId, 30, 255000),

@@ -13,7 +13,6 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materials;
         private readonly IOrderRepository _orderRepository;
         private readonly IPartnerRelationRepository _partnerRelationRepository;
-        private static int _invoiceCounter = 99;
         public InvoiceService(
             IInvoiceRepository invoices,
             IMaterialRepository materials,
@@ -68,7 +67,7 @@ namespace Services.Implementations
         public List<Invoice> CreateInvoiceFromOrder(CreateInvoiceFromOrderDto dto)
         {
             var order = _orderRepository.GetByCode(dto.OrderCode);
-            if (order == null)
+            if (order == null)  
                 throw new Exception(InvoiceMessages.ORDER_NOT_FOUND);
 
             if (order.Status != StatusEnum.Approved.ToStatusString()
@@ -206,9 +205,31 @@ namespace Services.Implementations
 
         private string GenerateInvoiceCode()
         {
-            int next = Interlocked.Increment(ref _invoiceCounter);
-            return $"INV-{next}";
+            // Lấy InvoiceCode lớn nhất trong DB
+            var lastCode = _invoices.GetAll()
+                .Where(i => i.InvoiceCode.StartsWith("INV-"))
+                .OrderByDescending(i => i.InvoiceCode)
+                .Select(i => i.InvoiceCode)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (!string.IsNullOrEmpty(lastCode))
+            {
+                // INV-001 → 001
+                var numberPart = lastCode.Substring(4);
+
+                if (int.TryParse(numberPart, out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            // Format 3 chữ số
+            return $"INV-{nextNumber:D3}";
         }
+
+
 
         public Invoice? UpdateExportStatus(int id, string newStatus)
         {

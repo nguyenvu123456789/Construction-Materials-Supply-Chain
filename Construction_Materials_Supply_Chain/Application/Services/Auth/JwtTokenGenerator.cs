@@ -30,6 +30,7 @@ namespace Infrastructure.Auth
         {
             var claims = new List<Claim>
             {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
                 new Claim("username", user.UserName ?? string.Empty)

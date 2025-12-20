@@ -16,7 +16,6 @@ namespace Services.Implementations
         private readonly IMaterialRepository _materialRepository;
         private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IMaterialPartnerRepository _materialPartners;
-        private static int _importCounter = 99;
 
 
         public ImportService(
@@ -326,9 +325,27 @@ namespace Services.Implementations
         }
         private string GenerateImportCode()
         {
-            int next = Interlocked.Increment(ref _importCounter);
-            return $"IMP-{next}";
+            var lastCode = _invoices.GetAll()
+                .Where(i => i.InvoiceCode.StartsWith("IMP-"))
+                .OrderByDescending(i => i.InvoiceCode)
+                .Select(i => i.InvoiceCode)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (!string.IsNullOrEmpty(lastCode))
+            {
+                var numberPart = lastCode.Substring(4);
+
+                if (int.TryParse(numberPart, out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            return $"IMP-{nextNumber:D3}";
         }
+
 
     }
 }

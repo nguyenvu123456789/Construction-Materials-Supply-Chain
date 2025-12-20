@@ -618,7 +618,7 @@ namespace Infrastructure.Persistence
                     new Import { ImportCode = "IMP-004", ImportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Nhập gạch", Status = "Success", CreatedAt = DateTime.Now },
                     new Import { ImportCode = "IMP-005", ImportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Nhập sơn", Status = "Success", CreatedAt = DateTime.Now },
                     new Import { ImportCode = "IMP-006", ImportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Nhập kính", Status = "Success", CreatedAt = DateTime.Now },
-                    new Import { ImportCode = "IMP-SUCCESS-001", ImportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Phiếu nhập đã hoàn thành", Status = "Success", CreatedAt = DateTime.Now }
+                    new Import { ImportCode = "IMP-007", ImportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Phiếu nhập đã hoàn thành", Status = "Success", CreatedAt = DateTime.Now }
                 );
 
                 context.SaveChanges();
@@ -791,12 +791,12 @@ namespace Infrastructure.Persistence
                 var staff = context.Users.FirstOrDefault(u => u.UserName == "staff01") ?? throw new InvalidOperationException("User staff01 not found.");
                 var whHN = context.Warehouses.FirstOrDefault(w => w.WarehouseName == "Kho Hà Nội") ?? throw new InvalidOperationException("Warehouse Kho Hà Nội not found.");
 
-                var prj1 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-001");
-                var prj2 = context.Exports.FirstOrDefault(e => e.ExportCode == "PRJ-002");
+                var prj1 = context.Exports.FirstOrDefault(e => e.ExportCode == "EXP-008");
+                var prj2 = context.Exports.FirstOrDefault(e => e.ExportCode == "EXP-009");
 
-                if (prj1 == null) { prj1 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-10), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10), InvoiceId = 1 }; context.Exports.Add(prj1); context.SaveChanges(); }
+                if (prj1 == null) { prj1 = new Export { ExportCode = "EXP-008", ExportDate = DateTime.Now.AddDays(-10), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10), InvoiceId = 1 }; context.Exports.Add(prj1); context.SaveChanges(); }
 
-                if (prj2 == null) { prj2 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-4), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4), InvoiceId = 2 }; context.Exports.Add(prj2); context.SaveChanges(); }
+                if (prj2 == null) { prj2 = new Export { ExportCode = "EXP-009", ExportDate = DateTime.Now.AddDays(-4), WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4), InvoiceId = 2 }; context.Exports.Add(prj2); context.SaveChanges(); }
 
                 // ===== Update ExportDate =====
                 prj1.ExportDate = DateTime.Now.AddDays(-12);
@@ -835,9 +835,9 @@ namespace Infrastructure.Persistence
                 var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var pHoaPhat = context.Partners.First(p => p.PartnerCode == "P002");
 
-                var invI1 = new Invoice { InvoiceCode = "IMP-001", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), ImportStatus = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
-                var invI2 = new Invoice { InvoiceCode = "IMP-002", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(2), ImportStatus = "Pending", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
-                var invE1 = new Invoice { InvoiceCode = "EXP-001", InvoiceType = "Export", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(4), ExportStatus = "Success", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
+                var invI1 = new Invoice { InvoiceCode = "INV-008", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), ImportStatus = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
+                var invI2 = new Invoice { InvoiceCode = "INV-009", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(2), ImportStatus = "Pending", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
+                var invE1 = new Invoice { InvoiceCode = "INV-010", InvoiceType = "Export", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(4), ExportStatus = "Success", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
 
                 context.Invoices.AddRange(invI1, invI2, invE1);
                 context.SaveChanges();

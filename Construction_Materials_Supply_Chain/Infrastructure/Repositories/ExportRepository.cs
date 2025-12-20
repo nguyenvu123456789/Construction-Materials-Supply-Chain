@@ -38,6 +38,7 @@ namespace Infrastructure.Implementations
                 .Include(e => e.Warehouse)
                     .ThenInclude(w => w.Manager)
                 .Include(e => e.ExportDetails)
+                    .ThenInclude(d => d.Material)
                 .ToList();
         }
         public Export? GetByInvoiceId(int invoiceId)

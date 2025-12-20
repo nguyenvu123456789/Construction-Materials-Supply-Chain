@@ -1,4 +1,5 @@
-﻿using Domain.Interface;
+﻿using Application.Constants.Enums;
+using Domain.Interface;
 using Domain.Models;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories.Base;
@@ -116,6 +117,25 @@ namespace Infrastructure.Implementations
             return _dbSet.Any(i =>
                 i.InvoiceCode.Trim().ToUpper() == invoiceCode.Trim().ToUpper());
         }
+        public List<Invoice> GetPendingInvoicesBySellerPartner(int sellerPartnerId)
+        {
+            return _context.Invoices
+                .Include(i => i.CreatedByNavigation)
+                    .ThenInclude(u => u.Partner)
+                .Include(i => i.Warehouse)
+                .Include(i => i.Partner)
+                .Where(i =>
+                    i.CreatedByNavigation.PartnerId == sellerPartnerId
+                    && (
+                      i.ImportStatus == StatusEnum.Pending.ToStatusString()
+                    )
+                )
+                .OrderByDescending(i => i.CreatedAt)
+                .AsNoTracking()
+                .ToList();
+        }
+
+
 
     }
 }

@@ -88,7 +88,7 @@ namespace Infrastructure.Persistence
             }
 
             // Seed thêm 10 partner thuộc các tỉnh
-            if (!context.Partners.Any(p => p.PartnerCode.StartsWith("PX")))
+            if (!context.Partners.Any(p => p.PartnerCode.StartsWith("P")))
             {
                 var allRegions = context.Regions.ToList();
                 var rnd = new Random();
@@ -108,7 +108,7 @@ namespace Infrastructure.Persistence
 
                     newPartners.Add(new Partner
                     {
-                        PartnerCode = $"PX{i:000}",
+                        PartnerCode = $"P{i:000}",
                         PartnerName = $"Đối tác Tỉnh Số {i}",
                         PartnerTypeId = supplierType.PartnerTypeId,
                         ContactEmail = $"province{i}@partner.vn",
@@ -148,7 +148,19 @@ namespace Infrastructure.Persistence
                     new User { UserName = "support1", Email = "support1@scmvlxd.vn", FullName = "Vũ Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0956789012", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
                     new User { UserName = "inventory1", Email = "inventory1@scmvlxd.vn", FullName = "Đỗ Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0967890123", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
                     new User { UserName = "customer1", Email = "levana@customer.vn", FullName = "Lê Văn A", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0915666777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
-                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 }
+                    new User { UserName = "collaborator1", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 },
+                    new User { UserName = "collaborator", Email = "nguyenb@collaborator.vn", FullName = "Nguyễn Thị B", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0922333444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 },
+                    new User { UserName = "manager2", Email = "manager2@scmvlxd.vn", FullName = "Hoàng Văn Quản Lý", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0971111111", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "staff02", Email = "staff02@scmvlxd.vn", FullName = "Nguyễn Thị Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0972222222", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "staff03", Email = "staff03@scmvlxd.vn", FullName = "Phan Văn Nhân Viên", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0973333333", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 1 },
+                    new User { UserName = "accountant2", Email = "accountant2@scmvlxd.vn", FullName = "Lưu Thị Kế Toán", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0974444444", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 2 },
+                    new User { UserName = "inventory2", Email = "inventory2@scmvlxd.vn", FullName = "Bùi Văn Kiểm Kho", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0975555555", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 2 },
+                    new User { UserName = "sales2", Email = "sales2@scmvlxd.vn", FullName = "Trịnh Văn Bán Hàng", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0976666666", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
+                    new User { UserName = "support2", Email = "support2@scmvlxd.vn", FullName = "Mai Thị Hỗ Trợ", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0977777777", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 3 },
+                    new User { UserName = "customer2", Email = "customer2@customer.vn", FullName = "Nguyễn Văn Khách", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0978888888", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
+                    new User { UserName = "customer3", Email = "customer3@customer.vn", FullName = "Trần Thị Khách", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0979999999", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 4 },
+                    new User { UserName = "collaborator2", Email = "collaborator2@collaborator.vn", FullName = "Đặng Văn Cộng Tác", PasswordHash = "73l8gRjwLftklgfdXT+MdiMEjJwGPVMsyVxe16iYpk8=", Phone = "0981111111", Status = "Active", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, PartnerId = 5 }
+
                 );
                 context.SaveChanges();
 
@@ -533,7 +545,7 @@ namespace Infrastructure.Persistence
                         CreatedBy = manager.UserId,
                         OrderId = order.OrderId,
                         IssueDate = DateTime.Now,
-                        ExportStatus = "Pending",
+                        ExportStatus = "Success",
                         Address = order.DeliveryAddress,
                         TotalAmount = totalLine,
                         DiscountAmount = discount,
@@ -560,7 +572,7 @@ namespace Infrastructure.Persistence
             if (!context.Imports.Any())
             {
                 var pendingInvoices = context.Invoices
-                    .Where(i => i.InvoiceType == "Import" && i.ImportStatus == "Pending")
+                    .Where(i => i.InvoiceType == "Import" && i.ImportStatus == "Success")
                     .ToList();
 
                 var manager = context.Users.First(u => u.UserName == "manager1");
@@ -575,7 +587,7 @@ namespace Infrastructure.Persistence
                         WarehouseId = wh1.WarehouseId,
                         CreatedBy = invoice.CreatedBy,
                         Notes = $"Tự động nhập từ hóa đơn {invoice.InvoiceCode}",
-                        Status = "Pending",
+                        Status = "Success",
                         CreatedAt = DateTime.Now
                     };
                     context.Imports.Add(import);
@@ -651,7 +663,7 @@ namespace Infrastructure.Persistence
                 new Export { ExportCode = "EXP-004", InvoiceId = 4, ExportDate = DateTime.Now.AddDays(-2), WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Xuất gạch và xi măng", Status = "Success", CreatedAt = DateTime.Now },
                 new Export { ExportCode = "EXP-005", InvoiceId = 5, ExportDate = DateTime.Now.AddDays(-1), WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Xuất sơn và kính", Status = "Success", CreatedAt = DateTime.Now },
                 new Export { ExportCode = "EXP-006", InvoiceId = 6, ExportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Xuất gỗ và thép", Status = "Success", CreatedAt = DateTime.Now },
-                new Export { ExportCode = "EXP-007", InvoiceId = 6, ExportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Phiếu xuất đang chờ duyệt", Status = "Pending", CreatedAt = DateTime.Now }
+                new Export { ExportCode = "EXP-007", InvoiceId = 6, ExportDate = DateTime.Now, WarehouseId = wh1.WarehouseId, CreatedBy = manager.UserId, Notes = "Phiếu xuất đang chờ duyệt", Status = "Success", CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
 
@@ -692,7 +704,7 @@ namespace Infrastructure.Persistence
                             CreatedBy = managerUserId,
                             Notes = $"Báo cáo nhập số {importReportCounter}",
                             CreatedAt = DateTime.Now,
-                            Status = "Pending",
+                            Status = "Success",
                             ImportReportCode = $"IR-{importReportCounter:D3}"
                         };
                         context.ImportReports.Add(report);
@@ -726,19 +738,18 @@ namespace Infrastructure.Persistence
                 // ==================== ExportReport ====================
                 if (!context.ExportReports.Any())
                 {
-                    var exports = context.Exports.Take(10).ToList(); // Lấy 10 export đầu tiên
+                    var exports = context.Exports.Take(10).ToList(); 
                     int exportReportCounter = 1;
 
                     foreach (var export in exports)
                     {
-                        // Tạo ExportReport
                         var report = new ExportReport
                         {
-                            ExportId = export.ExportId,              // Bắt buộc liên kết ExportId
+                            ExportId = export.ExportId,       
                             ReportedBy = managerUserId,
                             Notes = $"Báo cáo xuất số {exportReportCounter}",
                             ReportDate = DateTime.Now,
-                            Status = "Pending",
+                            Status = "Success",
                             ExportReportCode = $"ER-{exportReportCounter:D3}"
                         };
                         context.ExportReports.Add(report);
@@ -778,10 +789,10 @@ namespace Infrastructure.Persistence
                     var invUser = context.Users.First(u => u.UserName == "inventory1");
                     var mats = context.Materials.ToList();
                     var wh = context.Warehouses.First();
-
+                        
                     context.MaterialChecks.AddRange(
                         new MaterialCheck { UserId = invUser.UserId, WarehouseId = wh.WarehouseId, CheckDate = DateTime.Now.AddHours(-6), Notes = "Đợt kiểm kê đột xuất", Status = "Approved", Details = { new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "W001").MaterialId, SystemQty = 120, ActualQty = 115, Reason = "Mất 5 tấm" }, new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "M001").MaterialId, SystemQty = 80, ActualQty = 80, Reason = "Khớp số liệu" } } },
-                        new MaterialCheck { UserId = invUser.UserId, WarehouseId = wh.WarehouseId, CheckDate = DateTime.Now.AddHours(-20), Notes = "Kiểm kê theo lịch", Status = "Pending", Details = { new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "P001").MaterialId, SystemQty = 210, ActualQty = 210, Reason = "Nhập bù chưa hạch toán" }, new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "C001").MaterialId, SystemQty = 150, ActualQty = 140, Reason = "Hao hụt / đổ vỡ" } } }
+                        new MaterialCheck { UserId = invUser.UserId, WarehouseId = wh.WarehouseId, CheckDate = DateTime.Now.AddHours(-20), Notes = "Kiểm kê theo lịch", Status = "Success", Details = { new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "P001").MaterialId, SystemQty = 210, ActualQty = 210, Reason = "Nhập bù chưa hạch toán" }, new MaterialCheckDetail { MaterialId = mats.First(m => m.MaterialCode == "C001").MaterialId, SystemQty = 150, ActualQty = 140, Reason = "Hao hụt / đổ vỡ" } } }
                     );
 
                     context.SaveChanges();
@@ -835,8 +846,8 @@ namespace Infrastructure.Persistence
                 var pGoviet = context.Partners.First(p => p.PartnerCode == "P001");
                 var pHoaPhat = context.Partners.First(p => p.PartnerCode == "P002");
 
-                var invI1 = new Invoice { InvoiceCode = "INV-008", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), ImportStatus = "Approved", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
-                var invI2 = new Invoice { InvoiceCode = "INV-009", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(2), ImportStatus = "Pending", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
+                var invI1 = new Invoice { InvoiceCode = "INV-008", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-12), DueDate = DateTime.Now.AddDays(-2), ImportStatus = "Success", CreatedAt = DateTime.Now.AddDays(-12), TotalAmount = 0m };
+                var invI2 = new Invoice { InvoiceCode = "INV-009", InvoiceType = "Import", PartnerId = pGoviet.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-9), DueDate = DateTime.Now.AddDays(2), ImportStatus = "Success", CreatedAt = DateTime.Now.AddDays(-9), TotalAmount = 0m };
                 var invE1 = new Invoice { InvoiceCode = "INV-010", InvoiceType = "Export", PartnerId = pHoaPhat.PartnerId, CreatedBy = manager.UserId, IssueDate = DateTime.Now.AddDays(-6), DueDate = DateTime.Now.AddDays(4), ExportStatus = "Success", CreatedAt = DateTime.Now.AddDays(-6), TotalAmount = 0m };
 
                 context.Invoices.AddRange(invI1, invI2, invE1);
@@ -868,14 +879,14 @@ namespace Infrastructure.Persistence
                 context.SaveChanges();
                 }
 
-            if (!context.Exports.Any(e => e.ExportCode.StartsWith("PRJ-")))
+            if (!context.Exports.Any(e => e.ExportCode.StartsWith("EXP-")))
             {
                 var staff = context.Users.First(u => u.UserName == "staff01");
                 var whHN = context.Warehouses.First(w => w.WarehouseName == "Kho Hà Nội");
-                var ex1 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-10), InvoiceId = 1, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10) };
-                var ex2 = new Export { ExportCode = "PRJ-001", ExportDate = DateTime.Now.AddDays(-7), InvoiceId = 2, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-7) };
-                var ex3 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-4), InvoiceId = 3, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4) };
-                var ex4 = new Export { ExportCode = "PRJ-002", ExportDate = DateTime.Now.AddDays(-1), InvoiceId = 4, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-1) };
+                var ex1 = new Export { ExportCode = "EXP-001", ExportDate = DateTime.Now.AddDays(-10), InvoiceId = 1, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-10) };
+                var ex2 = new Export { ExportCode = "EXP-001", ExportDate = DateTime.Now.AddDays(-7), InvoiceId = 2, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình A", Status = "Success", CreatedAt = DateTime.Now.AddDays(-7) };
+                var ex3 = new Export { ExportCode = "EXP-002", ExportDate = DateTime.Now.AddDays(-4), InvoiceId = 3, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-4) };
+                var ex4 = new Export { ExportCode = "EXP-002", ExportDate = DateTime.Now.AddDays(-1), InvoiceId = 4, WarehouseId = whHN.WarehouseId, CreatedBy = staff.UserId, Notes = "Xuất công trình B", Status = "Success", CreatedAt = DateTime.Now.AddDays(-1) };
                 context.Exports.AddRange(ex1, ex2, ex3, ex4);
                 context.SaveChanges();
 
@@ -953,7 +964,7 @@ namespace Infrastructure.Persistence
                     CustomerName = "Retail Customer 1",
                     PhoneNumber = "0909123456",
                     DeliveryAddress = "123 Retail St.",
-                    Status = "Pending",
+                    Status = "Success",
                     CreatedBy = userStaff.UserId,
                     CreatedAt = DateTime.Now,
                     SupplierId = pRetail.PartnerId
@@ -971,7 +982,7 @@ namespace Infrastructure.Persistence
                     CustomerName = "Retail Customer 2",
                     PhoneNumber = "0909876543",
                     DeliveryAddress = "456 Retail Ave.",
-                    Status = "Pending",
+                    Status = "Success",
                     CreatedBy = userStaff.UserId,
                     CreatedAt = DateTime.Now,
                     SupplierId = pRetail.PartnerId
@@ -989,7 +1000,7 @@ namespace Infrastructure.Persistence
                     CustomerName = "Agent Customer",
                     PhoneNumber = "0912345678",
                     DeliveryAddress = "789 Agent Rd.",
-                    Status = "Pending",
+                    Status = "Success",
                     CreatedBy = userStaff.UserId,
                     CreatedAt = DateTime.Now,
                     SupplierId = pAgent.PartnerId
@@ -1013,9 +1024,9 @@ namespace Infrastructure.Persistence
             // 3️⃣ Seed InvoiceDetails
             EnsureInvoiceDetails(invImp1, new[]
             {
-    (matWood.MaterialId, 30, 255000),
-    (matBrick.MaterialId, 500, 1200)
-});
+                (matWood.MaterialId, 30, 255000),
+                (matBrick.MaterialId, 500, 1200)
+            });
 
             EnsureInvoiceDetails(invImp2, new[]
             {

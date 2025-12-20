@@ -14,7 +14,7 @@ namespace Infrastructure.Implementations
         public List<Invoice>? GetInvoiceSeller(int partnerId)
         {
             return _dbSet
-                .Where(i => i.CreatedBy == partnerId && i.ExportStatus == "Success" && !_context.Receipts.Any(r => r.Invoices == i.InvoiceCode))
+                .Where(i => i.CreatedByNavigation.PartnerId == partnerId && i.ExportStatus == "Success" && !_context.Receipts.Any(r => r.Invoices == i.InvoiceCode))
                 .ToList();
         }
 
@@ -58,7 +58,7 @@ namespace Infrastructure.Implementations
                 .Include(i => i.Warehouse)
                 .Include(i => i.CreatedByNavigation)
                 .Include(i => i.Order)
-            .ThenInclude(o => o.Warehouse)
+                .ThenInclude(o => o.Warehouse)
                 .Include(i => i.InvoiceDetails)
                     .ThenInclude(d => d.Material)
                 .Include(i => i.Partner)
